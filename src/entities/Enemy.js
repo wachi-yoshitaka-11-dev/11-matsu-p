@@ -1,4 +1,9 @@
 import * as THREE from 'three';
+import {
+    ENEMY_ATTACK_COOLDOWN,
+    ENEMY_DAMAGE,
+    ENEMY_ATTACK_RANGE
+} from '../utils/constants.js';
 
 export class Enemy {
     constructor(player) {
@@ -11,7 +16,7 @@ export class Enemy {
         this.hp = 30;
         this.maxHp = 30;
         this.isDead = false;
-        this.attackCooldown = 2; // 2秒に1回攻撃
+        this.attackCooldown = ENEMY_ATTACK_COOLDOWN; // 2秒に1回攻撃
         this.experience = 10; // 倒した時にもらえる経験値
     }
 
@@ -26,7 +31,7 @@ export class Enemy {
         // プレイヤーを追跡
         if (distance > 1) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            const speed = 2;
+            const speed = 2; // TODO: Add to constants if needed elsewhere
             this.mesh.position.add(direction.multiplyScalar(speed * deltaTime));
         }
 
@@ -35,7 +40,7 @@ export class Enemy {
 
         // 攻撃
         this.attackCooldown -= deltaTime;
-        if (distance <= 1.5 && this.attackCooldown <= 0) {
+        if (distance <= ENEMY_ATTACK_RANGE && this.attackCooldown <= 0) {
             console.log('Enemy attacks!');
 
             // Check if player is guarding and attack is from the front
@@ -44,13 +49,13 @@ export class Enemy {
             const angle = toPlayer.angleTo(playerForward);
 
             if (this.player.isGuarding && angle < Math.PI / 2) { // Guarding front attacks
-                this.player.stamina -= 15;
+                this.player.stamina -= 15; // TODO: Add to constants
                 console.log('Player guarded the attack!');
             } else if (!this.player.isInvincible) {
-                this.player.hp -= 10;
+                this.player.hp -= ENEMY_DAMAGE;
                 console.log(`Player HP: ${this.player.hp}`);
             }
-            this.attackCooldown = 2; // Reset cooldown
+            this.attackCooldown = ENEMY_ATTACK_COOLDOWN; // Reset cooldown
         }
     }
 }

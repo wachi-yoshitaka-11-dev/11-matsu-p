@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { NPC_INTERACTION_RANGE } from '../utils/constants.js';
 
 export class Npc {
     constructor(dialogue) {
@@ -32,7 +33,7 @@ export class Npc {
 
     update(playerPosition) {
         const distance = this.mesh.position.distanceTo(playerPosition);
-        this.interactionPrompt.visible = distance < 2;
+        this.interactionPrompt.visible = distance < NPC_INTERACTION_RANGE;
     }
 
     interact() {

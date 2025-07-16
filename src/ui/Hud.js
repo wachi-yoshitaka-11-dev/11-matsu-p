@@ -1,3 +1,5 @@
+import { PLAYER_STATUS_POINTS_PER_LEVEL } from '../utils/constants.js';
+
 export class Hud {
     constructor(player) {
         this.player = player;
@@ -46,9 +48,9 @@ export class Hud {
         points.id = 'status-points';
         menu.appendChild(points);
 
-        const hpButton = this.createStatButton('hp', 'HP +5', () => this.player.maxHp += 5);
-        const fpButton = this.createStatButton('fp', 'FP +5', () => this.player.maxFp += 5);
-        const staminaButton = this.createStatButton('stamina', 'Stamina +5', () => this.player.maxStamina += 5);
+        const hpButton = this.createStatButton('hp', `HP +${PLAYER_STATUS_POINTS_PER_LEVEL}`, () => this.player.maxHp += PLAYER_STATUS_POINTS_PER_LEVEL);
+        const fpButton = this.createStatButton('fp', `FP +${PLAYER_STATUS_POINTS_PER_LEVEL}`, () => this.player.maxFp += PLAYER_STATUS_POINTS_PER_LEVEL);
+        const staminaButton = this.createStatButton('stamina', `Stamina +${PLAYER_STATUS_POINTS_PER_LEVEL}`, () => this.player.maxStamina += PLAYER_STATUS_POINTS_PER_LEVEL);
 
         menu.appendChild(hpButton);
         menu.appendChild(fpButton);

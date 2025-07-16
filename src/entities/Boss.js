@@ -1,4 +1,11 @@
 import * as THREE from 'three';
+import {
+    BOSS_ATTACK_COOLDOWN,
+    BOSS_NORMAL_ATTACK_DAMAGE,
+    BOSS_NORMAL_ATTACK_RANGE,
+    BOSS_SPECIAL_ATTACK_DAMAGE,
+    BOSS_SPECIAL_ATTACK_RANGE
+} from '../utils/constants.js';
 
 export class Boss {
     constructor(player) {
@@ -11,7 +18,7 @@ export class Boss {
         this.hp = 200;
         this.maxHp = 200;
         this.isDead = false;
-        this.attackCooldown = 3; // Slower attack speed
+        this.attackCooldown = BOSS_ATTACK_COOLDOWN; // Slower attack speed
         this.experience = 100;
     }
 
@@ -31,15 +38,15 @@ export class Boss {
             } else {
                 this.specialAttack();
             }
-            this.attackCooldown = 3 + Math.random() * 2; // Randomize cooldown
+            this.attackCooldown = BOSS_ATTACK_COOLDOWN + Math.random() * 2; // Randomize cooldown
         }
     }
 
     normalAttack() {
         console.log('Boss: Normal Attack!');
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
-        if (distance < 3 && !this.player.isInvincible) {
-            this.player.hp -= 20;
+        if (distance < BOSS_NORMAL_ATTACK_RANGE && !this.player.isInvincible) {
+            this.player.hp -= BOSS_NORMAL_ATTACK_DAMAGE;
             console.log(`Player HP: ${this.player.hp}`);
         }
     }
@@ -48,8 +55,8 @@ export class Boss {
         console.log('Boss: Special Attack! (Area of Effect)');
         // Simple AoE damage around the boss
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
-        if (distance < 5 && !this.player.isInvincible) {
-            this.player.hp -= 40;
+        if (distance < BOSS_SPECIAL_ATTACK_RANGE && !this.player.isInvincible) {
+            this.player.hp -= BOSS_SPECIAL_ATTACK_DAMAGE;
             console.log(`Player HP: ${this.player.hp}`);
         }
         // TODO: Add visual effect for special attack

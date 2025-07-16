@@ -1,0 +1,44 @@
+// src/core/SceneManager.js
+
+import * as THREE from 'three';
+
+export class SceneManager {
+    constructor(game) {
+        this.game = game;
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.renderer = new THREE.WebGLRenderer();
+
+        this.init();
+    }
+
+    init() {
+        this.camera.position.z = 5;
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(this.renderer.domElement);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1).normalize();
+        this.scene.add(light);
+
+        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+    }
+
+    onWindowResize() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    add(object) {
+        this.scene.add(object);
+    }
+
+    remove(object) {
+        this.scene.remove(object);
+    }
+
+    render() {
+        this.renderer.render(this.scene, this.camera);
+    }
+}

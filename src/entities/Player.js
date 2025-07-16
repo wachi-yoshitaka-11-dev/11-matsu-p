@@ -1,4 +1,11 @@
 import * as THREE from 'three';
+import {
+    GRAVITY,
+    PLAYER_RESPAWN_DELAY,
+    PLAYER_LEVEL_UP_EXP_MULTIPLIER,
+    PLAYER_STATUS_POINTS_PER_LEVEL,
+    POTION_HEAL_AMOUNT
+} from '../utils/constants.js';
 
 export class Player {
     constructor(field) {
@@ -45,7 +52,7 @@ export class Player {
         if (this.inventory.length > index) {
             const item = this.inventory[index];
             if (item === 'potion') {
-                this.hp += 20;
+                this.hp += POTION_HEAL_AMOUNT;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
                 console.log('Used potion! HP restored.');
             }
@@ -63,8 +70,8 @@ export class Player {
     levelUp() {
         this.level++;
         this.experience -= this.experienceToNextLevel;
-        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
-        this.statusPoints += 5;
+        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * PLAYER_LEVEL_UP_EXP_MULTIPLIER);
+        this.statusPoints += PLAYER_STATUS_POINTS_PER_LEVEL;
         console.log('Level Up!');
     }
 
@@ -81,7 +88,7 @@ export class Player {
             this.isDead = true;
             console.log('Player Died!');
             // TODO: Show YOU DIED screen
-            setTimeout(() => this.respawn(), 3000);
+            setTimeout(() => this.respawn(), PLAYER_RESPAWN_DELAY);
         }
 
         if (this.isDead) return;
@@ -96,7 +103,7 @@ export class Player {
         }
 
         // 物理演算
-        this.velocity.y -= 9.8 * deltaTime; // 重力
+        this.velocity.y -= GRAVITY * deltaTime; // 重力
         this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
 
         // 地面との衝突判定

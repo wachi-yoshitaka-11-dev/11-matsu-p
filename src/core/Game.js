@@ -2,20 +2,21 @@ import * as THREE from 'three';
 import { Hud } from '../ui/Hud.js';
 import { TitleScreen } from '../ui/TitleScreen.js';
 import { PauseMenu } from '../ui/PauseMenu.js';
+import { SceneManager } from './SceneManager.js';
+import { AssetLoader } from './AssetLoader.js';
+import { ITEM_PICKUP_RANGE, PROJECTILE_DAMAGE } from '../utils/constants.js';
 
 const GameState = {
     TITLE: 'title',
     PLAYING: 'playing',
     PAUSED: 'paused'
 };
-import { InputController } from '../controls/InputController.js';
 
 export class Game {
     constructor(player) {
         this.player = player;
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.renderer = new THREE.WebGLRenderer();
+        this.sceneManager = new SceneManager(this);
+        this.assetLoader = new AssetLoader();
         this.clock = new THREE.Clock();
         this.enemies = [];
         this.items = [];
@@ -25,8 +26,7 @@ export class Game {
 
         // Audio
         this.listener = new THREE.AudioListener();
-        this.camera.add(this.listener);
-        this.audioLoader = new THREE.AudioLoader();
+        this.sceneManager.camera.add(this.listener);
         this.bgm = new THREE.Audio(this.listener);
         this.attackSound = new THREE.Audio(this.listener);
 
@@ -40,15 +40,7 @@ export class Game {
     }
 
     init() {
-        this.camera.position.z = 5;
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(this.renderer.domElement);
-
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1).normalize();
-        this.scene.add(light);
-
-        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+        this.sceneManager.init();
     }
 
     startGame() {
@@ -71,22 +63,19 @@ export class Game {
         }
     }
 
-    loadAudio() {
-        this.audioLoader.load('assets/audio/bgm.mp3', (buffer) => {
-            this.bgm.setBuffer(buffer);
-            this.bgm.setLoop(true);
-            this.bgm.setVolume(0.5);
-        });
-        this.audioLoader.load('assets/audio/attack.mp3', (buffer) => {
-            this.attackSound.setBuffer(buffer);
-            this.attackSound.setVolume(1);
-        });
+    async loadAudio() {
+        const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
+        this.bgm.setBuffer(bgmBuffer);
+        this.bgm.setLoop(true);
+        this.bgm.setVolume(0.5);
+
+        const attackBuffer = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
+        this.attackSound.setBuffer(attackBuffer);
+        this.attackSound.setVolume(1);
     }
 
     onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.sceneManager.onWindowResize();
     }
 
     start() {
@@ -97,12 +86,12 @@ export class Game {
         requestAnimationFrame(this.animate.bind(this));
 
         if (this.gameState === GameState.PAUSED) {
-            this.renderer.render(this.scene, this.camera);
+            this.sceneManager.render();
             return;
         }
 
         if (this.gameState !== GameState.PLAYING) {
-            this.renderer.render(this.scene, this.camera);
+            this.sceneManager.render();
             return;
         }
 
@@ -116,7 +105,7 @@ export class Game {
         this.enemies.forEach((enemy, index) => {
             if (enemy.isDead) {
                 this.player.addExperience(enemy.experience);
-                this.scene.remove(enemy.mesh);
+                this.sceneManager.remove(enemy.mesh);
                 this.enemies.splice(index, 1);
             } else {
                 enemy.update(deltaTime);
@@ -125,10 +114,10 @@ export class Game {
 
         this.items.forEach((item, index) => {
             const distance = this.player.mesh.position.distanceTo(item.mesh.position);
-            if (distance < 0.5) {
+            if (distance < ITEM_PICKUP_RANGE) {
                 this.player.inventory.push(item.type);
                 console.log(`Picked up ${item.type}! Inventory:`, this.player.inventory);
-                this.scene.remove(item.mesh);
+                this.sceneManager.remove(item.mesh);
                 this.items.splice(index, 1);
             }
         });
@@ -136,16 +125,16 @@ export class Game {
         this.projectiles.forEach((projectile, pIndex) => {
             projectile.update(deltaTime);
             if (projectile.lifespan <= 0) {
-                this.scene.remove(projectile.mesh);
+                this.sceneManager.remove(projectile.mesh);
                 this.projectiles.splice(pIndex, 1);
             }
 
             this.enemies.forEach(enemy => {
                 const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                if (distance < 1) {
-                    enemy.hp -= projectile.damage;
+                if (distance < 1) { // Projectile hit range
+                    enemy.hp -= PROJECTILE_DAMAGE;
                     console.log(`Enemy hit by projectile! HP: ${enemy.hp}`);
-                    this.scene.remove(projectile.mesh);
+                    this.sceneManager.remove(projectile.mesh);
                     this.projectiles.splice(pIndex, 1);
                 }
             });
@@ -155,7 +144,7 @@ export class Game {
             this.boss.update(deltaTime);
         } else if (this.boss && this.boss.isDead) {
             this.player.addExperience(this.boss.experience);
-            this.scene.remove(this.boss.mesh);
+            this.sceneManager.remove(this.boss.mesh);
             this.boss = null;
             console.log('Congratulations! You defeated the boss!');
         }
@@ -173,16 +162,16 @@ export class Game {
             const cameraPosition = new THREE.Vector3().subVectors(playerPosition, targetPosition).normalize().multiplyScalar(5).add(midPoint);
             cameraPosition.y = playerPosition.y + 2;
 
-            this.camera.position.copy(cameraPosition);
-            this.camera.lookAt(midPoint);
+            this.sceneManager.camera.position.copy(cameraPosition);
+            this.sceneManager.camera.lookAt(midPoint);
         } else {
             const cameraOffset = new THREE.Vector3(0, 2, 5);
             cameraOffset.applyQuaternion(this.player.mesh.quaternion);
-            this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
-            this.camera.lookAt(this.player.mesh.position);
+            this.sceneManager.camera.position.copy(this.player.mesh.position).add(cameraOffset);
+            this.sceneManager.camera.lookAt(this.player.mesh.position);
         }
 
         this.hud.update();
-        this.renderer.render(this.scene, this.camera);
+        this.sceneManager.render();
     }
 }
