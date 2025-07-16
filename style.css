@@ -1,0 +1,8 @@
+body {
+    margin: 0;
+    overflow: hidden; /* スクロールバーを消す */
+}
+
+canvas {
+    display: block; /* canvas要素のデフォルトのマージンを消す */
+}

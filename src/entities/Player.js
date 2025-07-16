@@ -1,0 +1,113 @@
+import * as THREE from 'three';
+
+export class Player {
+    constructor(field) {
+        this.field = field;
+        const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh.position.y = 0.25; // 地面の上に配置
+
+        // ステータス
+        this.maxHp = 100;
+        this.hp = this.maxHp;
+        this.maxFp = 50;
+        this.fp = this.maxFp;
+        this.maxStamina = 100;
+        this.stamina = this.maxStamina;
+        this.isDashing = false;
+
+        // 物理演算用
+        this.velocity = new THREE.Vector3();
+        this.onGround = true;
+        this.isRolling = false;
+        this.isInvincible = false;
+        this.isAttacking = false;
+        this.isGuarding = false;
+        this.isLockedOn = false;
+        this.lockedOnTarget = null;
+        this.isDead = false;
+
+        // レベルと経験値
+        this.level = 1;
+        this.experience = 0;
+        this.experienceToNextLevel = 100;
+        this.statusPoints = 0;
+        this.inventory = [];
+
+        // 武器
+        this.weapons = ['sword', 'claws'];
+        this.currentWeaponIndex = 0;
+        this.isUsingSkill = false;
+    }
+
+    useItem(index) {
+        if (this.inventory.length > index) {
+            const item = this.inventory[index];
+            if (item === 'potion') {
+                this.hp += 20;
+                if (this.hp > this.maxHp) this.hp = this.maxHp;
+                console.log('Used potion! HP restored.');
+            }
+            this.inventory.splice(index, 1);
+        }
+    }
+
+    addExperience(amount) {
+        this.experience += amount;
+        if (this.experience >= this.experienceToNextLevel) {
+            this.levelUp();
+        }
+    }
+
+    levelUp() {
+        this.level++;
+        this.experience -= this.experienceToNextLevel;
+        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
+        this.statusPoints += 5;
+        console.log('Level Up!');
+    }
+
+    respawn() {
+        this.mesh.position.set(0, 0.25, 0);
+        this.hp = this.maxHp;
+        this.stamina = this.maxStamina;
+        this.isDead = false;
+        console.log('Player Respawned!');
+    }
+
+    update(deltaTime) {
+        if (this.hp <= 0 && !this.isDead) {
+            this.isDead = true;
+            console.log('Player Died!');
+            // TODO: Show YOU DIED screen
+            setTimeout(() => this.respawn(), 3000);
+        }
+
+        if (this.isDead) return;
+
+        // Raycaster for ground detection
+        const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
+        const intersects = raycaster.intersectObject(this.field.mesh);
+
+        let groundHeight = -Infinity;
+        if (intersects.length > 0) {
+            groundHeight = intersects[0].point.y;
+        }
+
+        // 物理演算
+        this.velocity.y -= 9.8 * deltaTime; // 重力
+        this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
+
+        // 地面との衝突判定
+        if (this.mesh.position.y < groundHeight + 0.25) {
+            this.mesh.position.y = groundHeight + 0.25;
+            this.velocity.y = 0;
+            this.onGround = true;
+        }
+
+        if (this.isLockedOn && this.lockedOnTarget) {
+            this.mesh.lookAt(this.lockedOnTarget.mesh.position);
+        }
+    }
+}
