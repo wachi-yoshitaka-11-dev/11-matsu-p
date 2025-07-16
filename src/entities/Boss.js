@@ -4,7 +4,8 @@ import {
     BOSS_NORMAL_ATTACK_DAMAGE,
     BOSS_NORMAL_ATTACK_RANGE,
     BOSS_SPECIAL_ATTACK_DAMAGE,
-    BOSS_SPECIAL_ATTACK_RANGE
+    BOSS_SPECIAL_ATTACK_RANGE,
+    PLAYER_DEFENSE_BUFF_MULTIPLIER
 } from '../utils/constants.js';
 
 export class Boss {
@@ -46,7 +47,11 @@ export class Boss {
         console.log('Boss: Normal Attack!');
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         if (distance < BOSS_NORMAL_ATTACK_RANGE && !this.player.isInvincible) {
-            this.player.hp -= BOSS_NORMAL_ATTACK_DAMAGE;
+            let damageToPlayer = BOSS_NORMAL_ATTACK_DAMAGE;
+            if (this.player.isDefenseBuffed) {
+                damageToPlayer *= PLAYER_DEFENSE_BUFF_MULTIPLIER;
+            }
+            this.player.hp -= damageToPlayer;
             console.log(`Player HP: ${this.player.hp}`);
         }
     }
@@ -56,7 +61,11 @@ export class Boss {
         // Simple AoE damage around the boss
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         if (distance < BOSS_SPECIAL_ATTACK_RANGE && !this.player.isInvincible) {
-            this.player.hp -= BOSS_SPECIAL_ATTACK_DAMAGE;
+            let damageToPlayer = BOSS_SPECIAL_ATTACK_DAMAGE;
+            if (this.player.isDefenseBuffed) {
+                damageToPlayer *= PLAYER_DEFENSE_BUFF_MULTIPLIER;
+            }
+            this.player.hp -= damageToPlayer;
             console.log(`Player HP: ${this.player.hp}`);
         }
         // TODO: Add visual effect for special attack

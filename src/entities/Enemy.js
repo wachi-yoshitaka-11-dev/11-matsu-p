@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import {
     ENEMY_ATTACK_COOLDOWN,
     ENEMY_DAMAGE,
-    ENEMY_ATTACK_RANGE
+    ENEMY_ATTACK_RANGE,
+    PLAYER_DEFENSE_BUFF_MULTIPLIER
 } from '../utils/constants.js';
 
 export class Enemy {
@@ -48,11 +49,16 @@ export class Enemy {
             const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
             const angle = toPlayer.angleTo(playerForward);
 
+            let damageToPlayer = ENEMY_DAMAGE;
+            if (this.player.isDefenseBuffed) {
+                damageToPlayer *= PLAYER_DEFENSE_BUFF_MULTIPLIER;
+            }
+
             if (this.player.isGuarding && angle < Math.PI / 2) { // Guarding front attacks
                 this.player.stamina -= 15; // TODO: Add to constants
                 console.log('Player guarded the attack!');
             } else if (!this.player.isInvincible) {
-                this.player.hp -= ENEMY_DAMAGE;
+                this.player.hp -= damageToPlayer;
                 console.log(`Player HP: ${this.player.hp}`);
             }
             this.attackCooldown = ENEMY_ATTACK_COOLDOWN; // Reset cooldown

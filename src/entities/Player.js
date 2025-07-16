@@ -117,4 +117,25 @@ export class Player {
             this.mesh.lookAt(this.lockedOnTarget.mesh.position);
         }
     }
+
+    applyAttackBuff() {
+        this.isAttackBuffed = true;
+        console.log('Attack buff applied!');
+    }
+
+    removeAttackBuff() {
+        this.isAttackBuffed = false;
+        console.log('Attack buff removed!');
+    }
+
+    applyDefenseBuff() {
+        this.isDefenseBuffed = true;
+        console.log('Defense buff applied!');
+    }
+
+    removeDefenseBuff() {
+        this.isDefenseBuffed = false;
+        console.log('Defense buff removed!');
+    }
+    }
 }

@@ -38,3 +38,8 @@ export const ITEM_PICKUP_RANGE = 0.5;
 export const POTION_HEAL_AMOUNT = 20;
 export const SKILL_FP_COST = 20;
 export const SKILL_DURATION = 1000; // ms
+
+export const SKILL_FP_COST_BUFF = 30;
+export const SKILL_DURATION_BUFF = 10000; // ms
+export const PLAYER_ATTACK_BUFF_MULTIPLIER = 1.5;
+export const PLAYER_DEFENSE_BUFF_MULTIPLIER = 0.7;

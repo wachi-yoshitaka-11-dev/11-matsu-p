@@ -105,8 +105,12 @@ export class InputController {
                     // Strong Attack Hit Detection
                     this.game.enemies.forEach(enemy => {
                         const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
+                        let finalDamage = damage;
+                        if (this.player.isAttackBuffed) {
+                            finalDamage *= PLAYER_ATTACK_BUFF_MULTIPLIER;
+                        }
                         if (distance < range) {
-                            enemy.hp -= damage;
+                            enemy.hp -= finalDamage;
                             console.log(`Enemy HP: ${enemy.hp}`);
                         }
                     });
@@ -184,7 +188,7 @@ export class InputController {
             this.keys['Digit2'] = false; // Prevent continuous switching
         }
 
-        // Use Skill
+        // Use Skill (Projectile)
         if (this.keys['Digit3']) {
             if (!this.player.isUsingSkill && this.player.fp >= SKILL_FP_COST) {
                 this.player.isUsingSkill = true;
@@ -201,6 +205,25 @@ export class InputController {
                 }, SKILL_DURATION);
             }
             this.keys['Digit3'] = false;
+        }
+
+        // Use Skill (Buff)
+        if (this.keys['Digit4']) {
+            if (!this.player.isUsingSkill && this.player.fp >= SKILL_FP_COST_BUFF) {
+                this.player.isUsingSkill = true;
+                this.player.fp -= SKILL_FP_COST_BUFF;
+                console.log('Used Skill: Buff!');
+
+                this.player.applyAttackBuff();
+                this.player.applyDefenseBuff();
+
+                setTimeout(() => {
+                    this.player.removeAttackBuff();
+                    this.player.removeDefenseBuff();
+                    this.player.isUsingSkill = false;
+                }, SKILL_DURATION_BUFF);
+            }
+            this.keys['Digit4'] = false;
         }
 
         // Interact with NPC
