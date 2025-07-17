@@ -2,9 +2,9 @@
   "name": "mofumofu-adventure",
   "version": "0.1.0",
   "description": "AI-generated 3D open-world action RPG using Three.js",
-  "main": "src/main.js",
+  "main": "public/src/main.js",
   "scripts": {
-    "start": "open index.html",
+    "start": "open public/index.html",
     "test": "echo \"No test specified\" && exit 0"
   },
   "keywords": [
@@ -17,5 +17,8 @@
   "license": "MIT",
   "dependencies": {
     "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1"
   }
 }

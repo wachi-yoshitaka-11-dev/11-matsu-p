@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import { Hud } from '../ui/Hud.js';
-import { TitleScreen } from '../ui/TitleScreen.js';
-import { PauseMenu } from '../ui/PauseMenu.js';
-import { SceneManager } from './SceneManager.js';
-import { AssetLoader } from './AssetLoader.js';
+import { Hud } from '../ui/hud.js';
+import { TitleScreen } from '../ui/title-screen.js';
+import { PauseMenu } from '../ui/pause-menu.js';
+import { SceneManager } from './scene-manager.js';
+import { AssetLoader } from './asset-loader.js';
 import { ITEM_PICKUP_RANGE, PROJECTILE_DAMAGE } from '../utils/constants.js';
 
 const GameState = {
@@ -64,12 +64,12 @@ export class Game {
     }
 
     async loadAudio() {
-        const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
+        const bgmBuffer = await this.assetLoader.loadAudio('bgm', '../assets/audio/bgm.mp3');
         this.bgm.setBuffer(bgmBuffer);
         this.bgm.setLoop(true);
         this.bgm.setVolume(0.5);
 
-        const attackBuffer = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
+        const attackBuffer = await this.assetLoader.loadAudio('attack', '../assets/audio/attack.mp3');
         this.attackSound.setBuffer(attackBuffer);
         this.attackSound.setVolume(1);
     }

@@ -49,5 +49,8 @@ src/
 ## 5. コーディング規約
 
 - **スタイル:** [Prettier](https://prettier.io/) のデフォルト設定に準拠する。
-- **命名規則:** クラス名は`PascalCase`、関数・変数名は`camelCase`とする。
+- **命名規則:**
+  - ファイル名: `kebab-case` (例: `input-controller.js`)
+  - クラス名: `PascalCase` (例: `InputController`)
+  - 関数・変数名: `camelCase` (例: `handleClick`)
 - **モジュール:** ES Modules (`import`/`export`) を使用する。

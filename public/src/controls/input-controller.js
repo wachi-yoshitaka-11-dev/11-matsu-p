@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Projectile } from '../world/Projectile.js';
+import { Projectile } from '../world/projectile.js';
 import {
     PLAYER_ATTACK_RANGE_SWORD,
     PLAYER_ATTACK_SPEED_SWORD,

@@ -1,14 +1,14 @@
 import * as THREE from 'three';
-import { Game } from './core/Game.js';
-import { Player } from './entities/Player.js';
-import { Field } from './world/Field.js';
-import { Enemy } from './entities/Enemy.js';
-import { InputController } from './controls/InputController.js';
-import { Item } from './world/Item.js';
-import { Boss } from './entities/Boss.js';
-import { Npc } from './entities/Npc.js';
-import { SceneManager } from './core/SceneManager.js';
-import { AssetLoader } from './core/AssetLoader.js';
+import { Game } from './core/game.js';
+import { Player } from './entities/player.js';
+import { Field } from './world/field.js';
+import { Enemy } from './entities/enemy.js';
+import { InputController } from './controls/input-controller.js';
+import { Item } from './world/item.js';
+import { Boss } from './entities/boss.js';
+import { Npc } from './entities/npc.js';
+import { SceneManager } from './core/scene-manager.js';
+import { AssetLoader } from './core/asset-loader.js';
 
 // 1. ワールド（地形）の生成
 const field = new Field();
