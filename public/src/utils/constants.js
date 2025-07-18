@@ -14,6 +14,7 @@ export const Player = {
     DEFENSE_BUFF_MULTIPLIER: 0.7,
     STAMINA_COST_JUMP: 10,
     STAMINA_COST_ROLL: 20,
+    STAMINA_COST_GUARD: 15,
 };
 
 export const WeaponSword = {

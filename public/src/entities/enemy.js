@@ -60,7 +60,7 @@ export class Enemy {
         const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
 
         if (isGuarded) {
-            this.player.takeStaminaDamage(15);
+            this.player.takeStaminaDamage(Player.STAMINA_COST_GUARD);
         } else {
             this.player.takeDamage(damageToPlayer);
         }

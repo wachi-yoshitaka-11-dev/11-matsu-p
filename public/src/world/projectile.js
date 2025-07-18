@@ -11,7 +11,7 @@ export class Projectile {
         const material = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00 });
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.copy(startPosition);
-        this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction); // Align with direction
+        this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize()); // Align with direction
 
         this.direction = direction;
         this.speed = PROJECTILE_SPEED;
