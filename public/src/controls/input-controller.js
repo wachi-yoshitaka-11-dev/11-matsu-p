@@ -18,9 +18,12 @@ import {
     PLAYER_ROLL_DURATION,
     PLAYER_JUMP_POWER,
     PLAYER_DASH_SPEED_MULTIPLIER,
+    PLAYER_ATTACK_BUFF_MULTIPLIER,
     NPC_INTERACTION_RANGE,
     SKILL_FP_COST,
-    SKILL_DURATION
+    SKILL_DURATION,
+    SKILL_FP_COST_BUFF,
+    SKILL_DURATION_BUFF
 } from '../utils/constants.js';
 
 export class InputController {
@@ -62,8 +65,9 @@ export class InputController {
             if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= staminaCost) { // Left click
                 this.player.isAttacking = true;
                 this.player.stamina -= staminaCost;
+                this.player.showAttackEffect();
                 console.log(`Weak Attack with ${weapon}!`);
-                this.game.attackSound.play();
+                this.game.playSound('attack');
 
                 // Attack Hit Detection
                 this.game.enemies.forEach(enemy => {
@@ -80,6 +84,7 @@ export class InputController {
             } else if (e.button === 2 && !this.player.isAttacking) { // Right click
                 this.isCharging = true;
                 this.chargeStartTime = Date.now();
+                this.player.startChargingEffect();
                 console.log(`Charging strong attack with ${weapon}...`);
             }
         });
@@ -95,6 +100,7 @@ export class InputController {
                 }
 
                 this.isCharging = false;
+                this.player.stopChargingEffect();
                 const chargeTime = Date.now() - this.chargeStartTime;
                 const damage = Math.min(10 + chargeTime / 100, maxDamage);
                 const staminaCost = Math.floor(damage / 2);
@@ -193,6 +199,7 @@ export class InputController {
             if (!this.player.isUsingSkill && this.player.fp >= SKILL_FP_COST) {
                 this.player.isUsingSkill = true;
                 this.player.fp -= SKILL_FP_COST;
+                this.player.showSkillEffect();
                 console.log('Used Skill: Shockwave!');
 
                 const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);

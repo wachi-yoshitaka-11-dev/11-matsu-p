@@ -27,7 +27,16 @@ export class Hud {
         this.inventoryDisplay = this.createInventoryDisplay();
         this.container.appendChild(this.inventoryDisplay);
 
+        this.weaponDisplay = this.createWeaponDisplay();
+        this.container.appendChild(this.weaponDisplay);
+
         this.addStyles();
+    }
+
+    createWeaponDisplay() {
+        const weaponContainer = document.createElement('div');
+        weaponContainer.id = 'weapon-display';
+        return weaponContainer;
     }
 
     createInventoryDisplay() {
@@ -114,6 +123,9 @@ export class Hud {
             itemEl.textContent = item;
             this.inventoryDisplay.appendChild(itemEl);
         });
+
+        // Update weapon display
+        this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
     }
 
     addStyles() {
@@ -171,6 +183,14 @@ export class Hud {
             #inventory {
                 position: absolute;
                 top: 150px;
+                left: 10px;
+                background-color: rgba(0,0,0,0.5);
+                padding: 10px;
+                border: 1px solid white;
+            }
+            #weapon-display {
+                position: absolute;
+                top: 250px; /* Adjust as needed */
                 left: 10px;
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;

@@ -21,6 +21,11 @@ export class SceneManager {
         light.position.set(1, 1, 1).normalize();
         this.scene.add(light);
 
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
+        this.scene.add(ambientLight);
+
+        this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
+
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
     }
 

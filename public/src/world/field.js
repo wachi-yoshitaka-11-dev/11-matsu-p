@@ -15,6 +15,7 @@ export class Field {
             const z = Math.sin(x * 0.1) * 2 + Math.cos(y * 0.1) * 2;
             vertices[i + 2] = z;
         }
+        geometry.attributes.position.needsUpdate = true; // Notify Three.js that vertices have been updated
         geometry.computeVertexNormals(); // Recalculate normals for correct lighting
 
         const material = new THREE.MeshStandardMaterial({ color: 0x4a7d2c, side: THREE.DoubleSide });

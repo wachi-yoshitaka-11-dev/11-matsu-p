@@ -4,7 +4,7 @@ import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { SceneManager } from './scene-manager.js';
 import { AssetLoader } from './asset-loader.js';
-import { ITEM_PICKUP_RANGE, PROJECTILE_DAMAGE } from '../utils/constants.js';
+import { ITEM_PICKUP_RANGE, PROJECTILE_DAMAGE, PLAYER_ATTACK_BUFF_MULTIPLIER } from '../utils/constants.js';
 
 const GameState = {
     TITLE: 'title',
@@ -28,7 +28,7 @@ export class Game {
         this.listener = new THREE.AudioListener();
         this.sceneManager.camera.add(this.listener);
         this.bgm = new THREE.Audio(this.listener);
-        this.attackSound = new THREE.Audio(this.listener);
+        this.audioBuffers = {}; // Store loaded audio buffers
 
         this.gameState = GameState.TITLE;
         this.titleScreen = new TitleScreen(() => this.startGame());
@@ -64,14 +64,21 @@ export class Game {
     }
 
     async loadAudio() {
-        const bgmBuffer = await this.assetLoader.loadAudio('bgm', '../assets/audio/bgm.mp3');
+        const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
         this.bgm.setBuffer(bgmBuffer);
         this.bgm.setLoop(true);
         this.bgm.setVolume(0.5);
 
-        const attackBuffer = await this.assetLoader.loadAudio('attack', '../assets/audio/attack.mp3');
-        this.attackSound.setBuffer(attackBuffer);
-        this.attackSound.setVolume(1);
+        this.audioBuffers['attack'] = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
+    }
+
+    playSound(name) {
+        if (this.audioBuffers[name]) {
+            const sound = new THREE.Audio(this.listener);
+            sound.setBuffer(this.audioBuffers[name]);
+            sound.setVolume(1);
+            sound.play();
+        }
     }
 
     onWindowResize() {
@@ -85,6 +92,8 @@ export class Game {
     animate() {
         requestAnimationFrame(this.animate.bind(this));
 
+        
+
         if (this.gameState === GameState.PAUSED) {
             this.sceneManager.render();
             return;
@@ -97,61 +106,73 @@ export class Game {
 
         const deltaTime = this.clock.getDelta();
 
-        this.player.update(deltaTime);
-        if (this.inputController) {
+        if (this.player) {
+            this.player.update(deltaTime);
+        }
+        if (this.player && this.inputController) {
             this.inputController.update();
         }
 
-        this.enemies.forEach((enemy, index) => {
-            if (enemy.isDead) {
-                this.player.addExperience(enemy.experience);
-                this.sceneManager.remove(enemy.mesh);
-                this.enemies.splice(index, 1);
-            } else {
-                enemy.update(deltaTime);
-            }
-        });
+        if (this.player) {
+            this.enemies.forEach((enemy, index) => {
+                if (enemy.isDead) {
+                    this.player.addExperience(enemy.experience);
+                    this.sceneManager.remove(enemy.mesh);
+                    this.enemies.splice(index, 1);
+                } else {
+                    enemy.update(deltaTime);
+                }
+            });
+        }
 
-        this.items.forEach((item, index) => {
-            const distance = this.player.mesh.position.distanceTo(item.mesh.position);
-            if (distance < ITEM_PICKUP_RANGE) {
-                this.player.inventory.push(item.type);
-                console.log(`Picked up ${item.type}! Inventory:`, this.player.inventory);
-                this.sceneManager.remove(item.mesh);
-                this.items.splice(index, 1);
-            }
-        });
+        if (this.player) {
+            this.items.forEach((item, index) => {
+                const distance = this.player.mesh.position.distanceTo(item.mesh.position);
+                if (distance < ITEM_PICKUP_RANGE) {
+                    this.player.inventory.push(item.type);
+                    console.log(`Picked up ${item.type}! Inventory:`, this.player.inventory);
+                    this.sceneManager.remove(item.mesh);
+                    this.items.splice(index, 1);
+                }
+            });
+        }
 
-        this.projectiles.forEach((projectile, pIndex) => {
-            projectile.update(deltaTime);
-            if (projectile.lifespan <= 0) {
-                this.sceneManager.remove(projectile.mesh);
-                this.projectiles.splice(pIndex, 1);
-            }
-
-            this.enemies.forEach(enemy => {
-                const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                if (distance < 1) { // Projectile hit range
-                    enemy.hp -= PROJECTILE_DAMAGE;
-                    console.log(`Enemy hit by projectile! HP: ${enemy.hp}`);
+        if (this.player) {
+            this.projectiles.forEach((projectile, pIndex) => {
+                projectile.update(deltaTime);
+                if (projectile.lifespan <= 0) {
                     this.sceneManager.remove(projectile.mesh);
                     this.projectiles.splice(pIndex, 1);
                 }
-            });
-        });
 
-        if (this.boss && !this.boss.isDead) {
-            this.boss.update(deltaTime);
-        } else if (this.boss && this.boss.isDead) {
-            this.player.addExperience(this.boss.experience);
-            this.sceneManager.remove(this.boss.mesh);
-            this.boss = null;
-            console.log('Congratulations! You defeated the boss!');
+                this.enemies.forEach(enemy => {
+                    const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
+                    if (distance < 1) { // Projectile hit range
+                        enemy.hp -= PROJECTILE_DAMAGE;
+                        console.log(`Enemy hit by projectile! HP: ${enemy.hp}`);
+                        this.sceneManager.remove(projectile.mesh);
+                        this.projectiles.splice(pIndex, 1);
+                    }
+                });
+            });
         }
 
-        this.npcs.forEach(npc => {
-            npc.update(this.player.mesh.position);
-        });
+        if (this.player) {
+            if (this.boss && !this.boss.isDead) {
+                this.boss.update(deltaTime);
+            } else if (this.boss && this.boss.isDead) {
+                this.player.addExperience(this.boss.experience);
+                this.sceneManager.remove(this.boss.mesh);
+                this.boss = null;
+                console.log('Congratulations! You defeated the boss!');
+            }
+        }
+
+        if (this.player) {
+            this.npcs.forEach(npc => {
+                npc.update(this.player.mesh.position);
+            });
+        }
 
         // カメラの更新
         if (this.player.isLockedOn && this.player.lockedOnTarget) {

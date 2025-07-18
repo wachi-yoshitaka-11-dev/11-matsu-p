@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Gemini
 .gemini/
+
+# Test results
+test-results/

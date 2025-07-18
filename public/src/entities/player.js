@@ -4,7 +4,8 @@ import {
     PLAYER_RESPAWN_DELAY,
     PLAYER_LEVEL_UP_EXP_MULTIPLIER,
     PLAYER_STATUS_POINTS_PER_LEVEL,
-    POTION_HEAL_AMOUNT
+    POTION_HEAL_AMOUNT,
+    PLAYER_ATTACK_BUFF_MULTIPLIER
 } from '../utils/constants.js';
 
 export class Player {
@@ -13,7 +14,16 @@ export class Player {
         const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.y = 0.25; // 地面の上に配置
+
+        // 初期位置を地形の高さに合わせる
+        this.mesh.position.set(0, 50, 0); // 仮の高い位置に設定
+        const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
+        const intersects = raycaster.intersectObject(this.field.mesh);
+        if (intersects.length > 0) {
+            this.mesh.position.y = intersects[0].point.y + 0.25; // 地面の少し上に配置
+        } else {
+            this.mesh.position.y = 0.25; // 地形が見つからない場合のフォールバック
+        }
 
         // ステータス
         this.maxHp = 100;
@@ -46,6 +56,26 @@ export class Player {
         this.weapons = ['sword', 'claws'];
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
+        this.originalColor = this.mesh.material.color.clone();
+    }
+
+    // Visual feedback for actions
+    showAttackEffect() {
+        this.mesh.material.color.set(0xffffff); // White
+        setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
+    }
+
+    showSkillEffect() {
+        this.mesh.material.color.set(0x8a2be2); // BlueViolet
+        setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
+    }
+
+    startChargingEffect() {
+        this.mesh.material.color.set(0xffff00); // Yellow
+    }
+
+    stopChargingEffect() {
+        this.mesh.material.color.copy(this.originalColor);
     }
 
     useItem(index) {
@@ -136,6 +166,5 @@ export class Player {
     removeDefenseBuff() {
         this.isDefenseBuffed = false;
         console.log('Defense buff removed!');
-    }
     }
 }
