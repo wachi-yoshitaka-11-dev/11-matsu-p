@@ -55,7 +55,7 @@ export class Player {
 
     spawn() {
         this.mesh.position.set(0, 50, 0); // 仮の高い位置に設定
-        if (this.field && this.field.mesh) {
+        if (this.field?.mesh) {
             const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
             const intersects = raycaster.intersectObject(this.field.mesh);
             if (intersects.length > 0) {

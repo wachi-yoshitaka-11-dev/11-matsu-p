@@ -36,6 +36,10 @@ export class InputController {
         this.isCharging = false;
         this.chargeStartTime = 0;
 
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
         document.addEventListener('keydown', (e) => this.keys[e.code] = true);
         document.addEventListener('keyup', (e) => this.keys[e.code] = false);
         document.addEventListener('mousemove', (e) => {
@@ -66,7 +70,6 @@ export class InputController {
                 this.player.isAttacking = true;
                 this.player.stamina -= staminaCost;
                 this.player.showAttackEffect();
-                console.log(`Weak Attack with ${weapon}!`);
                 this.game.playSound('attack');
 
                 // Attack Hit Detection
@@ -74,7 +77,6 @@ export class InputController {
                     const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
                     if (distance < attackRange) {
                         enemy.hp -= damage;
-                        console.log(`Enemy HP: ${enemy.hp}`);
                     }
                 });
 
@@ -85,7 +87,6 @@ export class InputController {
                 this.isCharging = true;
                 this.chargeStartTime = Date.now();
                 this.player.startChargingEffect();
-                console.log(`Charging strong attack with ${weapon}...`);
             }
         });
 
@@ -107,7 +108,6 @@ export class InputController {
 
                 if (this.player.stamina >= staminaCost) {
                     this.player.stamina -= staminaCost;
-                    console.log(`Strong Attack with ${weapon}! Damage: ${damage}`);
                     // Strong Attack Hit Detection
                     this.game.enemies.forEach(enemy => {
                         const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
@@ -117,11 +117,9 @@ export class InputController {
                         }
                         if (distance < range) {
                             enemy.hp -= finalDamage;
-                            console.log(`Enemy HP: ${enemy.hp}`);
                         }
                     });
                 } else {
-                    console.log('Not enough stamina for strong attack!');
                 }
             }
         });

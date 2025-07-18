@@ -1,9 +1,10 @@
 import * as THREE from 'three';
+import { TERRAIN_SIZE, TERRAIN_SEGMENTS } from '../utils/constants.js';
 
 export class Field {
     constructor() {
-        const size = 100;
-        const segments = 50;
+        const size = TERRAIN_SIZE;
+        const segments = TERRAIN_SEGMENTS;
         const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
 
         // Generate height data
@@ -21,11 +22,13 @@ export class Field {
         const material = new THREE.MeshStandardMaterial({ color: 0x4a7d2c, side: THREE.DoubleSide });
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+
+        this.raycaster = new THREE.Raycaster();
     }
 
     getHeightAt(x, z) {
-        const raycaster = new THREE.Raycaster(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
-        const intersects = raycaster.intersectObject(this.mesh);
+        this.raycaster.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
+        const intersects = this.raycaster.intersectObject(this.mesh);
         if (intersects.length > 0) {
             return intersects[0].point.y;
         }

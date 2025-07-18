@@ -55,12 +55,8 @@ export class Npc {
         }
         if (this.interactionPrompt) {
             const sprite = this.interactionPrompt.children[0];
-            if (sprite && sprite.material && sprite.material.map) {
-                sprite.material.map.dispose();
-            }
-            if (sprite && sprite.material) {
-                sprite.material.dispose();
-            }
+            sprite?.material?.map?.dispose();
+            sprite?.material?.dispose();
         }
     }
 }
