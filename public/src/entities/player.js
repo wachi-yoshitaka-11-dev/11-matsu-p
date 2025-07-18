@@ -1,12 +1,5 @@
 import * as THREE from 'three';
-import {
-    GRAVITY,
-    PLAYER_RESPAWN_DELAY,
-    PLAYER_LEVEL_UP_EXP_MULTIPLIER,
-    PLAYER_STATUS_POINTS_PER_LEVEL,
-    POTION_HEAL_AMOUNT,
-    PLAYER_ATTACK_BUFF_MULTIPLIER
-} from '../utils/constants.js';
+import { GRAVITY, Player as PlayerConst, Item as ItemConst } from '../utils/constants.js';
 
 export class Player {
     constructor(field) {
@@ -101,7 +94,7 @@ export class Player {
         if (this.inventory.length > index) {
             const item = this.inventory[index];
             if (item === 'potion') {
-                this.hp += POTION_HEAL_AMOUNT;
+                this.hp += ItemConst.POTION_HEAL_AMOUNT;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
             this.inventory.splice(index, 1);
@@ -118,8 +111,8 @@ export class Player {
     levelUp() {
         this.level++;
         this.experience -= this.experienceToNextLevel;
-        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * PLAYER_LEVEL_UP_EXP_MULTIPLIER);
-        this.statusPoints += PLAYER_STATUS_POINTS_PER_LEVEL;
+        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * PlayerConst.LEVEL_UP_EXP_MULTIPLIER);
+        this.statusPoints += PlayerConst.STATUS_POINTS_PER_LEVEL;
     }
 
     respawn() {
@@ -132,7 +125,7 @@ export class Player {
     update(deltaTime) {
         if (this.hp <= 0 && !this.isDead) {
             this.isDead = true;
-            setTimeout(() => this.respawn(), PLAYER_RESPAWN_DELAY);
+            setTimeout(() => this.respawn(), PlayerConst.RESPAWN_DELAY);
         }
 
         if (this.isDead) return;

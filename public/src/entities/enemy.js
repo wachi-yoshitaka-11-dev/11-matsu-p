@@ -1,11 +1,5 @@
 import * as THREE from 'three';
-import {
-    ENEMY_ATTACK_COOLDOWN,
-    ENEMY_DAMAGE,
-    ENEMY_ATTACK_RANGE,
-    PLAYER_DEFENSE_BUFF_MULTIPLIER,
-    ENEMY_SPEED
-} from '../utils/constants.js';
+import { Enemy as EnemyConst, Player as PlayerConst } from '../utils/constants.js';
 
 export class Enemy {
     constructor(player) {
@@ -18,7 +12,7 @@ export class Enemy {
         this.hp = 30;
         this.maxHp = 30;
         this.isDead = false;
-        this.attackCooldown = ENEMY_ATTACK_COOLDOWN; // 2秒に1回攻撃
+        this.attackCooldown = EnemyConst.ATTACK_COOLDOWN; // 2秒に1回攻撃
         this.experience = 10; // 倒した時にもらえる経験値
     }
 
@@ -33,7 +27,7 @@ export class Enemy {
         // プレイヤーを追跡
         if (distance > 1) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            this.mesh.position.add(direction.multiplyScalar(ENEMY_SPEED * deltaTime));
+            this.mesh.position.add(direction.multiplyScalar(EnemyConst.SPEED * deltaTime));
         }
 
         // プレイヤーの方を向く
@@ -41,9 +35,9 @@ export class Enemy {
 
         // 攻撃
         this.attackCooldown -= deltaTime;
-        if (distance <= ENEMY_ATTACK_RANGE && this.attackCooldown <= 0) {
+        if (distance <= EnemyConst.ATTACK_RANGE && this.attackCooldown <= 0) {
             this.attack();
-            this.attackCooldown = ENEMY_ATTACK_COOLDOWN; // Reset cooldown
+            this.attackCooldown = EnemyConst.ATTACK_COOLDOWN; // Reset cooldown
         }
     }
 
@@ -52,9 +46,9 @@ export class Enemy {
         const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
         const angle = toPlayer.angleTo(playerForward);
 
-        let damageToPlayer = ENEMY_DAMAGE;
+        let damageToPlayer = EnemyConst.DAMAGE;
         if (this.player.isDefenseBuffed) {
-            damageToPlayer *= PLAYER_DEFENSE_BUFF_MULTIPLIER;
+            damageToPlayer *= PlayerConst.DEFENSE_BUFF_MULTIPLIER;
         }
 
         const isGuarded = this.player.isGuarding && angle < Math.PI / 2;

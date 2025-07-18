@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { TERRAIN_SIZE, TERRAIN_SEGMENTS } from '../utils/constants.js';
+import { Field as FieldConst } from '../utils/constants.js';
 
 export class Field {
     constructor() {
-        const size = TERRAIN_SIZE;
-        const segments = TERRAIN_SEGMENTS;
+        const size = FieldConst.TERRAIN_SIZE;
+        const segments = FieldConst.TERRAIN_SEGMENTS;
         const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
 
         // Generate height data

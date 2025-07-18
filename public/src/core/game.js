@@ -4,7 +4,7 @@ import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { SceneManager } from './scene-manager.js';
 import { AssetLoader } from './asset-loader.js';
-import { ITEM_PICKUP_RANGE, PROJECTILE_DAMAGE, PLAYER_ATTACK_BUFF_MULTIPLIER } from '../utils/constants.js';
+import { Item as ItemConst, Projectile as ProjectileConst } from '../utils/constants.js';
 
 const GameState = {
     TITLE: 'title',
@@ -119,7 +119,7 @@ export class Game {
 
         this.items.forEach((item, index) => {
             const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
-            if (distance < ITEM_PICKUP_RANGE) {
+            if (distance < ItemConst.PICKUP_RANGE) {
                 this.player?.inventory.push(item.type);
                 this.sceneManager.remove(item.mesh);
                 this.items.splice(index, 1);
@@ -136,7 +136,7 @@ export class Game {
             this.enemies.forEach(enemy => {
                 const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
                 if (distance < 1) { // Projectile hit range
-                    enemy.takeDamage(PROJECTILE_DAMAGE);
+                    enemy.takeDamage(ProjectileConst.DAMAGE);
                     this.sceneManager.remove(projectile.mesh);
                     this.projectiles.splice(pIndex, 1);
                 }
