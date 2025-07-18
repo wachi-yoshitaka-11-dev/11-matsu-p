@@ -143,3 +143,4 @@ vite.config.ts.timestamp-*
 
 # Test results
 test-results/
+pr_body.txt
