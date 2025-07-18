@@ -1,0 +1,4 @@
+reviews:
+  branches:
+    base_branches:
+      - "develop"
