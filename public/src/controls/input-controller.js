@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
-import { Player as PlayerConst, WeaponSword, WeaponClaws, Npc as NpcConst, Skill } from '../utils/constants.js';
+import { Player as PlayerConst, WeaponSword, WeaponClaws, Npc as NpcConst, Skill as SkillConst } from '../utils/constants.js';
 
 export class InputController {
     constructor(player, camera, game) {
@@ -13,6 +13,29 @@ export class InputController {
         this.chargeStartTime = 0;
 
         this.setupEventListeners();
+    }
+
+    _getWeaponParams() {
+        const weaponName = this.player.weapons[this.player.currentWeaponIndex];
+        if (weaponName === 'claws') {
+            return {
+                attackRange: WeaponClaws.ATTACK_RANGE,
+                attackSpeed: WeaponClaws.ATTACK_SPEED,
+                staminaCost: WeaponClaws.STAMINA_COST_WEAK_ATTACK,
+                damage: WeaponClaws.DAMAGE_WEAK_ATTACK,
+                maxStrongDamage: WeaponClaws.DAMAGE_STRONG_ATTACK_MAX,
+                strongAttackRange: WeaponClaws.RANGE_STRONG_ATTACK,
+            };
+        }
+        // Default to sword
+        return {
+            attackRange: WeaponSword.ATTACK_RANGE,
+            attackSpeed: WeaponSword.ATTACK_SPEED,
+            staminaCost: WeaponSword.STAMINA_COST_WEAK_ATTACK,
+            damage: WeaponSword.DAMAGE_WEAK_ATTACK,
+            maxStrongDamage: WeaponSword.DAMAGE_STRONG_ATTACK_MAX,
+            strongAttackRange: WeaponSword.RANGE_STRONG_ATTACK,
+        };
     }
 
     setupEventListeners() {
@@ -29,36 +52,25 @@ export class InputController {
         });
 
         document.addEventListener('mousedown', (e) => {
-            const weapon = this.player.weapons[this.player.currentWeaponIndex];
-            let attackRange = WeaponSword.ATTACK_RANGE;
-            let attackSpeed = WeaponSword.ATTACK_SPEED;
-            let staminaCost = WeaponSword.STAMINA_COST_WEAK_ATTACK;
-            let damage = WeaponSword.DAMAGE_WEAK_ATTACK;
+            const params = this._getWeaponParams();
 
-            if (weapon === 'claws') {
-                attackRange = WeaponClaws.ATTACK_RANGE;
-                attackSpeed = WeaponClaws.ATTACK_SPEED;
-                staminaCost = WeaponClaws.STAMINA_COST_WEAK_ATTACK;
-                damage = WeaponClaws.DAMAGE_WEAK_ATTACK;
-            }
-
-            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= staminaCost) { // Left click
+            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) { // Left click
                 this.player.isAttacking = true;
-                this.player.stamina -= staminaCost;
+                this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
                 this.game.playSound('attack');
 
                 // Attack Hit Detection
                 this.game.enemies.forEach(enemy => {
                     const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                    if (distance < attackRange) {
-                        enemy.hp -= damage;
+                    if (distance < params.attackRange) {
+                        enemy.hp -= params.damage;
                     }
                 });
 
                 setTimeout(() => {
                     this.player.isAttacking = false;
-                }, attackSpeed);
+                }, params.attackSpeed);
             } else if (e.button === 2 && !this.player.isAttacking) { // Right click
                 this.isCharging = true;
                 this.chargeStartTime = Date.now();
@@ -68,18 +80,12 @@ export class InputController {
 
         document.addEventListener('mouseup', (e) => {
             if (e.button === 2 && this.isCharging) {
-                const weapon = this.player.weapons[this.player.currentWeaponIndex];
-                let maxDamage = WeaponSword.DAMAGE_STRONG_ATTACK_MAX;
-                let range = WeaponSword.RANGE_STRONG_ATTACK;
-                if (weapon === 'claws') {
-                    maxDamage = WeaponClaws.DAMAGE_STRONG_ATTACK_MAX;
-                    range = WeaponClaws.RANGE_STRONG_ATTACK;
-                }
+                const params = this._getWeaponParams();
 
                 this.isCharging = false;
                 this.player.stopChargingEffect();
                 const chargeTime = Date.now() - this.chargeStartTime;
-                const damage = Math.min(10 + chargeTime / 100, maxDamage);
+                const damage = Math.min(10 + chargeTime / 100, params.maxStrongDamage);
                 const staminaCost = Math.floor(damage / 2);
 
                 if (this.player.stamina >= staminaCost) {
@@ -91,7 +97,7 @@ export class InputController {
                         if (this.player.isAttackBuffed) {
                             finalDamage *= PlayerConst.ATTACK_BUFF_MULTIPLIER;
                         }
-                        if (distance < range) {
+                        if (distance < params.strongAttackRange) {
                             enemy.hp -= finalDamage;
                         }
                     });
@@ -202,7 +208,7 @@ export class InputController {
                     this.player.removeAttackBuff();
                     this.player.removeDefenseBuff();
                     this.player.isUsingSkill = false;
-                }, Skill.DURATION_BUFF);
+                }, SkillConst.DURATION_BUFF);
             }
             this.keys['Digit4'] = false;
         }

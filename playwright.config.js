@@ -15,6 +15,5 @@ module.exports = defineConfig({
     baseURL: 'http://localhost:8080/',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
-    headless: false, // ヘッドレスモードを無効化
   },
 });
