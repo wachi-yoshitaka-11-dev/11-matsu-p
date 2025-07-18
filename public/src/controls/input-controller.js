@@ -261,7 +261,7 @@ export class InputController {
         if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= PLAYER_STAMINA_COST_ROLL) {
             this.player.isRolling = true;
             this.player.stamina -= PLAYER_STAMINA_COST_ROLL;
-            // TODO: Add rolling animation and movement
+            // TODO: Add rolling animation and movement. The player should move forward quickly for a short duration.
             setTimeout(() => {
                 this.player.isRolling = false;
             }, PLAYER_ROLL_DURATION); // 0.5 seconds for rolling

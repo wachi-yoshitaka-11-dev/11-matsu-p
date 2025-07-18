@@ -8,7 +8,6 @@ import { Item } from './world/item.js';
 import { Boss } from './entities/boss.js';
 import { Npc } from './entities/npc.js';
 import { SceneManager } from './core/scene-manager.js';
-import { AssetLoader } from './core/asset-loader.js';
 
 // 1. ワールド（地形）の生成
 const field = new Field();
@@ -40,7 +39,7 @@ const boss = new Boss(player);
 game.boss = boss;
 game.sceneManager.add(boss.mesh);
 
-const npc = new Npc('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。');
+const npc = new Npc('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5));
 game.npcs.push(npc);
 game.sceneManager.add(npc.mesh);
 

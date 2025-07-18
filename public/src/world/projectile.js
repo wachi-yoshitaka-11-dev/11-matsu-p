@@ -23,4 +23,13 @@ export class Projectile {
         this.mesh.position.add(this.direction.clone().multiplyScalar(this.speed * deltaTime));
         this.lifespan -= deltaTime;
     }
+
+    dispose() {
+        if (this.mesh.geometry) {
+            this.mesh.geometry.dispose();
+        }
+        if (this.mesh.material) {
+            this.mesh.material.dispose();
+        }
+    }
 }

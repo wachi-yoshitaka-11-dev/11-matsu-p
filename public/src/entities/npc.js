@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { NPC_INTERACTION_RANGE } from '../utils/constants.js';
 
 export class Npc {
-    constructor(dialogue) {
+    constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5)) {
         this.dialogue = dialogue;
         const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
         const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.set(-5, 0.5, -5);
+        this.mesh.position.copy(position);
 
         this.interactionPrompt = this.createInteractionPrompt();
         this.mesh.add(this.interactionPrompt);
@@ -18,13 +18,19 @@ export class Npc {
         // Simple text prompt using canvas texture
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        context.font = "Bold 20px Arial";
+        const fontSize = 20;
+        context.font = `Bold ${fontSize}px Arial`;
+        const textWidth = context.measureText('[E] Talk').width;
+        canvas.width = textWidth;
+        canvas.height = fontSize;
+        context.font = `Bold ${fontSize}px Arial`;
         context.fillStyle = "white";
-        context.fillText("[E] Talk", 0, 20);
+        context.fillText('[E] Talk', 0, fontSize);
         const texture = new THREE.CanvasTexture(canvas);
 
         const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
         const sprite = new THREE.Sprite(material);
+        sprite.scale.set(canvas.width / 100, canvas.height / 100, 1);
         sprite.position.y = 1.5;
         prompt.add(sprite);
         prompt.visible = false;
@@ -38,5 +44,23 @@ export class Npc {
 
     interact() {
         alert(this.dialogue);
+    }
+
+    dispose() {
+        if (this.mesh.geometry) {
+            this.mesh.geometry.dispose();
+        }
+        if (this.mesh.material) {
+            this.mesh.material.dispose();
+        }
+        if (this.interactionPrompt) {
+            const sprite = this.interactionPrompt.children[0];
+            if (sprite && sprite.material && sprite.material.map) {
+                sprite.material.map.dispose();
+            }
+            if (sprite && sprite.material) {
+                sprite.material.dispose();
+            }
+        }
     }
 }

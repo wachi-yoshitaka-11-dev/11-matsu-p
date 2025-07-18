@@ -1,4 +1,4 @@
-// src/core/AssetLoader.js
+// src/core/asset-loader.js
 
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { AudioLoader } from 'three';

@@ -2,44 +2,73 @@
 
 export const GAME_SPEED = 1.0;
 export const GRAVITY = 9.8;
-export const PLAYER_JUMP_POWER = 5;
-export const PLAYER_DASH_SPEED_MULTIPLIER = 2.0;
-export const PLAYER_ROLL_DURATION = 500; // ms
-export const PLAYER_ATTACK_RANGE_SWORD = 1.5;
-export const PLAYER_ATTACK_SPEED_SWORD = 300; // ms
-export const PLAYER_STAMINA_COST_WEAK_ATTACK_SWORD = 10;
-export const PLAYER_DAMAGE_WEAK_ATTACK_SWORD = 10;
-export const PLAYER_ATTACK_RANGE_CLAWS = 1.2;
-export const PLAYER_ATTACK_SPEED_CLAWS = 200; // ms
-export const PLAYER_STAMINA_COST_WEAK_ATTACK_CLAWS = 7;
-export const PLAYER_DAMAGE_WEAK_ATTACK_CLAWS = 8;
-export const PLAYER_MAX_DAMAGE_STRONG_ATTACK_SWORD = 50;
-export const PLAYER_RANGE_STRONG_ATTACK_SWORD = 2;
-export const PLAYER_MAX_DAMAGE_STRONG_ATTACK_CLAWS = 40;
-export const PLAYER_RANGE_STRONG_ATTACK_CLAWS = 1.8;
-export const PLAYER_STAMINA_COST_ROLL = 20;
-export const PLAYER_STAMINA_COST_JUMP = 10;
-export const ENEMY_ATTACK_COOLDOWN = 2; // seconds
-export const ENEMY_ATTACK_RANGE = 1.5;
-export const ENEMY_DAMAGE = 10;
-export const BOSS_ATTACK_COOLDOWN = 3; // seconds
-export const BOSS_NORMAL_ATTACK_RANGE = 3;
-export const BOSS_NORMAL_ATTACK_DAMAGE = 20;
-export const BOSS_SPECIAL_ATTACK_RANGE = 5;
-export const BOSS_SPECIAL_ATTACK_DAMAGE = 40;
-export const PROJECTILE_SPEED = 10;
-export const PROJECTILE_LIFESPAN = 2; // seconds
-export const PROJECTILE_DAMAGE = 30;
-export const NPC_INTERACTION_RANGE = 2;
-export const PLAYER_RESPAWN_DELAY = 3000; // ms
-export const PLAYER_LEVEL_UP_EXP_MULTIPLIER = 1.5;
-export const PLAYER_STATUS_POINTS_PER_LEVEL = 5;
-export const ITEM_PICKUP_RANGE = 0.5;
-export const POTION_HEAL_AMOUNT = 20;
-export const SKILL_FP_COST = 20;
-export const SKILL_DURATION = 1000; // ms
 
-export const SKILL_FP_COST_BUFF = 30;
-export const SKILL_DURATION_BUFF = 10000; // ms
-export const PLAYER_ATTACK_BUFF_MULTIPLIER = 1.5;
-export const PLAYER_DEFENSE_BUFF_MULTIPLIER = 0.7;
+export const Player = {
+    JUMP_POWER: 5,
+    DASH_SPEED_MULTIPLIER: 2.0,
+    ROLL_DURATION: 500, // ms
+    RESPAWN_DELAY: 3000, // ms
+    LEVEL_UP_EXP_MULTIPLIER: 1.5,
+    STATUS_POINTS_PER_LEVEL: 5,
+    ATTACK_BUFF_MULTIPLIER: 1.5,
+    DEFENSE_BUFF_MULTIPLIER: 0.7,
+    STAMINA_COST_JUMP: 10,
+    STAMINA_COST_ROLL: 20,
+};
+
+export const WeaponSword = {
+    ATTACK_RANGE: 1.5,
+    ATTACK_SPEED: 300, // ms
+    STAMINA_COST_WEAK_ATTACK: 10,
+    DAMAGE_WEAK_ATTACK: 10,
+    DAMAGE_STRONG_ATTACK_MAX: 50,
+    RANGE_STRONG_ATTACK: 2,
+};
+
+export const WeaponClaws = {
+    ATTACK_RANGE: 1.2,
+    ATTACK_SPEED: 200, // ms
+    STAMINA_COST_WEAK_ATTACK: 7,
+    DAMAGE_WEAK_ATTACK: 8,
+    DAMAGE_STRONG_ATTACK_MAX: 40,
+    RANGE_STRONG_ATTACK: 1.8,
+};
+
+export const Enemy = {
+    ATTACK_COOLDOWN: 2, // seconds
+    ATTACK_RANGE: 1.5,
+    DAMAGE: 10,
+    SPEED: 2,
+};
+
+export const Boss = {
+    ATTACK_COOLDOWN: 3, // seconds
+    NORMAL_ATTACK_RANGE: 3,
+    NORMAL_ATTACK_DAMAGE: 20,
+    SPECIAL_ATTACK_RANGE: 5,
+    SPECIAL_ATTACK_DAMAGE: 40,
+    SPEED: 1.5,
+    INITIAL_POSITION: new THREE.Vector3(10, 0.5, 10),
+};
+
+export const Projectile = {
+    SPEED: 10,
+    LIFESPAN: 2, // seconds
+    DAMAGE: 30,
+};
+
+export const Npc = {
+    INTERACTION_RANGE: 2,
+};
+
+export const Item = {
+    PICKUP_RANGE: 0.5,
+    POTION_HEAL_AMOUNT: 20,
+};
+
+export const Skill = {
+    FP_COST: 20,
+    DURATION: 1000, // ms
+    FP_COST_BUFF: 30,
+    DURATION_BUFF: 10000, // ms
+};

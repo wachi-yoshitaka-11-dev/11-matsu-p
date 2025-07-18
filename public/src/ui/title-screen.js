@@ -9,13 +9,14 @@ export class TitleScreen {
 
         const startButton = document.createElement('button');
         startButton.textContent = 'Start Game';
-        startButton.addEventListener('click', () => {
+        startButton.setAttribute('aria-label', 'Start Game');
+        this.startButtonClickHandler = () => {
             this.hide();
             onStart();
-        });
+        };
+        startButton.addEventListener('click', this.startButtonClickHandler);
         this.container.appendChild(startButton);
 
-        this.addStyles();
         document.body.appendChild(this.container);
     }
 
@@ -23,25 +24,13 @@ export class TitleScreen {
         this.container.style.display = 'none';
     }
 
-    addStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
-            #title-screen {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.8);
-                color: white;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                font-family: sans-serif;
-                z-index: 100;
-            }
-        `;
-        document.head.appendChild(style);
+    dispose() {
+        const startButton = this.container.querySelector('button');
+        if (startButton) {
+            startButton.removeEventListener('click', this.startButtonClickHandler);
+        }
+        if (this.container.parentNode) {
+            this.container.parentNode.removeChild(this.container);
+        }
     }
 }

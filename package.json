@@ -5,7 +5,7 @@
   "main": "public/src/main.js",
   "scripts": {
     "start": "http-server ./public -p 8080",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "playwright test"
   },
   "keywords": [
     "three.js",

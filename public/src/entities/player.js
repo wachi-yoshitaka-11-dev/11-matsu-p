@@ -16,14 +16,7 @@ export class Player {
         this.mesh = new THREE.Mesh(geometry, material);
 
         // 初期位置を地形の高さに合わせる
-        this.mesh.position.set(0, 50, 0); // 仮の高い位置に設定
-        const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
-        const intersects = raycaster.intersectObject(this.field.mesh);
-        if (intersects.length > 0) {
-            this.mesh.position.y = intersects[0].point.y + 0.25; // 地面の少し上に配置
-        } else {
-            this.mesh.position.y = 0.25; // 地形が見つからない場合のフォールバック
-        }
+        this.spawn();
 
         // ステータス
         this.maxHp = 100;
@@ -57,25 +50,51 @@ export class Player {
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
         this.originalColor = this.mesh.material.color.clone();
+        this.effectTimeout = null;
+    }
+
+    spawn() {
+        this.mesh.position.set(0, 50, 0); // 仮の高い位置に設定
+        if (this.field && this.field.mesh) {
+            const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
+            const intersects = raycaster.intersectObject(this.field.mesh);
+            if (intersects.length > 0) {
+                this.mesh.position.y = intersects[0].point.y + 0.25; // 地面の少し上に配置
+            } else {
+                this.mesh.position.y = 0.25; // 地形が見つからない場合のフォールバック
+            }
+        } else {
+            this.mesh.position.y = 0.25; // フィールドが存在しない場合のフォールバック
+        }
     }
 
     // Visual feedback for actions
     showAttackEffect() {
         this.mesh.material.color.set(0xffffff); // White
-        setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
+        this.clearEffectTimeout();
+        this.effectTimeout = setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
     }
 
     showSkillEffect() {
         this.mesh.material.color.set(0x8a2be2); // BlueViolet
-        setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
+        this.clearEffectTimeout();
+        this.effectTimeout = setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
     }
 
     startChargingEffect() {
         this.mesh.material.color.set(0xffff00); // Yellow
+        this.clearEffectTimeout();
     }
 
     stopChargingEffect() {
         this.mesh.material.color.copy(this.originalColor);
+    }
+
+    clearEffectTimeout() {
+        if (this.effectTimeout) {
+            clearTimeout(this.effectTimeout);
+            this.effectTimeout = null;
+        }
     }
 
     useItem(index) {
@@ -84,7 +103,6 @@ export class Player {
             if (item === 'potion') {
                 this.hp += POTION_HEAL_AMOUNT;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
-                console.log('Used potion! HP restored.');
             }
             this.inventory.splice(index, 1);
         }
@@ -102,22 +120,18 @@ export class Player {
         this.experience -= this.experienceToNextLevel;
         this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * PLAYER_LEVEL_UP_EXP_MULTIPLIER);
         this.statusPoints += PLAYER_STATUS_POINTS_PER_LEVEL;
-        console.log('Level Up!');
     }
 
     respawn() {
-        this.mesh.position.set(0, 0.25, 0);
+        this.spawn();
         this.hp = this.maxHp;
         this.stamina = this.maxStamina;
         this.isDead = false;
-        console.log('Player Respawned!');
     }
 
     update(deltaTime) {
         if (this.hp <= 0 && !this.isDead) {
             this.isDead = true;
-            console.log('Player Died!');
-            // TODO: Show YOU DIED screen
             setTimeout(() => this.respawn(), PLAYER_RESPAWN_DELAY);
         }
 
@@ -150,21 +164,26 @@ export class Player {
 
     applyAttackBuff() {
         this.isAttackBuffed = true;
-        console.log('Attack buff applied!');
     }
 
     removeAttackBuff() {
         this.isAttackBuffed = false;
-        console.log('Attack buff removed!');
     }
 
     applyDefenseBuff() {
         this.isDefenseBuffed = true;
-        console.log('Defense buff applied!');
     }
 
     removeDefenseBuff() {
         this.isDefenseBuffed = false;
-        console.log('Defense buff removed!');
+    }
+
+    takeDamage(amount) {
+        if (this.isInvincible) return;
+        this.hp -= amount;
+    }
+
+    takeStaminaDamage(amount) {
+        this.stamina -= amount;
     }
 }

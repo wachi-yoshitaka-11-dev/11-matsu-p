@@ -3,7 +3,8 @@ import {
     ENEMY_ATTACK_COOLDOWN,
     ENEMY_DAMAGE,
     ENEMY_ATTACK_RANGE,
-    PLAYER_DEFENSE_BUFF_MULTIPLIER
+    PLAYER_DEFENSE_BUFF_MULTIPLIER,
+    ENEMY_SPEED
 } from '../utils/constants.js';
 
 export class Enemy {
@@ -32,8 +33,7 @@ export class Enemy {
         // プレイヤーを追跡
         if (distance > 1) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            const speed = 2; // TODO: Add to constants if needed elsewhere
-            this.mesh.position.add(direction.multiplyScalar(speed * deltaTime));
+            this.mesh.position.add(direction.multiplyScalar(ENEMY_SPEED * deltaTime));
         }
 
         // プレイヤーの方を向く
@@ -42,26 +42,31 @@ export class Enemy {
         // 攻撃
         this.attackCooldown -= deltaTime;
         if (distance <= ENEMY_ATTACK_RANGE && this.attackCooldown <= 0) {
-            console.log('Enemy attacks!');
-
-            // Check if player is guarding and attack is from the front
-            const toPlayer = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
-            const angle = toPlayer.angleTo(playerForward);
-
-            let damageToPlayer = ENEMY_DAMAGE;
-            if (this.player.isDefenseBuffed) {
-                damageToPlayer *= PLAYER_DEFENSE_BUFF_MULTIPLIER;
-            }
-
-            if (this.player.isGuarding && angle < Math.PI / 2) { // Guarding front attacks
-                this.player.stamina -= 15; // TODO: Add to constants
-                console.log('Player guarded the attack!');
-            } else if (!this.player.isInvincible) {
-                this.player.hp -= damageToPlayer;
-                console.log(`Player HP: ${this.player.hp}`);
-            }
+            this.attack();
             this.attackCooldown = ENEMY_ATTACK_COOLDOWN; // Reset cooldown
         }
+    }
+
+    attack() {
+        const toPlayer = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
+        const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
+        const angle = toPlayer.angleTo(playerForward);
+
+        let damageToPlayer = ENEMY_DAMAGE;
+        if (this.player.isDefenseBuffed) {
+            damageToPlayer *= PLAYER_DEFENSE_BUFF_MULTIPLIER;
+        }
+
+        const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
+
+        if (isGuarded) {
+            this.player.takeStaminaDamage(15);
+        } else {
+            this.player.takeDamage(damageToPlayer);
+        }
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
     }
 }
