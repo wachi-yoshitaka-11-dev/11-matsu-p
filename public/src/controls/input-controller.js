@@ -1,30 +1,6 @@
 import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
-import {
-    PLAYER_ATTACK_RANGE_SWORD,
-    PLAYER_ATTACK_SPEED_SWORD,
-    PLAYER_STAMINA_COST_WEAK_ATTACK_SWORD,
-    PLAYER_DAMAGE_WEAK_ATTACK_SWORD,
-    PLAYER_ATTACK_RANGE_CLAWS,
-    PLAYER_ATTACK_SPEED_CLAWS,
-    PLAYER_STAMINA_COST_WEAK_ATTACK_CLAWS,
-    PLAYER_DAMAGE_WEAK_ATTACK_CLAWS,
-    PLAYER_MAX_DAMAGE_STRONG_ATTACK_SWORD,
-    PLAYER_RANGE_STRONG_ATTACK_SWORD,
-    PLAYER_MAX_DAMAGE_STRONG_ATTACK_CLAWS,
-    PLAYER_RANGE_STRONG_ATTACK_CLAWS,
-    PLAYER_STAMINA_COST_JUMP,
-    PLAYER_STAMINA_COST_ROLL,
-    PLAYER_ROLL_DURATION,
-    PLAYER_JUMP_POWER,
-    PLAYER_DASH_SPEED_MULTIPLIER,
-    PLAYER_ATTACK_BUFF_MULTIPLIER,
-    NPC_INTERACTION_RANGE,
-    SKILL_FP_COST,
-    SKILL_DURATION,
-    SKILL_FP_COST_BUFF,
-    SKILL_DURATION_BUFF
-} from '../utils/constants.js';
+import { Player as PlayerConst, WeaponSword, WeaponClaws, Npc as NpcConst, Skill as SkillConst } from '../utils/constants.js';
 
 export class InputController {
     constructor(player, camera, game) {
@@ -37,6 +13,29 @@ export class InputController {
         this.chargeStartTime = 0;
 
         this.setupEventListeners();
+    }
+
+    _getWeaponParams() {
+        const weaponName = this.player.weapons[this.player.currentWeaponIndex];
+        if (weaponName === 'claws') {
+            return {
+                attackRange: WeaponClaws.ATTACK_RANGE,
+                attackSpeed: WeaponClaws.ATTACK_SPEED,
+                staminaCost: WeaponClaws.STAMINA_COST_WEAK_ATTACK,
+                damage: WeaponClaws.DAMAGE_WEAK_ATTACK,
+                maxStrongDamage: WeaponClaws.DAMAGE_STRONG_ATTACK_MAX,
+                strongAttackRange: WeaponClaws.RANGE_STRONG_ATTACK,
+            };
+        }
+        // Default to sword
+        return {
+            attackRange: WeaponSword.ATTACK_RANGE,
+            attackSpeed: WeaponSword.ATTACK_SPEED,
+            staminaCost: WeaponSword.STAMINA_COST_WEAK_ATTACK,
+            damage: WeaponSword.DAMAGE_WEAK_ATTACK,
+            maxStrongDamage: WeaponSword.DAMAGE_STRONG_ATTACK_MAX,
+            strongAttackRange: WeaponSword.RANGE_STRONG_ATTACK,
+        };
     }
 
     setupEventListeners() {
@@ -53,36 +52,25 @@ export class InputController {
         });
 
         document.addEventListener('mousedown', (e) => {
-            const weapon = this.player.weapons[this.player.currentWeaponIndex];
-            let attackRange = PLAYER_ATTACK_RANGE_SWORD;
-            let attackSpeed = PLAYER_ATTACK_SPEED_SWORD;
-            let staminaCost = PLAYER_STAMINA_COST_WEAK_ATTACK_SWORD;
-            let damage = PLAYER_DAMAGE_WEAK_ATTACK_SWORD;
+            const params = this._getWeaponParams();
 
-            if (weapon === 'claws') {
-                attackRange = PLAYER_ATTACK_RANGE_CLAWS;
-                attackSpeed = PLAYER_ATTACK_SPEED_CLAWS;
-                staminaCost = PLAYER_STAMINA_COST_WEAK_ATTACK_CLAWS;
-                damage = PLAYER_DAMAGE_WEAK_ATTACK_CLAWS;
-            }
-
-            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= staminaCost) { // Left click
+            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) { // Left click
                 this.player.isAttacking = true;
-                this.player.stamina -= staminaCost;
+                this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
                 this.game.playSound('attack');
 
                 // Attack Hit Detection
                 this.game.enemies.forEach(enemy => {
                     const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                    if (distance < attackRange) {
-                        enemy.hp -= damage;
+                    if (distance < params.attackRange) {
+                        enemy.hp -= params.damage;
                     }
                 });
 
                 setTimeout(() => {
                     this.player.isAttacking = false;
-                }, attackSpeed);
+                }, params.attackSpeed);
             } else if (e.button === 2 && !this.player.isAttacking) { // Right click
                 this.isCharging = true;
                 this.chargeStartTime = Date.now();
@@ -92,18 +80,12 @@ export class InputController {
 
         document.addEventListener('mouseup', (e) => {
             if (e.button === 2 && this.isCharging) {
-                const weapon = this.player.weapons[this.player.currentWeaponIndex];
-                let maxDamage = PLAYER_MAX_DAMAGE_STRONG_ATTACK_SWORD;
-                let range = PLAYER_RANGE_STRONG_ATTACK_SWORD;
-                if (weapon === 'claws') {
-                    maxDamage = PLAYER_MAX_DAMAGE_STRONG_ATTACK_CLAWS;
-                    range = PLAYER_RANGE_STRONG_ATTACK_CLAWS;
-                }
+                const params = this._getWeaponParams();
 
                 this.isCharging = false;
                 this.player.stopChargingEffect();
                 const chargeTime = Date.now() - this.chargeStartTime;
-                const damage = Math.min(10 + chargeTime / 100, maxDamage);
+                const damage = Math.min(10 + chargeTime / 100, params.maxStrongDamage);
                 const staminaCost = Math.floor(damage / 2);
 
                 if (this.player.stamina >= staminaCost) {
@@ -113,9 +95,9 @@ export class InputController {
                         const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
                         let finalDamage = damage;
                         if (this.player.isAttackBuffed) {
-                            finalDamage *= PLAYER_ATTACK_BUFF_MULTIPLIER;
+                            finalDamage *= PlayerConst.ATTACK_BUFF_MULTIPLIER;
                         }
-                        if (distance < range) {
+                        if (distance < params.strongAttackRange) {
                             enemy.hp -= finalDamage;
                         }
                     });
@@ -134,7 +116,7 @@ export class InputController {
         // Dash
         this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
         if (this.player.isDashing) {
-            speed *= PLAYER_DASH_SPEED_MULTIPLIER;
+            speed *= PlayerConst.DASH_SPEED_MULTIPLIER;
         }
 
         // Player movement
@@ -194,9 +176,9 @@ export class InputController {
 
         // Use Skill (Projectile)
         if (this.keys['Digit3']) {
-            if (!this.player.isUsingSkill && this.player.fp >= SKILL_FP_COST) {
+            if (!this.player.isUsingSkill && this.player.fp >= Skill.FP_COST) {
                 this.player.isUsingSkill = true;
-                this.player.fp -= SKILL_FP_COST;
+                this.player.fp -= Skill.FP_COST;
                 this.player.showSkillEffect();
                 console.log('Used Skill: Shockwave!');
 
@@ -207,16 +189,16 @@ export class InputController {
 
                 setTimeout(() => {
                     this.player.isUsingSkill = false;
-                }, SKILL_DURATION);
+                }, Skill.DURATION);
             }
             this.keys['Digit3'] = false;
         }
 
         // Use Skill (Buff)
         if (this.keys['Digit4']) {
-            if (!this.player.isUsingSkill && this.player.fp >= SKILL_FP_COST_BUFF) {
+            if (!this.player.isUsingSkill && this.player.fp >= Skill.FP_COST_BUFF) {
                 this.player.isUsingSkill = true;
-                this.player.fp -= SKILL_FP_COST_BUFF;
+                this.player.fp -= Skill.FP_COST_BUFF;
                 console.log('Used Skill: Buff!');
 
                 this.player.applyAttackBuff();
@@ -226,7 +208,7 @@ export class InputController {
                     this.player.removeAttackBuff();
                     this.player.removeDefenseBuff();
                     this.player.isUsingSkill = false;
-                }, SKILL_DURATION_BUFF);
+                }, SkillConst.DURATION_BUFF);
             }
             this.keys['Digit4'] = false;
         }
@@ -235,7 +217,7 @@ export class InputController {
         if (this.keys['KeyE']) {
             this.game.npcs.forEach(npc => {
                 const distance = this.player.mesh.position.distanceTo(npc.mesh.position);
-                if (distance < NPC_INTERACTION_RANGE) {
+                if (distance < NpcConst.INTERACTION_RANGE) {
                     npc.interact();
                 }
             });
@@ -249,20 +231,20 @@ export class InputController {
         }
 
         // Jump
-        if (this.keys['Space'] && this.player.onGround && this.player.stamina >= PLAYER_STAMINA_COST_JUMP) {
-            this.player.velocity.y = PLAYER_JUMP_POWER; // ジャンプ力
-            this.player.stamina -= PLAYER_STAMINA_COST_JUMP;
+        if (this.keys['Space'] && this.player.onGround && this.player.stamina >= PlayerConst.STAMINA_COST_JUMP) {
+            this.player.velocity.y = PlayerConst.JUMP_POWER; // ジャンプ力
+            this.player.stamina -= PlayerConst.STAMINA_COST_JUMP;
             this.player.onGround = false;
         }
 
         // Rolling
-        if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= PLAYER_STAMINA_COST_ROLL) {
+        if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= PlayerConst.STAMINA_COST_ROLL) {
             this.player.isRolling = true;
-            this.player.stamina -= PLAYER_STAMINA_COST_ROLL;
+            this.player.stamina -= PlayerConst.STAMINA_COST_ROLL;
             // TODO: Add rolling animation and movement. The player should move forward quickly for a short duration.
             setTimeout(() => {
                 this.player.isRolling = false;
-            }, PLAYER_ROLL_DURATION); // 0.5 seconds for rolling
+            }, PlayerConst.ROLL_DURATION); // 0.5 seconds for rolling
         }
 
         // Player rotation based on mouse

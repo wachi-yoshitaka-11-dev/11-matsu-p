@@ -1,9 +1,5 @@
 import * as THREE from 'three';
-import {
-    PROJECTILE_SPEED,
-    PROJECTILE_LIFESPAN,
-    PROJECTILE_DAMAGE
-} from '../utils/constants.js';
+import { Projectile as ProjectileConst } from '../utils/constants.js';
 
 export class Projectile {
     constructor(startPosition, direction) {
@@ -14,9 +10,9 @@ export class Projectile {
         this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize()); // Align with direction
 
         this.direction = direction;
-        this.speed = PROJECTILE_SPEED;
-        this.lifespan = PROJECTILE_LIFESPAN; // seconds
-        this.damage = PROJECTILE_DAMAGE;
+        this.speed = ProjectileConst.SPEED;
+        this.lifespan = ProjectileConst.LIFESPAN; // seconds
+        this.damage = ProjectileConst.DAMAGE;
     }
 
     update(deltaTime) {

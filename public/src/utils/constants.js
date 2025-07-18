@@ -1,4 +1,5 @@
 // src/utils/constants.js
+import * as THREE from 'three';
 
 export const GAME_SPEED = 1.0;
 export const GRAVITY = 9.8;
@@ -65,6 +66,8 @@ export const Npc = {
 export const Item = {
     PICKUP_RANGE: 0.5,
     POTION_HEAL_AMOUNT: 20,
+    SPHERE_RADIUS: 0.2,
+    GEOMETRY_SEGMENTS: 8,
 };
 
 export const Skill = {
@@ -72,4 +75,9 @@ export const Skill = {
     DURATION: 1000, // ms
     FP_COST_BUFF: 30,
     DURATION_BUFF: 10000, // ms
+};
+
+export const Field = {
+    TERRAIN_SIZE: 100,
+    TERRAIN_SEGMENTS: 50,
 };
