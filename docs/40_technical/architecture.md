@@ -37,16 +37,31 @@ src/
 │   └── InputController.js # キーボード・マウス入力の管理
 ├── ui/
 │   └── Hud.js          # 画面表示（HPゲージなど）
-└── utils/
-    └── constants.js    # 定数管理
+├── utils/
+│   └── constants.js    # 定数管理
+└── data/             # ゲームデータ（JSONファイル）
+    ├── player.json
+    ├── weapons.json
+    ├── enemies.json
+    ├── items.json
+    └── skills.json
 ```
 
-## 4. アセット管理
+## 4. データ管理
+
+ゲームの各種パラメータ（プレイヤーのステータス、武器の性能、敵のHPなど）は、コードから分離し、`public/data` ディレクトリ内のJSONファイルとして管理する「データ駆動型アーキテクチャ」を採用する。
+これにより、ゲームバランスの調整やコンテンツの追加を、コードの変更なしにデータファイルの編集のみで行えるようにする。
+
+- **データ形式:** JSON (JavaScript Object Notation)
+- **読み込み:** `AssetLoader` を拡張し、ゲーム起動時にすべてのJSONデータを読み込む。
+- **アクセス:** 読み込んだデータは、`game.data` のようなグローバルなオブジェクトを通じて各クラスから参照可能にする。
+
+## 5. アセット管理
 
 - **3Dモデル/テクスチャ:** 当初はThree.jsのプリミティブ形状（`BoxGeometry`, `SphereGeometry`など）と基本的なマテリアル（`MeshStandardMaterial`など）で全てを表現する。
 - **サウンド:** フリー素材サイトなどを活用し、必要に応じて追加する。
 
-## 5. コーディング規約
+## 6. コーディング規約
 
 - **スタイル:** [Prettier](https://prettier.io/) のデフォルト設定に準拠する。
 - **命名規則:**
