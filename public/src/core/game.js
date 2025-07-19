@@ -1,10 +1,16 @@
 import * as THREE from 'three';
+import { SceneManager } from './scene-manager.js';
+import { AssetLoader } from './asset-loader.js';
+import { Field } from '../world/field.js';
+import { Player } from '../entities/player.js';
+import { Enemy } from '../entities/enemy.js';
+import { Boss } from '../entities/boss.js';
+import { Npc } from '../entities/npc.js';
+import { Item } from '../world/item.js';
+import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
-import { SceneManager } from './scene-manager.js';
-import { AssetLoader } from './asset-loader.js';
-import { Item as ItemConst, Projectile as ProjectileConst } from '../utils/constants.js';
 
 const GameState = {
     TITLE: 'title',
@@ -13,34 +19,80 @@ const GameState = {
 };
 
 export class Game {
-    constructor(player) {
-        this.player = player;
-        this.sceneManager = new SceneManager(this);
+    constructor() {
+        this.sceneManager = new SceneManager();
         this.assetLoader = new AssetLoader();
         this.clock = new THREE.Clock();
+
+        this.field = null;
+        this.player = null;
+        this.inputController = null;
+        this.hud = null;
+
         this.enemies = [];
         this.items = [];
         this.projectiles = [];
         this.boss = null;
         this.npcs = [];
+        this.data = {};
 
-        // Audio
         this.listener = new THREE.AudioListener();
         this.sceneManager.camera.add(this.listener);
         this.bgm = new THREE.Audio(this.listener);
-        this.audioBuffers = {}; // Store loaded audio buffers
+        this.audioBuffers = {};
 
         this.gameState = GameState.TITLE;
         this.titleScreen = new TitleScreen(() => this.startGame());
         this.pauseMenu = new PauseMenu(this);
-        this.hud = new Hud(this.player);
-
-        this.init();
-        this.loadAudio();
     }
 
-    init() {
+    async init() {
         this.sceneManager.init();
+        await this.loadGameData();
+        await this.loadAudio();
+
+        this.field = new Field();
+        this.sceneManager.add(this.field.mesh);
+
+        this.player = new Player(this, this.field);
+        this.sceneManager.add(this.player.mesh);
+
+        this.hud = new Hud(this, this.player);
+
+        this.inputController = new InputController(this.player, this.sceneManager.camera, this);
+
+        const enemy = new Enemy(this, this.player);
+        this.enemies.push(enemy);
+        this.sceneManager.add(enemy.mesh);
+
+        const item = new Item('potion', new THREE.Vector3(3, 0.2, 3), this);
+        this.items.push(item);
+        this.sceneManager.add(item.mesh);
+
+        const boss = new Boss(this, this.player);
+        this.boss = boss;
+        this.sceneManager.add(boss.mesh);
+
+        const npc = new Npc(this, 'こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5));
+        this.npcs.push(npc);
+        this.sceneManager.add(npc.mesh);
+    }
+
+    async loadGameData() {
+        const dataFiles = ['player', 'weapons', 'enemies', 'items', 'skills'];
+        for (const fileName of dataFiles) {
+            const data = await this.assetLoader.loadJSON(fileName, `data/${fileName}.json`);
+            this.data[fileName] = data;
+        }
+    }
+
+    async loadAudio() {
+        const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
+        this.bgm.setBuffer(bgmBuffer);
+        this.bgm.setLoop(true);
+        this.bgm.setVolume(0.5);
+
+        this.audioBuffers['attack'] = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
     }
 
     startGame() {
@@ -61,15 +113,6 @@ export class Game {
             this.pauseMenu.toggle(false);
             document.body.requestPointerLock();
         }
-    }
-
-    async loadAudio() {
-        const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
-        this.bgm.setBuffer(bgmBuffer);
-        this.bgm.setLoop(true);
-        this.bgm.setVolume(0.5);
-
-        this.audioBuffers['attack'] = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
     }
 
     playSound(name) {
@@ -119,7 +162,7 @@ export class Game {
 
         this.items.forEach((item, index) => {
             const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
-            if (distance < ItemConst.PICKUP_RANGE) {
+            if (distance < this.data.items.generic.PICKUP_RANGE) {
                 this.player?.inventory.push(item.type);
                 this.sceneManager.remove(item.mesh);
                 this.items.splice(index, 1);
@@ -131,12 +174,13 @@ export class Game {
             if (projectile.lifespan <= 0) {
                 this.sceneManager.remove(projectile.mesh);
                 this.projectiles.splice(pIndex, 1);
+                return; 
             }
 
             this.enemies.forEach(enemy => {
                 const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
                 if (distance < 1) { // Projectile hit range
-                    enemy.takeDamage(ProjectileConst.DAMAGE);
+                    enemy.takeDamage(projectile.damage);
                     this.sceneManager.remove(projectile.mesh);
                     this.projectiles.splice(pIndex, 1);
                 }
@@ -155,7 +199,6 @@ export class Game {
             npc.update(this.player?.mesh.position);
         });
 
-        // カメラの更新
         if (this.player?.isLockedOn && this.player?.lockedOnTarget) {
             const targetPosition = this.player.lockedOnTarget.mesh.position;
             const playerPosition = this.player.mesh.position;
@@ -173,7 +216,7 @@ export class Game {
             this.sceneManager.camera.lookAt(this.player.mesh.position);
         }
 
-        this.hud.update();
+        this.hud?.update();
         this.sceneManager.render();
     }
 }

@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { Enemy as EnemyConst, Player as PlayerConst } from '../utils/constants.js';
 
 export class Enemy {
-    constructor(player) {
+    constructor(game, player) {
+        this.game = game;
         this.player = player;
         const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
@@ -12,7 +12,7 @@ export class Enemy {
         this.hp = 30;
         this.maxHp = 30;
         this.isDead = false;
-        this.attackCooldown = EnemyConst.ATTACK_COOLDOWN; // 2秒に1回攻撃
+        this.attackCooldown = this.game.data.enemies.grunt.ATTACK_COOLDOWN; // 2秒に1回攻撃
         this.experience = 10; // 倒した時にもらえる経験値
     }
 
@@ -23,11 +23,12 @@ export class Enemy {
         }
 
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+        const gruntData = this.game.data.enemies.grunt;
 
         // プレイヤーを追跡
         if (distance > 1) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            this.mesh.position.add(direction.multiplyScalar(EnemyConst.SPEED * deltaTime));
+            this.mesh.position.add(direction.multiplyScalar(gruntData.SPEED * deltaTime));
         }
 
         // プレイヤーの方を向く
@@ -35,9 +36,9 @@ export class Enemy {
 
         // 攻撃
         this.attackCooldown -= deltaTime;
-        if (distance <= EnemyConst.ATTACK_RANGE && this.attackCooldown <= 0) {
+        if (distance <= gruntData.ATTACK_RANGE && this.attackCooldown <= 0) {
             this.attack();
-            this.attackCooldown = EnemyConst.ATTACK_COOLDOWN; // Reset cooldown
+            this.attackCooldown = gruntData.ATTACK_COOLDOWN; // Reset cooldown
         }
     }
 
@@ -46,15 +47,15 @@ export class Enemy {
         const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
         const angle = toPlayer.angleTo(playerForward);
 
-        let damageToPlayer = EnemyConst.DAMAGE;
+        let damageToPlayer = this.game.data.enemies.grunt.DAMAGE;
         if (this.player.isDefenseBuffed) {
-            damageToPlayer *= PlayerConst.DEFENSE_BUFF_MULTIPLIER;
+            damageToPlayer *= this.game.data.player.DEFENSE_BUFF_MULTIPLIER;
         }
 
         const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
 
         if (isGuarded) {
-            this.player.takeStaminaDamage(PlayerConst.STAMINA_COST_GUARD);
+            this.player.takeStaminaDamage(this.game.data.player.STAMINA_COST_GUARD);
         } else {
             this.player.takeDamage(damageToPlayer);
         }

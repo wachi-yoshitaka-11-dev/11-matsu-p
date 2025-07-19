@@ -37,4 +37,24 @@ export class AssetLoader {
     getAsset(name) {
         return this.assets[name];
     }
+
+    async loadJSON(name, path) {
+        return new Promise((resolve, reject) => {
+            fetch(path)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.assets[name] = data;
+                    resolve(data);
+                })
+                .catch(error => {
+                    console.error(`Error loading JSON ${path}:`, error);
+                    reject(error);
+                });
+        });
+    }
 }

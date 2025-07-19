@@ -1,0 +1,13 @@
+{
+    "shockwave": {
+        "FP_COST": 20,
+        "DURATION": 1000,
+        "SPEED": 10,
+        "LIFESPAN": 2,
+        "DAMAGE": 30
+    },
+    "buff": {
+        "FP_COST": 30,
+        "DURATION": 10000
+    }
+}

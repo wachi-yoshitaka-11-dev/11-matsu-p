@@ -10,10 +10,14 @@ module.exports = defineConfig({
     command: 'npm start',
     url: 'http://localhost:8080/',
     reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // Increased timeout to 120 seconds
   },
   use: {
     baseURL: 'http://localhost:8080/',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    headless: false,
+    contextOptions: { ignoreHTTPSErrors: true },
+    storageState: undefined,
   },
 });

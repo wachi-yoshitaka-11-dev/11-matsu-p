@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { Projectile as ProjectileConst } from '../utils/constants.js';
 
 export class Projectile {
-    constructor(startPosition, direction) {
+    constructor(startPosition, direction, game) {
+        const skillData = game.data.skills.shockwave;
         const geometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);
         const material = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00 });
         this.mesh = new THREE.Mesh(geometry, material);
@@ -10,9 +10,9 @@ export class Projectile {
         this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize()); // Align with direction
 
         this.direction = direction;
-        this.speed = ProjectileConst.SPEED;
-        this.lifespan = ProjectileConst.LIFESPAN; // seconds
-        this.damage = ProjectileConst.DAMAGE;
+        this.speed = skillData.SPEED;
+        this.lifespan = skillData.LIFESPAN; // seconds
+        this.damage = skillData.DAMAGE;
     }
 
     update(deltaTime) {

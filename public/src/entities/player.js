@@ -1,8 +1,9 @@
 import * as THREE from 'three';
-import { GRAVITY, Player as PlayerConst, Item as ItemConst } from '../utils/constants.js';
+import { GRAVITY } from '../utils/constants.js';
 
 export class Player {
-    constructor(field) {
+    constructor(game, field) {
+        this.game = game;
         this.field = field;
         const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
@@ -92,9 +93,9 @@ export class Player {
 
     useItem(index) {
         if (this.inventory.length > index) {
-            const item = this.inventory[index];
-            if (item === 'potion') {
-                this.hp += ItemConst.POTION_HEAL_AMOUNT;
+            const itemType = this.inventory[index];
+            if (itemType === 'potion') {
+                this.hp += this.game.data.items.potion.HEAL_AMOUNT;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
             this.inventory.splice(index, 1);
@@ -111,8 +112,8 @@ export class Player {
     levelUp() {
         this.level++;
         this.experience -= this.experienceToNextLevel;
-        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * PlayerConst.LEVEL_UP_EXP_MULTIPLIER);
-        this.statusPoints += PlayerConst.STATUS_POINTS_PER_LEVEL;
+        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.LEVEL_UP_EXP_MULTIPLIER);
+        this.statusPoints += this.game.data.player.STATUS_POINTS_PER_LEVEL;
     }
 
     respawn() {
@@ -125,7 +126,7 @@ export class Player {
     update(deltaTime) {
         if (this.hp <= 0 && !this.isDead) {
             this.isDead = true;
-            setTimeout(() => this.respawn(), PlayerConst.RESPAWN_DELAY);
+            setTimeout(() => this.respawn(), this.game.data.player.RESPAWN_DELAY);
         }
 
         if (this.isDead) return;

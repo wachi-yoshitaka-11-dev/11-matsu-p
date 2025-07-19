@@ -1,49 +1,42 @@
 const { test, expect } = require('@playwright/test');
 
 test.describe('Mofu Mofu Adventure', () => {
-  let serverProcess;
-  let browser, context, page;
   const consoleErrors = [];
+  const failedRequests = [];
 
-  test.beforeAll(async () => {
-    // Start the server
-    const { spawn } = require('child_process');
-    serverProcess = spawn('npm', ['start'], { shell: true });
-    // Wait for server to be ready
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  });
+  test.beforeEach(async ({ page }) => {
+    consoleErrors.length = 0; // Reset errors for each test
+    failedRequests.length = 0; // Reset failed requests for each test
 
-  test.afterAll(async () => {
-    // Stop the server
-    serverProcess.kill();
-  });
-
-  test.beforeEach(async ({ playwright }) => {
-    browser = await playwright.chromium.launch();
-    context = await browser.newContext();
-    page = await context.newPage();
     page.on('console', msg => {
       if (msg.type() === 'error') {
+        console.log(`Browser console error: ${msg.text()}`);
         consoleErrors.push(msg.text());
       }
     });
+
+    page.on('requestfailed', request => {
+      console.log(`Failed request: ${request.url()} - ${request.failure().errorText}`);
+      failedRequests.push(request.url());
+    });
+
     await page.goto('/');
   });
 
-  test.afterEach(async () => {
-    await browser.close();
-    // Assert that there are no console errors
-    expect(consoleErrors).toEqual([]);
+  test.afterEach(() => {
+    // Assert that there are no console errors at the end of the test
+    expect(consoleErrors).toEqual([], `Console errors found: ${consoleErrors.join(', ')}`);
+    // Assert that there are no failed requests
+    expect(failedRequests).toEqual([], `Failed requests found: ${failedRequests.join(', ')}`);
   });
 
-  test('should load the title screen and start the game', async () => {
-    await page.waitForTimeout(1000); // Wait for 1 second
+  test('should load the title screen and start the game', async ({ page }) => {
     // Check if the title screen is visible
-    const titleScreen = await page.locator('#title-screen');
-    await expect(titleScreen).toBeVisible();
+    const titleScreen = page.locator('#title-screen');
+    await expect(titleScreen).toBeVisible({ timeout: 10000 }); // Increased timeout
 
     // Check for the game title
-    const title = await page.locator('h1');
+    const title = page.locator('h1');
     await expect(title).toHaveText('もふもふアドベンチャー');
 
     // Click the start button
@@ -53,7 +46,7 @@ test.describe('Mofu Mofu Adventure', () => {
     await expect(titleScreen).toBeHidden();
 
     // Check if the HUD is now visible
-    const hud = await page.locator('#hud');
+    const hud = page.locator('#hud');
     await expect(hud).toBeVisible();
 
     // Check for status bars

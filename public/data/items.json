@@ -1,0 +1,10 @@
+{
+    "potion": {
+        "HEAL_AMOUNT": 20
+    },
+    "generic": {
+        "PICKUP_RANGE": 0.5,
+        "SPHERE_RADIUS": 0.2,
+        "GEOMETRY_SEGMENTS": 8
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "grunt": {
+        "ATTACK_COOLDOWN": 2,
+        "ATTACK_RANGE": 1.5,
+        "DAMAGE": 10,
+        "SPEED": 2
+    },
+    "boss": {
+        "ATTACK_COOLDOWN": 3,
+        "NORMAL_ATTACK_RANGE": 3,
+        "NORMAL_ATTACK_DAMAGE": 20,
+        "SPECIAL_ATTACK_RANGE": 5,
+        "SPECIAL_ATTACK_DAMAGE": 40,
+        "SPEED": 1.5,
+        "INITIAL_POSITION": { "x": 10, "y": 0.5, "z": 10 }
+    },
+    "npc": {
+        "INTERACTION_RANGE": 2
+    }
+}
