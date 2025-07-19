@@ -54,7 +54,7 @@ export class Game {
         this.field = new Field();
         this.sceneManager.add(this.field.mesh);
 
-        this.player = new Player(this, this.field);
+        this.player = new Player(this);
         this.sceneManager.add(this.player.mesh);
 
         this.hud = new Hud(this, this.player);

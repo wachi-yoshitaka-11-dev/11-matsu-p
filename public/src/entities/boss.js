@@ -1,30 +1,27 @@
 import * as THREE from 'three';
+import { Character } from './character.js';
 
-export class Boss {
+export class Boss extends Character {
     constructor(game, player) {
-        this.game = game;
-        this.player = player;
         const geometry = new THREE.BoxGeometry(1, 1, 1); // Larger than enemy
         const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
-        this.mesh = new THREE.Mesh(geometry, material);
+        super(game, geometry, material, { hp: 200, speed: game.data.enemies.boss.SPEED });
+
+        this.player = player;
 
         // Set initial position dynamically based on field height
         const initialPosition = this.game.data.enemies.boss.INITIAL_POSITION;
         const y = this.game.field.getHeightAt(initialPosition.x, initialPosition.z) + this.mesh.geometry.parameters.height / 2;
         this.mesh.position.set(initialPosition.x, y, initialPosition.z);
 
-        this.hp = 200;
-        this.maxHp = 200;
-        this.isDead = false;
         this.attackCooldown = this.game.data.enemies.boss.ATTACK_COOLDOWN;
         this.experience = 100;
     }
 
     update(deltaTime) {
-        if (this.hp <= 0) {
-            this.isDead = true;
-            return;
-        }
+        super.update(deltaTime); // Handle physics and death check
+
+        if (this.isDead) return;
 
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         const bossData = this.game.data.enemies.boss;
@@ -32,7 +29,7 @@ export class Boss {
         // Simple AI: Chase and attack
         if (distance > bossData.NORMAL_ATTACK_RANGE) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            this.mesh.position.add(direction.multiplyScalar(bossData.SPEED * deltaTime));
+            this.mesh.position.add(direction.multiplyScalar(this.speed * deltaTime));
         }
 
         this.mesh.lookAt(this.player.mesh.position);
@@ -44,7 +41,5 @@ export class Boss {
         }
     }
 
-    takeDamage(amount) {
-        this.hp -= amount;
-    }
+    // takeDamage is inherited from Character
 }

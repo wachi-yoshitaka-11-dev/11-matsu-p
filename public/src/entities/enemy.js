@@ -1,49 +1,38 @@
 import * as THREE from 'three';
-import { PhysicsComponent } from '../core/components/physics-component.js';
-import { GRAVITY } from '../utils/constants.js';
+import { Character } from './character.js';
 
-export class Enemy {
+export class Enemy extends Character {
     constructor(game, player, position) {
-        this.game = game;
-        this.player = player;
         const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-        this.mesh = new THREE.Mesh(geometry, material);
+        super(game, geometry, material, { hp: 30, speed: game.data.enemies.grunt.SPEED });
+
+        this.player = player;
         this.mesh.position.copy(position);
 
-        this.physics = new PhysicsComponent(this.mesh, this.game.field);
-        this.velocity = new THREE.Vector3(); // Initialize velocity
-
-        this.hp = 30;
-        this.maxHp = 30;
-        this.isDead = false;
-        this.attackCooldown = this.game.data.enemies.grunt.ATTACK_COOLDOWN; // 2秒に1回攻撃
-        this.experience = 10; // 倒した時にもらえる経験値
+        this.attackCooldown = this.game.data.enemies.grunt.ATTACK_COOLDOWN;
+        this.experience = 10;
     }
 
     update(deltaTime) {
-        if (this.hp <= 0) {
-            this.isDead = true;
-            return;
-        }
+        super.update(deltaTime); // Handle physics and death check
 
-        // Use the physics component for gravity and ground collision
-        this.physics.update(deltaTime);
+        if (this.isDead) return;
 
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         const gruntData = this.game.data.enemies.grunt;
 
-        // プレイヤーを追跡
-        if (distance > gruntData.ATTACK_RANGE) { // Use ATTACK_RANGE for chase distance
+        // Chase the player
+        if (distance > gruntData.ATTACK_RANGE) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            this.mesh.position.x += direction.x * gruntData.SPEED * deltaTime;
-            this.mesh.position.z += direction.z * gruntData.SPEED * deltaTime;
+            this.mesh.position.x += direction.x * this.speed * deltaTime;
+            this.mesh.position.z += direction.z * this.speed * deltaTime;
         }
 
-        // プレイヤーの方を向く
+        // Look at the player
         this.mesh.lookAt(this.player.mesh.position);
 
-        // 攻撃
+        // Attack
         this.attackCooldown -= deltaTime;
         if (distance <= gruntData.ATTACK_RANGE && this.attackCooldown <= 0) {
             this.attack();
@@ -68,9 +57,5 @@ export class Enemy {
         } else {
             this.player.takeDamage(damageToPlayer);
         }
-    }
-
-    takeDamage(amount) {
-        this.hp -= amount;
     }
 }
