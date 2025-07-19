@@ -15,6 +15,7 @@ export class SceneManager {
         this.camera.position.z = 5;
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.domElement.setAttribute('tabindex', '0');
         document.body.appendChild(this.renderer.domElement);
 
         const light = new THREE.DirectionalLight(0xffffff, 1);

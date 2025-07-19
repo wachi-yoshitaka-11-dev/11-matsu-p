@@ -1,13 +1,18 @@
 import * as THREE from 'three';
+import { PhysicsComponent } from '../core/components/physics-component.js';
+import { GRAVITY } from '../utils/constants.js';
 
 export class Enemy {
-    constructor(game, player) {
+    constructor(game, player, position) {
         this.game = game;
         this.player = player;
         const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.set(5, 0.3, 0); // 初期位置
+        this.mesh.position.copy(position);
+
+        this.physics = new PhysicsComponent(this.mesh, this.game.field);
+        this.velocity = new THREE.Vector3(); // Initialize velocity
 
         this.hp = 30;
         this.maxHp = 30;
@@ -22,13 +27,17 @@ export class Enemy {
             return;
         }
 
+        // Use the physics component for gravity and ground collision
+        this.physics.update(deltaTime);
+
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         const gruntData = this.game.data.enemies.grunt;
 
         // プレイヤーを追跡
-        if (distance > 1) {
+        if (distance > gruntData.ATTACK_RANGE) { // Use ATTACK_RANGE for chase distance
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            this.mesh.position.add(direction.multiplyScalar(gruntData.SPEED * deltaTime));
+            this.mesh.position.x += direction.x * gruntData.SPEED * deltaTime;
+            this.mesh.position.z += direction.z * gruntData.SPEED * deltaTime;
         }
 
         // プレイヤーの方を向く

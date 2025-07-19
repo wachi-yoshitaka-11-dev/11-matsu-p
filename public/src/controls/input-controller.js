@@ -2,10 +2,11 @@ import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
 
 export class InputController {
-    constructor(player, camera, game) {
+    constructor(player, camera, game, canvas) {
         this.player = player;
         this.camera = camera;
         this.game = game;
+        this.canvas = canvas; // Keep a reference to the canvas
         this.keys = {};
         this.mouse = { x: 0, y: 0 };
         this.isCharging = false;
@@ -41,14 +42,17 @@ export class InputController {
     setupEventListeners() {
         document.addEventListener('keydown', (e) => this.keys[e.code] = true);
         document.addEventListener('keyup', (e) => this.keys[e.code] = false);
+
         document.addEventListener('mousemove', (e) => {
+            // If pointer is locked, update mouse movement
             if (document.pointerLockElement) {
                 this.mouse.x = e.movementX || 0;
                 this.mouse.y = e.movementY || 0;
             }
         });
-        document.body.addEventListener('click', () => {
-            document.body.requestPointerLock();
+
+        this.canvas.addEventListener('click', () => {
+            this.canvas.requestPointerLock();
         });
 
         document.addEventListener('mousedown', (e) => {
@@ -64,7 +68,7 @@ export class InputController {
                 this.game.enemies.forEach(enemy => {
                     const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
                     if (distance < params.attackRange) {
-                        enemy.hp -= params.damage;
+                        enemy.takeDamage(params.damage);
                     }
                 });
 
@@ -98,7 +102,7 @@ export class InputController {
                             finalDamage *= this.game.data.player.ATTACK_BUFF_MULTIPLIER;
                         }
                         if (distance < params.strongAttackRange) {
-                            enemy.hp -= finalDamage;
+                            enemy.takeDamage(finalDamage);
                         }
                     });
                 } else {
@@ -117,6 +121,7 @@ export class InputController {
         this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
         if (this.player.isDashing) {
             speed *= this.game.data.player.DASH_SPEED_MULTIPLIER;
+            this.player.stamina -= 1; // Consume stamina while dashing
         }
 
         // Player movement
@@ -234,9 +239,8 @@ export class InputController {
 
         // Jump
         if (this.keys['Space'] && this.player.onGround && this.player.stamina >= this.game.data.player.STAMINA_COST_JUMP) {
-            this.player.velocity.y = this.game.data.player.JUMP_POWER; // ジャンプ力
+            this.player.physics.velocity.y = this.game.data.player.JUMP_POWER; // ジャンプ力
             this.player.stamina -= this.game.data.player.STAMINA_COST_JUMP;
-            this.player.onGround = false;
         }
 
         // Rolling

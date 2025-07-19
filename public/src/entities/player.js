@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GRAVITY } from '../utils/constants.js';
+import { PhysicsComponent } from '../core/components/physics-component.js';
 
 export class Player {
     constructor(game, field) {
@@ -8,9 +9,6 @@ export class Player {
         const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         this.mesh = new THREE.Mesh(geometry, material);
-
-        // 初期位置を地形の高さに合わせる
-        this.spawn();
 
         // ステータス
         this.maxHp = 100;
@@ -21,9 +19,11 @@ export class Player {
         this.stamina = this.maxStamina;
         this.isDashing = false;
 
-        // 物理演算用
-        this.velocity = new THREE.Vector3();
+        this.physics = new PhysicsComponent(this.mesh, this.field);
         this.onGround = true;
+
+        // 初期位置を地形の高さに合わせる
+        this.spawn();
         this.isRolling = false;
         this.isInvincible = false;
         this.isAttacking = false;
@@ -48,17 +48,12 @@ export class Player {
     }
 
     spawn() {
-        this.mesh.position.set(0, 50, 0); // 仮の高い位置に設定
-        if (this.field?.mesh) {
-            const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
-            const intersects = raycaster.intersectObject(this.field.mesh);
-            if (intersects.length > 0) {
-                this.mesh.position.y = intersects[0].point.y + 0.25; // 地面の少し上に配置
-            } else {
-                this.mesh.position.y = 0.25; // 地形が見つからない場合のフォールバック
-            }
-        } else {
-            this.mesh.position.y = 0.25; // フィールドが存在しない場合のフォールバック
+        const x = 0;
+        const z = 0;
+        const y = this.field.getHeightAt(x, z) + this.mesh.geometry.parameters.height / 2;
+        this.mesh.position.set(x, y, z);
+        if (this.physics) {
+            this.physics.velocity.set(0, 0, 0); // Reset velocity on spawn
         }
     }
 
@@ -121,38 +116,32 @@ export class Player {
         this.hp = this.maxHp;
         this.stamina = this.maxStamina;
         this.isDead = false;
+        this.game.hud.hideDeathScreen();
     }
 
     update(deltaTime) {
         if (this.hp <= 0 && !this.isDead) {
             this.isDead = true;
-            setTimeout(() => this.respawn(), this.game.data.player.RESPAWN_DELAY);
+            this.game.playSound('death');
+            this.game.hud.showDeathScreen();
+            setTimeout(() => location.reload(), this.game.data.player.RESPAWN_DELAY);
         }
 
         if (this.isDead) return;
 
-        // Raycaster for ground detection
-        const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
-        const intersects = raycaster.intersectObject(this.field.mesh);
-
-        let groundHeight = -Infinity;
-        if (intersects.length > 0) {
-            groundHeight = intersects[0].point.y;
-        }
-
-        // 物理演算
-        this.velocity.y -= GRAVITY * deltaTime; // 重力
-        this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
-
-        // 地面との衝突判定
-        if (this.mesh.position.y < groundHeight + 0.25) {
-            this.mesh.position.y = groundHeight + 0.25;
-            this.velocity.y = 0;
-            this.onGround = true;
-        }
+        this.physics.update(deltaTime);
+        this.onGround = this.physics.onGround;
 
         if (this.isLockedOn && this.lockedOnTarget) {
             this.mesh.lookAt(this.lockedOnTarget.mesh.position);
+        }
+
+        // Stamina regeneration
+        if (!this.isDashing && !this.isGuarding && !this.isAttacking && !this.isRolling) {
+            this.stamina += this.game.data.player.STAMINA_REGEN_RATE * deltaTime;
+            if (this.stamina > this.maxStamina) {
+                this.stamina = this.maxStamina;
+            }
         }
     }
 
@@ -175,6 +164,8 @@ export class Player {
     takeDamage(amount) {
         if (this.isInvincible) return;
         this.hp -= amount;
+        this.game.hud.showDamageEffect();
+        this.game.playSound('damage');
     }
 
     takeStaminaDamage(amount) {

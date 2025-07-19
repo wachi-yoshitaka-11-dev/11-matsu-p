@@ -15,12 +15,16 @@ export class Hud {
         this.deathMessage.id = 'death-message';
         this.deathMessage.textContent = 'YOU DIED';
 
+        this.deathOverlay = document.createElement('div');
+        this.deathOverlay.id = 'death-overlay';
+
         this.levelUpMenu = this.createLevelUpMenu();
 
         this.container.appendChild(this.hpBar.element);
         this.container.appendChild(this.fpBar.element);
         this.container.appendChild(this.staminaBar.element);
-        this.container.appendChild(this.deathMessage);
+        document.body.appendChild(this.deathOverlay); // Add overlay to body
+        this.deathOverlay.appendChild(this.deathMessage); // Add message to overlay
         this.container.appendChild(this.levelUpMenu.element);
 
         this.inventoryDisplay = this.createInventoryDisplay();
@@ -28,6 +32,10 @@ export class Hud {
 
         this.weaponDisplay = this.createWeaponDisplay();
         this.container.appendChild(this.weaponDisplay);
+
+        this.damageOverlay = document.createElement('div');
+        this.damageOverlay.id = 'damage-overlay';
+        document.body.appendChild(this.damageOverlay);
 
         this.addStyles();
     }
@@ -127,6 +135,23 @@ export class Hud {
 
         // Update weapon display
         this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
+
+        this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
+    }
+
+    showDeathScreen() {
+        this.deathOverlay.style.opacity = 1;
+    }
+
+    hideDeathScreen() {
+        this.deathOverlay.style.opacity = 0;
+    }
+
+    showDamageEffect() {
+        this.damageOverlay.classList.add('active');
+        setTimeout(() => {
+            this.damageOverlay.classList.remove('active');
+        }, 200); // Effect duration
     }
 
     addStyles() {
@@ -163,13 +188,23 @@ export class Hud {
                 background-color: #00ff00; /* Green for Stamina */
             }
             #death-message {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
                 font-size: 5em;
-                color: red;
-                display: none;
+                color: #8b0000; /* DarkRed */
+                text-align: center;
+            }
+            #death-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7);
+                display: none; /* Initially hidden */
+                justify-content: center;
+                align-items: center;
+                opacity: 0;
+                transition: opacity 1s;
+                z-index: 100;
             }
             #level-up-menu {
                 position: fixed;
@@ -196,6 +231,21 @@ export class Hud {
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;
                 border: 1px solid white;
+            }
+            #damage-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 0, 0, 0.5);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.1s;
+                z-index: 99;
+            }
+            #damage-overlay.active {
+                opacity: 1;
             }
         `;
         document.head.appendChild(style);

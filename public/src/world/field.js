@@ -27,6 +27,7 @@ export class Field {
     }
 
     getHeightAt(x, z) {
+        this.mesh.updateMatrixWorld(); // Ensure world matrix is up-to-date
         this.raycaster.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
         const intersects = this.raycaster.intersectObject(this.mesh);
         if (intersects.length > 0) {

@@ -7,7 +7,11 @@ export class Boss {
         const geometry = new THREE.BoxGeometry(1, 1, 1); // Larger than enemy
         const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.copy(this.game.data.enemies.boss.INITIAL_POSITION);
+
+        // Set initial position dynamically based on field height
+        const initialPosition = this.game.data.enemies.boss.INITIAL_POSITION;
+        const y = this.game.field.getHeightAt(initialPosition.x, initialPosition.z) + this.mesh.geometry.parameters.height / 2;
+        this.mesh.position.set(initialPosition.x, y, initialPosition.z);
 
         this.hp = 200;
         this.maxHp = 200;

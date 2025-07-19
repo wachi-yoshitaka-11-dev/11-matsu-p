@@ -59,9 +59,13 @@ export class Game {
 
         this.hud = new Hud(this, this.player);
 
-        this.inputController = new InputController(this.player, this.sceneManager.camera, this);
+        this.inputController = new InputController(this.player, this.sceneManager.camera, this, this.sceneManager.renderer.domElement);
 
-        const enemy = new Enemy(this, this.player);
+        // 5. 敵やアイテムなどを生成してシーンとゲーム管理リストに追加
+        const enemyX = 5;
+        const enemyZ = 0;
+        const enemyY = this.field.getHeightAt(enemyX, enemyZ) + 0.3; // Get ground height and add half enemy height
+        const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, enemyY, enemyZ));
         this.enemies.push(enemy);
         this.sceneManager.add(enemy.mesh);
 
@@ -93,14 +97,24 @@ export class Game {
         this.bgm.setVolume(0.5);
 
         this.audioBuffers['attack'] = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
+        this.audioBuffers['damage'] = await this.assetLoader.loadAudio('damage', 'assets/audio/damage.mp3');
+        this.audioBuffers['death'] = await this.assetLoader.loadAudio('death', 'assets/audio/death.mp3');
     }
 
     startGame() {
+        if (this.gameState !== GameState.TITLE) return;
+
         this.gameState = GameState.PLAYING;
         this.hud.container.style.display = 'block';
+        if (this.titleScreen) {
+            this.titleScreen.dispose();
+            this.titleScreen = null;
+        }
         if (!this.bgm.isPlaying) {
             this.bgm.play();
         }
+        // Request pointer lock now that the game has started from a user click
+        this.sceneManager.renderer.domElement.requestPointerLock();
     }
 
     togglePause() {
@@ -111,7 +125,7 @@ export class Game {
         } else if (this.gameState === GameState.PAUSED) {
             this.gameState = GameState.PLAYING;
             this.pauseMenu.toggle(false);
-            document.body.requestPointerLock();
+            this.sceneManager.renderer.domElement.requestPointerLock();
         }
     }
 
@@ -135,88 +149,87 @@ export class Game {
     animate() {
         requestAnimationFrame(this.animate.bind(this));
 
-        if (this.gameState === GameState.PAUSED) {
-            this.sceneManager.render();
-            return;
-        }
-
-        if (this.gameState !== GameState.PLAYING) {
-            this.sceneManager.render();
-            return;
-        }
-
         const deltaTime = this.clock.getDelta();
 
-        this.player?.update(deltaTime);
-        this.inputController?.update();
+        // Always update game logic, except when paused
+        if (this.gameState !== GameState.PAUSED) {
+            this.player?.update(deltaTime);
+            this.inputController?.update();
 
-        this.enemies.forEach((enemy, index) => {
-            if (enemy.isDead) {
-                this.player?.addExperience(enemy.experience);
-                this.sceneManager.remove(enemy.mesh);
-                this.enemies.splice(index, 1);
-            } else {
-                enemy.update(deltaTime);
-            }
-        });
+            if (this.gameState === GameState.PLAYING) {
+                this.enemies.forEach((enemy, index) => {
+                    if (enemy.isDead) {
+                        this.player?.addExperience(enemy.experience);
+                        this.sceneManager.remove(enemy.mesh);
+                        this.enemies.splice(index, 1);
+                    } else {
+                        enemy.update(deltaTime);
+                    }
+                });
 
-        this.items.forEach((item, index) => {
-            const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
-            if (distance < this.data.items.generic.PICKUP_RANGE) {
-                this.player?.inventory.push(item.type);
-                this.sceneManager.remove(item.mesh);
-                this.items.splice(index, 1);
-            }
-        });
+                this.items.forEach((item, index) => {
+                    const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
+                    if (distance < this.data.items.generic.PICKUP_RANGE) {
+                        this.player?.inventory.push(item.type);
+                        this.sceneManager.remove(item.mesh);
+                        this.items.splice(index, 1);
+                    }
+                });
 
-        this.projectiles.forEach((projectile, pIndex) => {
-            projectile.update(deltaTime);
-            if (projectile.lifespan <= 0) {
-                this.sceneManager.remove(projectile.mesh);
-                this.projectiles.splice(pIndex, 1);
-                return; 
-            }
+                this.projectiles.forEach((projectile, pIndex) => {
+                    projectile.update(deltaTime);
+                    if (projectile.lifespan <= 0) {
+                        this.sceneManager.remove(projectile.mesh);
+                        this.projectiles.splice(pIndex, 1);
+                        return;
+                    }
 
-            this.enemies.forEach(enemy => {
-                const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                if (distance < 1) { // Projectile hit range
-                    enemy.takeDamage(projectile.damage);
-                    this.sceneManager.remove(projectile.mesh);
-                    this.projectiles.splice(pIndex, 1);
+                    this.enemies.forEach(enemy => {
+                        const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
+                        if (distance < 1) { // Projectile hit range
+                            enemy.takeDamage(projectile.damage);
+                            this.sceneManager.remove(projectile.mesh);
+                            this.projectiles.splice(pIndex, 1);
+                        }
+                    });
+                });
+
+                if (this.boss && !this.boss.isDead) {
+                    this.boss.update(deltaTime);
+                } else if (this.boss?.isDead) {
+                    this.player?.addExperience(this.boss.experience);
+                    this.sceneManager.remove(this.boss.mesh);
+                    this.boss = null;
                 }
-            });
-        });
 
-        if (this.boss && !this.boss.isDead) {
-            this.boss.update(deltaTime);
-        } else if (this.boss?.isDead) {
-            this.player?.addExperience(this.boss.experience);
-            this.sceneManager.remove(this.boss.mesh);
-            this.boss = null;
+                this.npcs.forEach(npc => {
+                    npc.update(this.player?.mesh.position);
+                });
+            }
         }
 
-        this.npcs.forEach(npc => {
-            npc.update(this.player?.mesh.position);
-        });
+        // Update camera and HUD regardless of the state (as long as not paused)
+        if (this.gameState !== GameState.PAUSED) {
+            if (this.player?.isLockedOn && this.player?.lockedOnTarget) {
+                const targetPosition = this.player.lockedOnTarget.mesh.position;
+                const playerPosition = this.player.mesh.position;
 
-        if (this.player?.isLockedOn && this.player?.lockedOnTarget) {
-            const targetPosition = this.player.lockedOnTarget.mesh.position;
-            const playerPosition = this.player.mesh.position;
+                const midPoint = new THREE.Vector3().addVectors(playerPosition, targetPosition).multiplyScalar(0.5);
+                const cameraPosition = new THREE.Vector3().subVectors(playerPosition, targetPosition).normalize().multiplyScalar(5).add(midPoint);
+                cameraPosition.y = playerPosition.y + 2;
 
-            const midPoint = new THREE.Vector3().addVectors(playerPosition, targetPosition).multiplyScalar(0.5);
-            const cameraPosition = new THREE.Vector3().subVectors(playerPosition, targetPosition).normalize().multiplyScalar(5).add(midPoint);
-            cameraPosition.y = playerPosition.y + 2;
+                this.sceneManager.camera.position.copy(cameraPosition);
+                this.sceneManager.camera.lookAt(midPoint);
+            } else if (this.player) {
+                const cameraOffset = new THREE.Vector3(0, 2, 5);
+                cameraOffset.applyQuaternion(this.player.mesh.quaternion);
+                this.sceneManager.camera.position.copy(this.player.mesh.position).add(cameraOffset);
+                this.sceneManager.camera.lookAt(this.player.mesh.position);
+            }
 
-            this.sceneManager.camera.position.copy(cameraPosition);
-            this.sceneManager.camera.lookAt(midPoint);
-        } else if (this.player) {
-            const cameraOffset = new THREE.Vector3(0, 2, 5);
-            cameraOffset.applyQuaternion(this.player.mesh.quaternion);
-            this.sceneManager.camera.position.copy(this.player.mesh.position).add(cameraOffset);
-            this.sceneManager.camera.lookAt(this.player.mesh.position);
+            this.hud?.update();
         }
 
-        this.hud?.update();
         this.sceneManager.render();
     }
 }
