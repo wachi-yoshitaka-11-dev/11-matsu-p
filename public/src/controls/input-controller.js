@@ -52,7 +52,9 @@ export class InputController {
         });
 
         this.canvas.addEventListener('click', () => {
-            this.canvas.requestPointerLock();
+            if (typeof window.playwright === 'undefined') {
+                this.canvas.requestPointerLock();
+            }
         });
 
         document.addEventListener('mousedown', (e) => {
@@ -99,7 +101,7 @@ export class InputController {
                         const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
                         let finalDamage = damage;
                         if (this.player.isAttackBuffed) {
-                            finalDamage *= this.game.data.player.ATTACK_BUFF_MULTIPLIER;
+                            finalDamage *= this.player.attackBuffMultiplier;
                         }
                         if (distance < params.strongAttackRange) {
                             enemy.takeDamage(finalDamage);
@@ -142,6 +144,9 @@ export class InputController {
 
         // Guard
         this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;
+        if (this.player.isGuarding) {
+            this.player.stamina -= (this.game.data.player.STAMINA_COST_GUARD_PER_SECOND || 10) * deltaTime;
+        }
 
         // Lock-on
         if (this.keys['Tab']) {

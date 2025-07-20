@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 export class Projectile {
     constructor(startPosition, direction, game) {
-        const skillData = game.data.skills?.shockwave; // Add defensive check
+        let skillData = game.data.skills?.shockwave; // Add defensive check
         if (!skillData) {
             console.warn('Skill data for shockwave not found. Using default values.');
             skillData = { FP_COST: 20, DURATION: 1000, SPEED: 10, LIFESPAN: 2, DAMAGE: 30 };

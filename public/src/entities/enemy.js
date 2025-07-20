@@ -5,12 +5,22 @@ export class Enemy extends Character {
     constructor(game, player, position) {
         const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-        super(game, geometry, material, { hp: 30, speed: game.data.enemies.grunt.SPEED });
+
+        const gruntData = game.data?.enemies?.grunt;
+        if (!gruntData) {
+            throw new Error('Grunt enemy data not found in game.data.enemies.grunt');
+        }
+
+        if (!position || !(position instanceof THREE.Vector3)) {
+            throw new Error('Invalid position parameter');
+        }
+
+        super(game, geometry, material, { hp: 30, speed: gruntData.SPEED });
 
         this.player = player;
         this.mesh.position.copy(position);
 
-        this.attackCooldown = this.game.data.enemies.grunt.ATTACK_COOLDOWN;
+        this.attackCooldown = gruntData.ATTACK_COOLDOWN;
         this.experience = 10;
     }
 
@@ -56,9 +66,9 @@ export class Enemy extends Character {
     }
 
     _calculateDamage() {
-        let damage = this.game.data.enemies.grunt.DAMAGE;
+        let damage = this.game.data?.enemies?.grunt?.DAMAGE || 10; // fallback value
         if (this.player.isDefenseBuffed) {
-            damage *= this.game.data.player.DEFENSE_BUFF_MULTIPLIER;
+            damage *= this.game.data?.player?.DEFENSE_BUFF_MULTIPLIER || 0.5; // fallback value
         }
         return damage;
     }

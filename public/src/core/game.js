@@ -11,6 +11,7 @@ import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
+import { DialogBox } from '../ui/dialog-box.js';
 
 const GameState = {
     TITLE: 'title',
@@ -44,6 +45,7 @@ export class Game {
         this.gameState = GameState.TITLE;
         this.titleScreen = new TitleScreen(() => this.startGame());
         this.pauseMenu = new PauseMenu(this);
+        this.dialogBox = new DialogBox(this);
     }
 
     async init() {
@@ -79,7 +81,7 @@ export class Game {
         this.boss = boss;
         this.sceneManager.add(boss.mesh);
 
-        const npc = new Npc(this, 'こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5));
+        const npc = new Npc('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5), this);
         this.npcs.push(npc);
         this.sceneManager.add(npc.mesh);
     }
@@ -131,6 +133,10 @@ export class Game {
         }
     }
 
+    reloadGame() {
+        location.reload();
+    }
+
     playSound(name) {
         if (this.audioBuffers[name]) {
             const sound = new THREE.Audio(this.listener);
@@ -145,56 +151,68 @@ export class Game {
     }
 
     start() {
+        this.isManualUpdate = false;
         this.animate();
     }
 
-    animate() {
-        requestAnimationFrame(this.animate.bind(this));
+    manualUpdate(deltaTime) {
+        this.isManualUpdate = true;
+        this._updateLoop(deltaTime);
+    }
 
-        const deltaTime = this.clock.getDelta();
-
+    _updateLoop(deltaTime) {
         // Always update game logic, except when paused
         if (this.gameState !== GameState.PAUSED) {
             this.player?.update(deltaTime);
             this.inputController?.update(deltaTime);
 
             if (this.gameState === GameState.PLAYING) {
-                this.enemies.forEach((enemy, index) => {
+                for (let i = this.enemies.length - 1; i >= 0; i--) {
+                    const enemy = this.enemies[i];
                     if (enemy.isDead) {
                         this.player?.addExperience(enemy.experience);
                         this.sceneManager.remove(enemy.mesh);
-                        this.enemies.splice(index, 1);
+                        this.enemies.splice(i, 1);
                     } else {
                         enemy.update(deltaTime);
                     }
-                });
+                }
 
                 this.items.forEach((item, index) => {
                     const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
                     if (distance < this.data.items.generic.PICKUP_RANGE) {
                         this.player?.inventory.push(item.type);
                         this.sceneManager.remove(item.mesh);
-                        this.items.splice(index, 1);
+                        this.itemsToRemove.push(item);
                     }
                 });
 
-                this.projectiles.forEach((projectile, pIndex) => {
+                for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                    const projectile = this.projectiles[i];
                     projectile.update(deltaTime);
+                    let shouldRemove = false;
+
                     if (projectile.lifespan <= 0) {
-                        this.sceneManager.remove(projectile.mesh);
-                        this.projectiles.splice(pIndex, 1);
-                        return;
+                        shouldRemove = true;
                     }
 
-                    this.enemies.forEach(enemy => {
-                        const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                        if (distance < 1) { // Projectile hit range
-                            enemy.takeDamage(projectile.damage);
-                            this.sceneManager.remove(projectile.mesh);
-                            this.projectiles.splice(pIndex, 1);
+                    if (!shouldRemove) {
+                        for (const enemy of this.enemies) {
+                            const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
+                            const hitRange = this.data.weapons?.projectile_hit_range || 1.0;
+                            if (distance < hitRange) {
+                                enemy.takeDamage(projectile.damage);
+                                shouldRemove = true;
+                                break; // 1度ヒットしたら敵ループを抜ける
+                            }
                         }
-                    });
-                });
+                    }
+
+                    if (shouldRemove) {
+                        this.sceneManager.remove(projectile.mesh);
+                        this.projectiles.splice(i, 1);
+                    }
+                }
 
                 if (this.boss && !this.boss.isDead) {
                     this.boss.update(deltaTime);
@@ -233,5 +251,14 @@ export class Game {
         }
 
         this.sceneManager.render();
+    }
+
+    animate() {
+        if (!this.isManualUpdate) {
+            requestAnimationFrame(this.animate.bind(this));
+        }
+
+        const deltaTime = this.clock.getDelta();
+        this._updateLoop(deltaTime);
     }
 }

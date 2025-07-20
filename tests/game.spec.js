@@ -39,7 +39,7 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
     await page.evaluate(() => {
       const { player, data } = window.game;
       if (player.onGround) {
-        player.physics.velocity.y = data.player.JUMP_POWER;
+        player.physics.velocity.y = data.player.JUMP_POWER; // ジャンプ力
         player.stamina -= data.player.STAMINA_COST_JUMP;
       }
     });
@@ -83,6 +83,7 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
       window.game.player.inventory.push('potion');
     });
     const initialPlayerHp = await page.evaluate(() => window.game.player.hp);
+    const initialInventoryLength = await page.evaluate(() => window.game.player.inventory.length);
 
     // Directly execute item use logic via evaluate
     await page.evaluate(() => {
@@ -91,6 +92,68 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
 
     await page.waitForFunction(hp => window.game.player.hp > hp, initialPlayerHp);
     const newPlayerHp = await page.evaluate(() => window.game.player.hp);
+    const newInventoryLength = await page.evaluate(() => window.game.player.inventory.length);
+    const potionHealAmount = await page.evaluate(() => window.game.data.items.potion.HEAL_AMOUNT);
+
     expect(newPlayerHp).toBeGreaterThan(initialPlayerHp);
+    expect(newPlayerHp - initialPlayerHp).toBe(potionHealAmount);
+    expect(newInventoryLength).toBe(initialInventoryLength - 1);
+  });
+
+  test('should not fall through the ground', async ({ page }) => {
+    // Force player to a high position
+    await page.evaluate(() => {
+      window.game.player.mesh.position.set(0, 20, 0);
+      window.game.player.physics.onGround = false;
+    });
+
+    // Let the game run for a bit to apply gravity
+    await page.waitForTimeout(1000); // Wait for 1 second
+
+    const finalPosition = await page.evaluate(() => window.game.player.mesh.position.clone());
+    const groundHeight = await page.evaluate(pos => window.game.field.getHeightAt(pos.x, pos.z), finalPosition);
+    const playerHeight = await page.evaluate(() => window.game.player.mesh.geometry.parameters.height);
+
+    // Assert that the player is at or above the ground
+    expect(finalPosition.y).toBeGreaterThanOrEqual(groundHeight + playerHeight / 2);
+  });
+
+  test('should consume stamina when dashing', async ({ page }) => {
+    await page.evaluate(() => {
+      window.game.player.stamina = window.game.player.maxStamina;
+    });
+    const initialStamina = await page.evaluate(() => window.game.player.stamina);
+
+    // Press ShiftLeft to dash
+    await page.keyboard.down('ShiftLeft');
+
+    // Simulate a few frames to allow stamina to drain
+    for (let i = 0; i < 60; i++) { // Simulate 1 second at 60fps
+      await page.evaluate(() => window.game._updateLoop(1 / 60));
+    }
+
+    await page.keyboard.up('ShiftLeft');
+
+    const finalStamina = await page.evaluate(() => window.game.player.stamina);
+    expect(finalStamina).toBeLessThan(initialStamina);
+  });
+
+  test('should interact with NPC and display dialog', async ({ page }) => {
+    // Move player close to NPC
+    await page.evaluate(() => {
+      window.game.player.mesh.position.set(-5, 0.5, -4);
+    });
+
+    // Press E to interact
+    await page.keyboard.press('KeyE');
+
+    // Check if dialog box is visible and contains correct text
+    const dialogBox = page.locator('#dialog-box');
+    await expect(dialogBox).toBeVisible();
+    await expect(dialogBox).toContainText('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。');
+
+    // Close dialog
+    await page.locator('#dialog-box button').click();
+    await expect(dialogBox).toBeHidden();
   });
 });

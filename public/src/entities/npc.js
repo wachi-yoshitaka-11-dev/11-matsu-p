@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export class Npc {
-    constructor(game, dialogue, position = new THREE.Vector3(-5, 0.5, -5)) {
+    constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game) {
         this.game = game;
         this.dialogue = dialogue;
         const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
@@ -44,7 +44,7 @@ export class Npc {
     }
 
     interact() {
-        alert(this.dialogue);
+        this.game.dialogBox.show(this.dialogue);
     }
 
     dispose() {

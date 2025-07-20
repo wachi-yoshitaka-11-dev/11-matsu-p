@@ -8,6 +8,8 @@
     },
     "buff": {
         "FP_COST": 30,
-        "DURATION": 10000
+        "DURATION": 10000,
+        "ATTACK_BUFF_MULTIPLIER": 1.5,
+        "DEFENSE_BUFF_MULTIPLIER": 0.7
     }
 }

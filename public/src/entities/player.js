@@ -25,6 +25,12 @@ export class Player extends Character {
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
 
+        // Buffs
+        this.attackBuffMultiplier = 1.0;
+        this.defenseBuffMultiplier = 1.0;
+        this.isAttackBuffed = false;
+        this.isDefenseBuffed = false;
+
         // Effects
         this.originalColor = this.mesh.material.color.clone();
         this.effectTimeout = null;
@@ -50,6 +56,7 @@ export class Player extends Character {
         this.fp = this.maxFp;
         this.isDead = false;
         this.game.hud.hideDeathScreen();
+        this.game.reloadGame(); // Delegate to game.js
     }
 
     update(deltaTime) {
@@ -75,7 +82,7 @@ export class Player extends Character {
     onDeath() {
         this.game.playSound('death');
         this.game.hud.showDeathScreen();
-        setTimeout(() => location.reload(), this.game.data.player.RESPAWN_DELAY);
+        setTimeout(() => this.respawn(), this.game.data.player.RESPAWN_DELAY);
     }
 
     takeDamage(amount) {
@@ -87,6 +94,9 @@ export class Player extends Character {
 
     takeStaminaDamage(amount) {
         this.stamina -= amount;
+        if (this.stamina < 0) {
+            this.stamina = 0;
+        }
     }
 
     addExperience(amount) {

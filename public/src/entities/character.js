@@ -19,9 +19,15 @@ export class Character {
         this.mesh = new THREE.Mesh(geometry, material);
         this.physics = new PhysicsComponent(this.mesh, this.game.field);
 
-        this.maxHp = options.hp || 100;
+        // Default character stats
+        const defaults = {
+            hp: 100,
+            speed: 2
+        };
+
+        this.maxHp = options.hp ?? defaults.hp;
         this.hp = this.maxHp;
-        this.speed = options.speed || 2;
+        this.speed = options.speed ?? defaults.speed;
         this.isDead = false;
     }
 

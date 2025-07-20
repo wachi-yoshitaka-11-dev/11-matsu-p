@@ -4,12 +4,10 @@ import { GRAVITY } from '../../utils/constants.js';
 export class PhysicsComponent {
     constructor(object, field) {
         if (!object || !(object instanceof THREE.Mesh)) {
-            console.error('PhysicsComponent: Invalid object provided. Must be a THREE.Mesh.');
-            return;
+            throw new Error('PhysicsComponent: Invalid object provided. Must be a THREE.Mesh.');
         }
         if (!field) {
-            console.error('PhysicsComponent: Invalid field provided.');
-            return;
+            throw new Error('PhysicsComponent: Invalid field provided.');
         }
         this.object = object;
         this.field = field;
@@ -18,18 +16,23 @@ export class PhysicsComponent {
     }
 
     update(deltaTime) {
+        const previousY = this.object.position.y;
+
         // Apply gravity
         this.velocity.y -= GRAVITY * deltaTime;
         this.object.position.y += this.velocity.y * deltaTime;
 
         // Ground collision detection
+        if (!this.field.getHeightAt) {
+            console.warn('PhysicsComponent: Field object does not implement getHeightAt method');
+            return;
+        }
         const groundHeight = this.field.getHeightAt(this.object.position.x, this.object.position.z);
-        
-        // Calculate object height using bounding box for more flexibility
-        const boundingBox = new THREE.Box3().setFromObject(this.object);
-        const objectHeight = boundingBox.max.y - boundingBox.min.y;
+        const objectHeight = this.object.geometry.parameters.height; // Assuming simple geometry
+        const objectBottomY = this.object.position.y - objectHeight / 2;
 
-        if (this.object.position.y < groundHeight + objectHeight / 2) {
+        // Check if the object has passed through the ground in this frame
+        if (this.velocity.y <= 0 && objectBottomY <= groundHeight && previousY >= groundHeight) {
             this.object.position.y = groundHeight + objectHeight / 2;
             this.velocity.y = 0;
             this.onGround = true;
