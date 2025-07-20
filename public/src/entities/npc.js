@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import { Npc as NpcConst } from '../utils/constants.js';
 
 export class Npc {
-    constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5)) {
+    constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game) {
+        this.game = game;
         this.dialogue = dialogue;
         const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
         const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
@@ -39,11 +39,12 @@ export class Npc {
 
     update(playerPosition) {
         const distance = this.mesh.position.distanceTo(playerPosition);
-        this.interactionPrompt.visible = distance < NpcConst.INTERACTION_RANGE;
+        const interactionRange = this.game.data.enemies.npc.interactionRange;
+        this.interactionPrompt.visible = distance < interactionRange;
     }
 
     interact() {
-        alert(this.dialogue);
+        this.game.dialogBox.show(this.dialogue);
     }
 
     dispose() {

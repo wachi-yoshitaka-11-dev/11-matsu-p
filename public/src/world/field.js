@@ -3,8 +3,8 @@ import { Field as FieldConst } from '../utils/constants.js';
 
 export class Field {
     constructor() {
-        const size = FieldConst.TERRAIN_SIZE;
-        const segments = FieldConst.TERRAIN_SEGMENTS;
+        const size = FieldConst.terrainSize;
+        const segments = FieldConst.terrainSegments;
         const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
 
         // Generate height data
@@ -27,6 +27,7 @@ export class Field {
     }
 
     getHeightAt(x, z) {
+        this.mesh.updateMatrixWorld(); // Ensure world matrix is up-to-date
         this.raycaster.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
         const intersects = this.raycaster.intersectObject(this.mesh);
         if (intersects.length > 0) {

@@ -1,8 +1,12 @@
 import * as THREE from 'three';
-import { Projectile as ProjectileConst } from '../utils/constants.js';
 
 export class Projectile {
-    constructor(startPosition, direction) {
+    constructor(startPosition, direction, game) {
+        let skillData = game.data.skills.shockwave;
+        if (!skillData) {
+            console.warn('Skill data for shockwave not found. Using default values.');
+            skillData = { fpCost: 20, duration: 1000, speed: 10, lifespan: 2, damage: 30 };
+        }
         const geometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);
         const material = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00 });
         this.mesh = new THREE.Mesh(geometry, material);
@@ -10,9 +14,9 @@ export class Projectile {
         this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize()); // Align with direction
 
         this.direction = direction;
-        this.speed = ProjectileConst.SPEED;
-        this.lifespan = ProjectileConst.LIFESPAN; // seconds
-        this.damage = ProjectileConst.DAMAGE;
+        this.speed = skillData.speed;
+        this.lifespan = skillData.lifespan; // seconds
+        this.damage = skillData.damage;
     }
 
     update(deltaTime) {

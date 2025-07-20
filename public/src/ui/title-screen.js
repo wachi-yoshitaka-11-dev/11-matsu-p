@@ -7,30 +7,28 @@ export class TitleScreen {
         title.textContent = 'もふもふアドベンチャー';
         this.container.appendChild(title);
 
-        const startButton = document.createElement('button');
-        startButton.textContent = 'Start Game';
-        startButton.setAttribute('aria-label', 'Start Game');
-        this.startButtonClickHandler = () => {
-            this.hide();
-            onStart();
-        };
-        startButton.addEventListener('click', this.startButtonClickHandler);
-        this.container.appendChild(startButton);
+        const subtitle = document.createElement('p');
+        subtitle.textContent = 'Click anywhere to start';
+        this.container.appendChild(subtitle);
+
+        this.container.addEventListener('click', () => {
+            if (this.container) { // Prevent multiple clicks
+                onStart();
+            }
+        }, { once: true }); // Fire only once
 
         document.body.appendChild(this.container);
     }
 
-    hide() {
-        this.container.style.display = 'none';
+    dispose() {
+        if (this.container) {
+            // The event listener is already removed with { once: true }
+            if (this.container.parentNode) {
+                this.container.parentNode.removeChild(this.container);
+            }
+            this.container = null;
+        }
     }
 
-    dispose() {
-        const startButton = this.container.querySelector('button');
-        if (startButton) {
-            startButton.removeEventListener('click', this.startButtonClickHandler);
-        }
-        if (this.container.parentNode) {
-            this.container.parentNode.removeChild(this.container);
-        }
-    }
+    // The setReady method is no longer needed as the screen is ready by default.
 }

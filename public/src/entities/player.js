@@ -1,67 +1,139 @@
 import * as THREE from 'three';
-import { GRAVITY, Player as PlayerConst, Item as ItemConst } from '../utils/constants.js';
+import { Character } from './character.js';
 
-export class Player {
-    constructor(field) {
-        this.field = field;
+export class Player extends Character {
+    constructor(game) {
         const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        this.mesh = new THREE.Mesh(geometry, material);
+        super(game, geometry, material, { hp: game.data.player.maxHp });
 
-        // 初期位置を地形の高さに合わせる
-        this.spawn();
-
-        // ステータス
-        this.maxHp = 100;
-        this.hp = this.maxHp;
-        this.maxFp = 50;
+        // Player-specific stats
+        this.maxFp = game.data.player.maxFp;
         this.fp = this.maxFp;
-        this.maxStamina = 100;
+        this.maxStamina = game.data.player.maxStamina;
         this.stamina = this.maxStamina;
-        this.isDashing = false;
 
-        // 物理演算用
-        this.velocity = new THREE.Vector3();
-        this.onGround = true;
-        this.isRolling = false;
-        this.isInvincible = false;
-        this.isAttacking = false;
-        this.isGuarding = false;
-        this.isLockedOn = false;
-        this.lockedOnTarget = null;
-        this.isDead = false;
-
-        // レベルと経験値
-        this.level = 1;
-        this.experience = 0;
-        this.experienceToNextLevel = 100;
-        this.statusPoints = 0;
+        // Leveling and inventory
+        this.level = game.data.player.initialLevel;
+        this.experience = game.data.player.initialExperience;
+        this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
+        this.statusPoints = game.data.player.initialStatusPoints;
         this.inventory = [];
 
-        // 武器
+        // Weapons and skills
         this.weapons = ['sword', 'claws'];
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
+
+        // Buffs
+        this.attackBuffMultiplier = 1.0;
+        this.defenseBuffMultiplier = 1.0;
+        this.isAttackBuffed = false;
+        this.isDefenseBuffed = false;
+
+        // Effects
         this.originalColor = this.mesh.material.color.clone();
         this.effectTimeout = null;
+
+        this.spawn();
     }
 
     spawn() {
-        this.mesh.position.set(0, 50, 0); // 仮の高い位置に設定
-        if (this.field?.mesh) {
-            const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
-            const intersects = raycaster.intersectObject(this.field.mesh);
-            if (intersects.length > 0) {
-                this.mesh.position.y = intersects[0].point.y + 0.25; // 地面の少し上に配置
-            } else {
-                this.mesh.position.y = 0.25; // 地形が見つからない場合のフォールバック
-            }
-        } else {
-            this.mesh.position.y = 0.25; // フィールドが存在しない場合のフォールバック
+        const spawnPoint = this.game.data.player.initialSpawnPoint || { x: 0, z: 0 };
+        const x = spawnPoint.x;
+        const z = spawnPoint.z;
+        const y = this.game.field.getHeightAt(x, z) + this.mesh.geometry.parameters.height / 2;
+        this.mesh.position.set(x, y, z);
+        if (this.physics) {
+            this.physics.velocity.set(0, 0, 0);
         }
     }
 
-    // Visual feedback for actions
+    respawn() {
+        this.spawn();
+        this.hp = this.maxHp;
+        this.stamina = this.maxStamina;
+        this.fp = this.maxFp;
+        this.isDead = false;
+        this.game.hud.hideDeathScreen();
+        this.game.reloadGame(); // Delegate to game.js
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime); // Call parent update for physics
+
+        if (this.isDead) return;
+
+        this.onGround = this.physics.onGround;
+
+        if (this.isLockedOn && this.lockedOnTarget) {
+            this.mesh.lookAt(this.lockedOnTarget.mesh.position);
+        }
+
+        // Stamina regeneration
+        if (!this.isDashing && !this.isGuarding && !this.isAttacking && !this.isRolling) {
+            this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
+            if (this.stamina > this.maxStamina) {
+                this.stamina = this.maxStamina;
+            }
+        }
+    }
+
+    onDeath() {
+        this.game.playSound('death');
+        this.game.hud.showDeathScreen();
+        setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
+    }
+
+    takeDamage(amount) {
+        if (this.isInvincible) return;
+        super.takeDamage(amount); // Use parent method for HP reduction
+        this.game.hud.showDamageEffect();
+        this.game.playSound('damage');
+    }
+
+    takeStaminaDamage(amount) {
+        this.stamina -= amount;
+        if (this.stamina < 0) {
+            this.stamina = 0;
+        }
+    }
+
+    addExperience(amount) {
+        this.experience += amount;
+        if (this.experience >= this.experienceToNextLevel) {
+            this.levelUp();
+        }
+    }
+
+    levelUp() {
+        this.level++;
+        this.experience -= this.experienceToNextLevel;
+        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier);
+        this.statusPoints += this.game.data.player.statusPointsPerLevel;
+    }
+
+    useItem(index) {
+        if (this.inventory.length > index) {
+            const itemType = this.inventory[index];
+            const itemData = this.game.data.items[itemType]; // Get item data from game.data
+
+            if (!itemData) {
+                console.warn(`Unknown item type: ${itemType}`);
+                return; // Do not consume unknown items
+            }
+
+            if (itemType === 'potion') {
+                this.hp += itemData.healAmount;
+                if (this.hp > this.maxHp) this.hp = this.maxHp;
+            }
+            // Add more item types here as needed
+
+            this.inventory.splice(index, 1); // Consume item
+        }
+    }
+
+    // Visual effect methods
     showAttackEffect() {
         this.mesh.material.color.set(0xffffff); // White
         this.clearEffectTimeout();
@@ -90,71 +162,6 @@ export class Player {
         }
     }
 
-    useItem(index) {
-        if (this.inventory.length > index) {
-            const item = this.inventory[index];
-            if (item === 'potion') {
-                this.hp += ItemConst.POTION_HEAL_AMOUNT;
-                if (this.hp > this.maxHp) this.hp = this.maxHp;
-            }
-            this.inventory.splice(index, 1);
-        }
-    }
-
-    addExperience(amount) {
-        this.experience += amount;
-        if (this.experience >= this.experienceToNextLevel) {
-            this.levelUp();
-        }
-    }
-
-    levelUp() {
-        this.level++;
-        this.experience -= this.experienceToNextLevel;
-        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * PlayerConst.LEVEL_UP_EXP_MULTIPLIER);
-        this.statusPoints += PlayerConst.STATUS_POINTS_PER_LEVEL;
-    }
-
-    respawn() {
-        this.spawn();
-        this.hp = this.maxHp;
-        this.stamina = this.maxStamina;
-        this.isDead = false;
-    }
-
-    update(deltaTime) {
-        if (this.hp <= 0 && !this.isDead) {
-            this.isDead = true;
-            setTimeout(() => this.respawn(), PlayerConst.RESPAWN_DELAY);
-        }
-
-        if (this.isDead) return;
-
-        // Raycaster for ground detection
-        const raycaster = new THREE.Raycaster(this.mesh.position, new THREE.Vector3(0, -1, 0));
-        const intersects = raycaster.intersectObject(this.field.mesh);
-
-        let groundHeight = -Infinity;
-        if (intersects.length > 0) {
-            groundHeight = intersects[0].point.y;
-        }
-
-        // 物理演算
-        this.velocity.y -= GRAVITY * deltaTime; // 重力
-        this.mesh.position.add(this.velocity.clone().multiplyScalar(deltaTime));
-
-        // 地面との衝突判定
-        if (this.mesh.position.y < groundHeight + 0.25) {
-            this.mesh.position.y = groundHeight + 0.25;
-            this.velocity.y = 0;
-            this.onGround = true;
-        }
-
-        if (this.isLockedOn && this.lockedOnTarget) {
-            this.mesh.lookAt(this.lockedOnTarget.mesh.position);
-        }
-    }
-
     applyAttackBuff() {
         this.isAttackBuffed = true;
     }
@@ -169,14 +176,5 @@ export class Player {
 
     removeDefenseBuff() {
         this.isDefenseBuffed = false;
-    }
-
-    takeDamage(amount) {
-        if (this.isInvincible) return;
-        this.hp -= amount;
-    }
-
-    takeStaminaDamage(amount) {
-        this.stamina -= amount;
     }
 }

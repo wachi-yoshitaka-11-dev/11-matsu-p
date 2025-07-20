@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
-import { Player as PlayerConst, WeaponSword, WeaponClaws, Npc as NpcConst, Skill as SkillConst } from '../utils/constants.js';
 
 export class InputController {
-    constructor(player, camera, game) {
+    constructor(player, camera, game, canvas) {
         this.player = player;
         this.camera = camera;
         this.game = game;
+        this.canvas = canvas; // Keep a reference to the canvas
         this.keys = {};
         this.mouse = { x: 0, y: 0 };
         this.isCharging = false;
@@ -17,38 +17,44 @@ export class InputController {
 
     _getWeaponParams() {
         const weaponName = this.player.weapons[this.player.currentWeaponIndex];
-        if (weaponName === 'claws') {
+        const weaponData = this.game.data.weapons[weaponName];
+        if (weaponData) {
             return {
-                attackRange: WeaponClaws.ATTACK_RANGE,
-                attackSpeed: WeaponClaws.ATTACK_SPEED,
-                staminaCost: WeaponClaws.STAMINA_COST_WEAK_ATTACK,
-                damage: WeaponClaws.DAMAGE_WEAK_ATTACK,
-                maxStrongDamage: WeaponClaws.DAMAGE_STRONG_ATTACK_MAX,
-                strongAttackRange: WeaponClaws.RANGE_STRONG_ATTACK,
+                attackRange: weaponData.attackRange,
+                attackSpeed: weaponData.attackSpeed,
+                staminaCost: weaponData.staminaCostWeakAttack,
+                damage: weaponData.damageWeakAttack,
+                maxStrongDamage: weaponData.damageStrongAttackMax,
+                strongAttackRange: weaponData.rangeStrongAttack,
             };
         }
-        // Default to sword
+        // Return a default object if data not found
         return {
-            attackRange: WeaponSword.ATTACK_RANGE,
-            attackSpeed: WeaponSword.ATTACK_SPEED,
-            staminaCost: WeaponSword.STAMINA_COST_WEAK_ATTACK,
-            damage: WeaponSword.DAMAGE_WEAK_ATTACK,
-            maxStrongDamage: WeaponSword.DAMAGE_STRONG_ATTACK_MAX,
-            strongAttackRange: WeaponSword.RANGE_STRONG_ATTACK,
+            attackRange: 1,
+            attackSpeed: 500,
+            staminaCost: 10,
+            damage: 5,
+            maxStrongDamage: 20,
+            strongAttackRange: 1.5,
         };
     }
 
     setupEventListeners() {
         document.addEventListener('keydown', (e) => this.keys[e.code] = true);
         document.addEventListener('keyup', (e) => this.keys[e.code] = false);
+
         document.addEventListener('mousemove', (e) => {
+            // If pointer is locked, update mouse movement
             if (document.pointerLockElement) {
                 this.mouse.x = e.movementX || 0;
                 this.mouse.y = e.movementY || 0;
             }
         });
-        document.body.addEventListener('click', () => {
-            document.body.requestPointerLock();
+
+        this.canvas.addEventListener('click', () => {
+            if (typeof window.playwright === 'undefined') {
+                this.canvas.requestPointerLock();
+            }
         });
 
         document.addEventListener('mousedown', (e) => {
@@ -64,7 +70,7 @@ export class InputController {
                 this.game.enemies.forEach(enemy => {
                     const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
                     if (distance < params.attackRange) {
-                        enemy.hp -= params.damage;
+                        enemy.takeDamage(params.damage);
                     }
                 });
 
@@ -95,10 +101,10 @@ export class InputController {
                         const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
                         let finalDamage = damage;
                         if (this.player.isAttackBuffed) {
-                            finalDamage *= PlayerConst.ATTACK_BUFF_MULTIPLIER;
+                            finalDamage *= this.player.attackBuffMultiplier;
                         }
                         if (distance < params.strongAttackRange) {
-                            enemy.hp -= finalDamage;
+                            enemy.takeDamage(finalDamage);
                         }
                     });
                 } else {
@@ -107,7 +113,7 @@ export class InputController {
         });
     }
 
-    update() {
+    update(deltaTime) {
         if (this.player.isDead) return;
 
         let speed = 0.1;
@@ -116,7 +122,8 @@ export class InputController {
         // Dash
         this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
         if (this.player.isDashing) {
-            speed *= PlayerConst.DASH_SPEED_MULTIPLIER;
+            speed *= this.game.data.player.dashSpeedMultiplier;
+            this.player.stamina -= this.game.data.player.staminaCostDash * deltaTime; // Use data-driven stamina cost
         }
 
         // Player movement
@@ -137,6 +144,9 @@ export class InputController {
 
         // Guard
         this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;
+        if (this.player.isGuarding) {
+            this.player.stamina -= (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
+        }
 
         // Lock-on
         if (this.keys['Tab']) {
@@ -176,29 +186,31 @@ export class InputController {
 
         // Use Skill (Projectile)
         if (this.keys['Digit3']) {
-            if (!this.player.isUsingSkill && this.player.fp >= Skill.FP_COST) {
+            const skillData = this.game.data.skills.shockwave;
+            if (!this.player.isUsingSkill && this.player.fp >= skillData.fpCost) {
                 this.player.isUsingSkill = true;
-                this.player.fp -= Skill.FP_COST;
+                this.player.fp -= skillData.fpCost;
                 this.player.showSkillEffect();
                 console.log('Used Skill: Shockwave!');
 
                 const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
-                const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction);
+                const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction, this.game);
                 this.game.projectiles.push(projectile);
                 this.game.sceneManager.add(projectile.mesh);
 
                 setTimeout(() => {
                     this.player.isUsingSkill = false;
-                }, Skill.DURATION);
+                }, skillData.duration);
             }
             this.keys['Digit3'] = false;
         }
 
         // Use Skill (Buff)
         if (this.keys['Digit4']) {
-            if (!this.player.isUsingSkill && this.player.fp >= Skill.FP_COST_BUFF) {
+            const buffData = this.game.data.skills.buff;
+            if (!this.player.isUsingSkill && this.player.fp >= buffData.fpCost) {
                 this.player.isUsingSkill = true;
-                this.player.fp -= Skill.FP_COST_BUFF;
+                this.player.fp -= buffData.fpCost;
                 console.log('Used Skill: Buff!');
 
                 this.player.applyAttackBuff();
@@ -208,7 +220,7 @@ export class InputController {
                     this.player.removeAttackBuff();
                     this.player.removeDefenseBuff();
                     this.player.isUsingSkill = false;
-                }, SkillConst.DURATION_BUFF);
+                }, buffData.duration);
             }
             this.keys['Digit4'] = false;
         }
@@ -217,7 +229,7 @@ export class InputController {
         if (this.keys['KeyE']) {
             this.game.npcs.forEach(npc => {
                 const distance = this.player.mesh.position.distanceTo(npc.mesh.position);
-                if (distance < NpcConst.INTERACTION_RANGE) {
+                if (distance < this.game.data.enemies.npc.interactionRange) {
                     npc.interact();
                 }
             });
@@ -231,20 +243,19 @@ export class InputController {
         }
 
         // Jump
-        if (this.keys['Space'] && this.player.onGround && this.player.stamina >= PlayerConst.STAMINA_COST_JUMP) {
-            this.player.velocity.y = PlayerConst.JUMP_POWER; // ジャンプ力
-            this.player.stamina -= PlayerConst.STAMINA_COST_JUMP;
-            this.player.onGround = false;
+        if (this.keys['Space'] && this.player.onGround && this.player.stamina >= this.game.data.player.staminaCostJump) {
+            this.player.physics.velocity.y = this.game.data.player.jumpPower; // ジャンプ力
+            this.player.stamina -= this.game.data.player.staminaCostJump;
         }
 
         // Rolling
-        if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= PlayerConst.STAMINA_COST_ROLL) {
+        if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= this.game.data.player.staminaCostRoll) {
             this.player.isRolling = true;
-            this.player.stamina -= PlayerConst.STAMINA_COST_ROLL;
+            this.player.stamina -= this.game.data.player.staminaCostRoll;
             // TODO: Add rolling animation and movement. The player should move forward quickly for a short duration.
             setTimeout(() => {
                 this.player.isRolling = false;
-            }, PlayerConst.ROLL_DURATION); // 0.5 seconds for rolling
+            }, this.game.data.player.rollDuration); // 0.5 seconds for rolling
         }
 
         // Player rotation based on mouse

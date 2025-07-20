@@ -1,10 +1,14 @@
 import * as THREE from 'three';
-import { Item as ItemConst } from '../utils/constants.js';
 
 export class Item {
-    constructor(type, position) {
+    constructor(type, position, game) {
         this.type = type;
-        const geometry = new THREE.SphereGeometry(ItemConst.SPHERE_RADIUS, ItemConst.GEOMETRY_SEGMENTS, ItemConst.GEOMETRY_SEGMENTS);
+        let itemData = game.data.items.generic;
+        if (!itemData) {
+            console.warn('Item data for generic not found. Using default values.');
+            itemData = { pickupRange: 0.5, sphereRadius: 0.2, geometrySegments: 8 };
+        }
+        const geometry = new THREE.SphereGeometry(itemData.sphereRadius, itemData.geometrySegments, itemData.geometrySegments);
         const material = new THREE.MeshStandardMaterial({ color: this.getColorForType(type) });
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.copy(position);

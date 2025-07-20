@@ -70,7 +70,7 @@ web_modules/
 .env.*
 !.env.example
 
-# parcel-bundler cache (https://parceljs.org/)
+# parcel-bundler cache (https://parceljs.dev/)
 .cache
 .parcel-cache
 
@@ -143,4 +143,8 @@ vite.config.ts.timestamp-*
 
 # Test results
 test-results/
+
+# Temporary files
+issue_body.txt
+commit_message.txt
 pr_body.txt
