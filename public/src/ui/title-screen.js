@@ -11,13 +11,11 @@ export class TitleScreen {
         subtitle.textContent = 'Click anywhere to start';
         this.container.appendChild(subtitle);
 
-        this.clickHandler = () => {
+        this.container.addEventListener('click', () => {
             if (this.container) { // Prevent multiple clicks
                 onStart();
             }
-        };
-
-        this.container.addEventListener('click', this.clickHandler, { once: true }); // Fire only once
+        }, { once: true }); // Fire only once
 
         document.body.appendChild(this.container);
     }

@@ -111,7 +111,7 @@ export class InputController {
         });
     }
 
-    update() {
+    update(deltaTime) {
         if (this.player.isDead) return;
 
         let speed = 0.1;
@@ -121,7 +121,7 @@ export class InputController {
         this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
         if (this.player.isDashing) {
             speed *= this.game.data.player.DASH_SPEED_MULTIPLIER;
-            this.player.stamina -= 1; // Consume stamina while dashing
+            this.player.stamina -= this.game.data.player.STAMINA_COST_DASH * deltaTime; // Use data-driven stamina cost
         }
 
         // Player movement

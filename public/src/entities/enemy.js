@@ -41,14 +41,10 @@ export class Enemy extends Character {
     }
 
     attack() {
+        const damageToPlayer = this._calculateDamage();
         const toPlayer = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
         const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
         const angle = toPlayer.angleTo(playerForward);
-
-        let damageToPlayer = this.game.data.enemies.grunt.DAMAGE;
-        if (this.player.isDefenseBuffed) {
-            damageToPlayer *= this.game.data.player.DEFENSE_BUFF_MULTIPLIER;
-        }
 
         const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
 
@@ -57,5 +53,13 @@ export class Enemy extends Character {
         } else {
             this.player.takeDamage(damageToPlayer);
         }
+    }
+
+    _calculateDamage() {
+        let damage = this.game.data.enemies.grunt.DAMAGE;
+        if (this.player.isDefenseBuffed) {
+            damage *= this.game.data.player.DEFENSE_BUFF_MULTIPLIER;
+        }
+        return damage;
     }
 }

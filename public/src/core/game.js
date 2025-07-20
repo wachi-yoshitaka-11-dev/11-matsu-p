@@ -64,7 +64,9 @@ export class Game {
         // 5. 敵やアイテムなどを生成してシーンとゲーム管理リストに追加
         const enemyX = 5;
         const enemyZ = 0;
-        const enemyY = this.field.getHeightAt(enemyX, enemyZ) + 0.3; // Get ground height and add half enemy height
+        const tempEnemy = new Enemy(this, this.player, new THREE.Vector3(0,0,0)); // Create a temporary enemy to get its height
+        const enemyY = this.field.getHeightAt(enemyX, enemyZ) + tempEnemy.mesh.geometry.parameters.height / 2;
+        tempEnemy.dispose(); // Dispose the temporary enemy
         const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, enemyY, enemyZ));
         this.enemies.push(enemy);
         this.sceneManager.add(enemy.mesh);
@@ -154,7 +156,7 @@ export class Game {
         // Always update game logic, except when paused
         if (this.gameState !== GameState.PAUSED) {
             this.player?.update(deltaTime);
-            this.inputController?.update();
+            this.inputController?.update(deltaTime);
 
             if (this.gameState === GameState.PLAYING) {
                 this.enemies.forEach((enemy, index) => {

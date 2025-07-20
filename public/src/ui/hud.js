@@ -148,9 +148,13 @@ export class Hud {
     }
 
     showDamageEffect() {
+        if (this.damageEffectTimeout) {
+            clearTimeout(this.damageEffectTimeout);
+        }
         this.damageOverlay.classList.add('active');
-        setTimeout(() => {
+        this.damageEffectTimeout = setTimeout(() => {
             this.damageOverlay.classList.remove('active');
+            this.damageEffectTimeout = null;
         }, 200); // Effect duration
     }
 

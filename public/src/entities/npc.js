@@ -39,7 +39,8 @@ export class Npc {
 
     update(playerPosition) {
         const distance = this.mesh.position.distanceTo(playerPosition);
-        this.interactionPrompt.visible = distance < this.game.data.enemies.npc.INTERACTION_RANGE;
+        const interactionRange = this.game.data.enemies?.npc?.INTERACTION_RANGE || 2; // Defensive check
+        this.interactionPrompt.visible = distance < interactionRange;
     }
 
     interact() {

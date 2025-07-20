@@ -3,7 +3,11 @@ import * as THREE from 'three';
 export class Item {
     constructor(type, position, game) {
         this.type = type;
-        const itemData = game.data.items.generic;
+        const itemData = game.data.items?.generic; // Add defensive check
+        if (!itemData) {
+            console.warn('Item data for generic not found. Using default values.');
+            itemData = { PICKUP_RANGE: 0.5, SPHERE_RADIUS: 0.2, GEOMETRY_SEGMENTS: 8 };
+        }
         const geometry = new THREE.SphereGeometry(itemData.SPHERE_RADIUS, itemData.GEOMETRY_SEGMENTS, itemData.GEOMETRY_SEGMENTS);
         const material = new THREE.MeshStandardMaterial({ color: this.getColorForType(type) });
         this.mesh = new THREE.Mesh(geometry, material);

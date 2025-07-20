@@ -5,28 +5,19 @@ export class Player extends Character {
     constructor(game) {
         const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        super(game, geometry, material, { hp: 100 });
+        super(game, geometry, material, { hp: game.data.player.MAX_HP });
 
         // Player-specific stats
-        this.maxFp = 50;
+        this.maxFp = game.data.player.MAX_FP;
         this.fp = this.maxFp;
-        this.maxStamina = 100;
+        this.maxStamina = game.data.player.MAX_STAMINA;
         this.stamina = this.maxStamina;
 
-        // Action states
-        this.isDashing = false;
-        this.isRolling = false;
-        this.isInvincible = false;
-        this.isAttacking = false;
-        this.isGuarding = false;
-        this.isLockedOn = false;
-        this.lockedOnTarget = null;
-
         // Leveling and inventory
-        this.level = 1;
-        this.experience = 0;
-        this.experienceToNextLevel = 100;
-        this.statusPoints = 0;
+        this.level = game.data.player.INITIAL_LEVEL;
+        this.experience = game.data.player.INITIAL_EXPERIENCE;
+        this.experienceToNextLevel = game.data.player.INITIAL_EXP_TO_NEXT_LEVEL;
+        this.statusPoints = game.data.player.INITIAL_STATUS_POINTS;
         this.inventory = [];
 
         // Weapons and skills
@@ -42,8 +33,9 @@ export class Player extends Character {
     }
 
     spawn() {
-        const x = 0;
-        const z = 0;
+        const spawnPoint = this.game.data.player.INITIAL_SPAWN_POINT || { x: 0, z: 0 };
+        const x = spawnPoint.x;
+        const z = spawnPoint.z;
         const y = this.game.field.getHeightAt(x, z) + this.mesh.geometry.parameters.height / 2;
         this.mesh.position.set(x, y, z);
         if (this.physics) {
@@ -114,11 +106,20 @@ export class Player extends Character {
     useItem(index) {
         if (this.inventory.length > index) {
             const itemType = this.inventory[index];
+            const itemData = this.game.data.items[itemType]; // Get item data from game.data
+
+            if (!itemData) {
+                console.warn(`Unknown item type: ${itemType}`);
+                return; // Do not consume unknown items
+            }
+
             if (itemType === 'potion') {
-                this.hp += this.game.data.items.potion.HEAL_AMOUNT;
+                this.hp += itemData.HEAL_AMOUNT;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
-            this.inventory.splice(index, 1);
+            // Add more item types here as needed
+
+            this.inventory.splice(index, 1); // Consume item
         }
     }
 

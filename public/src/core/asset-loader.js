@@ -11,27 +11,25 @@ export class AssetLoader {
     }
 
     async loadGLTF(name, path) {
-        return new Promise((resolve, reject) => {
-            this.gltfLoader.load(path, (gltf) => {
-                this.assets[name] = gltf.scene;
-                resolve(gltf.scene);
-            }, undefined, (error) => {
-                console.error(`Error loading GLTF ${path}:`, error);
-                reject(error);
-            });
-        });
+        try {
+            const gltf = await this.gltfLoader.loadAsync(path);
+            this.assets[name] = gltf.scene;
+            return gltf.scene;
+        } catch (error) {
+            console.error(`Error loading GLTF ${path}:`, error);
+            throw error;
+        }
     }
 
     async loadAudio(name, path) {
-        return new Promise((resolve, reject) => {
-            this.audioLoader.load(path, (buffer) => {
-                this.assets[name] = buffer;
-                resolve(buffer);
-            }, undefined, (error) => {
-                console.error(`Error loading audio ${path}:`, error);
-                reject(error);
-            });
-        });
+        try {
+            const buffer = await this.audioLoader.loadAsync(path);
+            this.assets[name] = buffer;
+            return buffer;
+        } catch (error) {
+            console.error(`Error loading audio ${path}:`, error);
+            throw error;
+        }
     }
 
     getAsset(name) {
@@ -39,22 +37,17 @@ export class AssetLoader {
     }
 
     async loadJSON(name, path) {
-        return new Promise((resolve, reject) => {
-            fetch(path)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    this.assets[name] = data;
-                    resolve(data);
-                })
-                .catch(error => {
-                    console.error(`Error loading JSON ${path}:`, error);
-                    reject(error);
-                });
-        });
+        try {
+            const response = await fetch(path);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            this.assets[name] = data;
+            return data;
+        } catch (error) {
+            console.error(`Error loading JSON ${path}:`, error);
+            throw error;
+        }
     }
 }

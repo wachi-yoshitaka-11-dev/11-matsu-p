@@ -5,12 +5,12 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
   test.beforeEach(async ({ page }) => {
     // Intercept network requests to serve local files
     await page.route('https://unpkg.com/three@0.160.0/build/three.module.js', route => {
-      route.fulfill({ path: require('path').resolve(__dirname, '../node_modules/three/build/three.module.js') });
+      route.fulfill({ path: require('path').join(__dirname, '../node_modules/three/build/three.module.js') });
     });
     await page.route('https://unpkg.com/three@0.160.0/examples/jsm/**', route => {
       const url = route.request().url();
       const jsmPath = url.substring(url.indexOf('/jsm/') + 5);
-      const localPath = require('path').resolve(__dirname, '../node_modules/three/examples/jsm/', jsmPath);
+      const localPath = require('path').join(__dirname, '../node_modules/three/examples/jsm/', jsmPath);
       route.fulfill({ path: localPath });
     });
 
@@ -58,14 +58,18 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
 
     // Directly execute attack logic via evaluate
     await page.evaluate(() => {
-      const { player, enemies, inputController } = window.game;
-      const params = inputController._getWeaponParams();
+      const { player, enemies, data } = window.game;
+      const weaponData = data.weapons[player.weapons[player.currentWeaponIndex]];
+      const attackRange = weaponData.ATTACK_RANGE;
+      const damage = weaponData.DAMAGE_WEAK_ATTACK;
+      const staminaCost = weaponData.STAMINA_COST_WEAK_ATTACK;
+
       enemies.forEach(enemy => {
-        if (player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
-          enemy.takeDamage(params.damage);
+        if (player.mesh.position.distanceTo(enemy.mesh.position) < attackRange) {
+          enemy.takeDamage(damage);
         }
       });
-      player.stamina -= params.staminaCost;
+      player.stamina -= staminaCost;
     });
 
     await page.waitForFunction(hp => window.game.enemies[0].hp < hp, initialEnemyHp);
