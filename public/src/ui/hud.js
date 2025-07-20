@@ -64,7 +64,7 @@ export class Hud {
         points.id = 'status-points';
         menu.appendChild(points);
 
-        const statusPointsPerLevel = this.game.data.player.STATUS_POINTS_PER_LEVEL;
+        const statusPointsPerLevel = this.game.data.player.statusPointsPerLevel;
 
         const hpButton = this.createStatButton('hp', `HP +${statusPointsPerLevel}`, () => this.player.maxHp += statusPointsPerLevel);
         const fpButton = this.createStatButton('fp', `FP +${statusPointsPerLevel}`, () => this.player.maxFp += statusPointsPerLevel);

@@ -39,8 +39,8 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
     await page.evaluate(() => {
       const { player, data } = window.game;
       if (player.onGround) {
-        player.physics.velocity.y = data.player.JUMP_POWER; // ジャンプ力
-        player.stamina -= data.player.STAMINA_COST_JUMP;
+        player.physics.velocity.y = data.player.jumpPower; // ジャンプ力
+        player.stamina -= data.player.staminaCostJump;
       }
     });
 
@@ -60,9 +60,9 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
     await page.evaluate(() => {
       const { player, enemies, data } = window.game;
       const weaponData = data.weapons[player.weapons[player.currentWeaponIndex]];
-      const attackRange = weaponData.ATTACK_RANGE;
-      const damage = weaponData.DAMAGE_WEAK_ATTACK;
-      const staminaCost = weaponData.STAMINA_COST_WEAK_ATTACK;
+      const attackRange = weaponData.attackRange;
+      const damage = weaponData.damageWeakAttack;
+      const staminaCost = weaponData.staminaCostWeakAttack;
 
       enemies.forEach(enemy => {
         if (player.mesh.position.distanceTo(enemy.mesh.position) < attackRange) {
@@ -93,7 +93,7 @@ test.describe('Mofu Mofu Adventure - Logic Validation', () => {
     await page.waitForFunction(hp => window.game.player.hp > hp, initialPlayerHp);
     const newPlayerHp = await page.evaluate(() => window.game.player.hp);
     const newInventoryLength = await page.evaluate(() => window.game.player.inventory.length);
-    const potionHealAmount = await page.evaluate(() => window.game.data.items.potion.HEAL_AMOUNT);
+    const potionHealAmount = await page.evaluate(() => window.game.data.items.potion.healAmount);
 
     expect(newPlayerHp).toBeGreaterThan(initialPlayerHp);
     expect(newPlayerHp - initialPlayerHp).toBe(potionHealAmount);

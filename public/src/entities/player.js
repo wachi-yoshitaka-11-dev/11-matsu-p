@@ -5,19 +5,19 @@ export class Player extends Character {
     constructor(game) {
         const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        super(game, geometry, material, { hp: game.data.player.MAX_HP });
+        super(game, geometry, material, { hp: game.data.player.maxHp });
 
         // Player-specific stats
-        this.maxFp = game.data.player.MAX_FP;
+        this.maxFp = game.data.player.maxFp;
         this.fp = this.maxFp;
-        this.maxStamina = game.data.player.MAX_STAMINA;
+        this.maxStamina = game.data.player.maxStamina;
         this.stamina = this.maxStamina;
 
         // Leveling and inventory
-        this.level = game.data.player.INITIAL_LEVEL;
-        this.experience = game.data.player.INITIAL_EXPERIENCE;
-        this.experienceToNextLevel = game.data.player.INITIAL_EXP_TO_NEXT_LEVEL;
-        this.statusPoints = game.data.player.INITIAL_STATUS_POINTS;
+        this.level = game.data.player.initialLevel;
+        this.experience = game.data.player.initialExperience;
+        this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
+        this.statusPoints = game.data.player.initialStatusPoints;
         this.inventory = [];
 
         // Weapons and skills
@@ -39,7 +39,7 @@ export class Player extends Character {
     }
 
     spawn() {
-        const spawnPoint = this.game.data.player.INITIAL_SPAWN_POINT || { x: 0, z: 0 };
+        const spawnPoint = this.game.data.player.initialSpawnPoint || { x: 0, z: 0 };
         const x = spawnPoint.x;
         const z = spawnPoint.z;
         const y = this.game.field.getHeightAt(x, z) + this.mesh.geometry.parameters.height / 2;
@@ -72,7 +72,7 @@ export class Player extends Character {
 
         // Stamina regeneration
         if (!this.isDashing && !this.isGuarding && !this.isAttacking && !this.isRolling) {
-            this.stamina += this.game.data.player.STAMINA_REGEN_RATE * deltaTime;
+            this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
             if (this.stamina > this.maxStamina) {
                 this.stamina = this.maxStamina;
             }
@@ -82,7 +82,7 @@ export class Player extends Character {
     onDeath() {
         this.game.playSound('death');
         this.game.hud.showDeathScreen();
-        setTimeout(() => this.respawn(), this.game.data.player.RESPAWN_DELAY);
+        setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
     }
 
     takeDamage(amount) {
@@ -109,8 +109,8 @@ export class Player extends Character {
     levelUp() {
         this.level++;
         this.experience -= this.experienceToNextLevel;
-        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.LEVEL_UP_EXP_MULTIPLIER);
-        this.statusPoints += this.game.data.player.STATUS_POINTS_PER_LEVEL;
+        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier);
+        this.statusPoints += this.game.data.player.statusPointsPerLevel;
     }
 
     useItem(index) {
@@ -124,7 +124,7 @@ export class Player extends Character {
             }
 
             if (itemType === 'potion') {
-                this.hp += itemData.HEAL_AMOUNT;
+                this.hp += itemData.healAmount;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
             // Add more item types here as needed

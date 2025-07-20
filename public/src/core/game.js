@@ -180,7 +180,7 @@ export class Game {
 
                 this.items.forEach((item, index) => {
                     const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
-                    if (distance < this.data.items.generic.PICKUP_RANGE) {
+                    if (distance < this.data.items.generic.pickupRange) {
                         this.player?.inventory.push(item.type);
                         this.sceneManager.remove(item.mesh);
                         this.itemsToRemove.push(item);
@@ -199,7 +199,7 @@ export class Game {
                     if (!shouldRemove) {
                         for (const enemy of this.enemies) {
                             const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                            const hitRange = this.data.weapons?.projectile_hit_range || 1.0;
+                            const hitRange = this.data.weapons.projectileHitRange;
                             if (distance < hitRange) {
                                 enemy.takeDamage(projectile.damage);
                                 shouldRemove = true;

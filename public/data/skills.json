@@ -1,15 +1,15 @@
 {
     "shockwave": {
-        "FP_COST": 20,
-        "DURATION": 1000,
-        "SPEED": 10,
-        "LIFESPAN": 2,
-        "DAMAGE": 30
+        "fpCost": 20,
+        "duration": 1000,
+        "speed": 10,
+        "lifespan": 2,
+        "damage": 30
     },
     "buff": {
-        "FP_COST": 30,
-        "DURATION": 10000,
-        "ATTACK_BUFF_MULTIPLIER": 1.5,
-        "DEFENSE_BUFF_MULTIPLIER": 0.7
+        "fpCost": 30,
+        "duration": 10000,
+        "attackBuffMultiplier": 1.5,
+        "defenseBuffMultiplier": 0.7
     }
 }

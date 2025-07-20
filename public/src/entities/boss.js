@@ -5,16 +5,16 @@ export class Boss extends Character {
     constructor(game, player) {
         const geometry = new THREE.BoxGeometry(1, 1, 1); // Larger than enemy
         const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
-        super(game, geometry, material, { hp: 200, speed: game.data.enemies.boss.SPEED });
+        super(game, geometry, material, { hp: 200, speed: game.data.enemies.boss.speed });
 
         this.player = player;
 
         // Set initial position dynamically based on field height
-        const initialPosition = this.game.data.enemies.boss.INITIAL_POSITION;
+        const initialPosition = this.game.data.enemies.boss.initialPosition;
         const y = this.game.field.getHeightAt(initialPosition.x, initialPosition.z) + this.mesh.geometry.parameters.height / 2;
         this.mesh.position.set(initialPosition.x, y, initialPosition.z);
 
-        this.attackCooldown = this.game.data.enemies.boss.ATTACK_COOLDOWN;
+        this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
         this.experience = 100;
     }
 
@@ -27,7 +27,7 @@ export class Boss extends Character {
         const bossData = this.game.data.enemies.boss;
 
         // Simple AI: Chase and attack
-        if (distance > bossData.NORMAL_ATTACK_RANGE) {
+        if (distance > bossData.normalAttackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.add(direction.multiplyScalar(this.speed * deltaTime));
         }
@@ -35,9 +35,9 @@ export class Boss extends Character {
         this.mesh.lookAt(this.player.mesh.position);
 
         this.attackCooldown -= deltaTime;
-        if (distance <= bossData.NORMAL_ATTACK_RANGE && this.attackCooldown <= 0) {
-            this.player.takeDamage(bossData.NORMAL_ATTACK_DAMAGE);
-            this.attackCooldown = bossData.ATTACK_COOLDOWN; // Reset cooldown
+        if (distance <= bossData.normalAttackRange && this.attackCooldown <= 0) {
+            this.player.takeDamage(bossData.normalAttackDamage);
+            this.attackCooldown = bossData.attackCooldown; // Reset cooldown
         }
     }
 

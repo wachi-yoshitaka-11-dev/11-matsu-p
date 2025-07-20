@@ -5,22 +5,12 @@ export class Enemy extends Character {
     constructor(game, player, position) {
         const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
         const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-
-        const gruntData = game.data?.enemies?.grunt;
-        if (!gruntData) {
-            throw new Error('Grunt enemy data not found in game.data.enemies.grunt');
-        }
-
-        if (!position || !(position instanceof THREE.Vector3)) {
-            throw new Error('Invalid position parameter');
-        }
-
-        super(game, geometry, material, { hp: 30, speed: gruntData.SPEED });
+        super(game, geometry, material, { hp: 30, speed: game.data.enemies.grunt.speed });
 
         this.player = player;
         this.mesh.position.copy(position);
 
-        this.attackCooldown = gruntData.ATTACK_COOLDOWN;
+        this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
         this.experience = 10;
     }
 
@@ -33,7 +23,7 @@ export class Enemy extends Character {
         const gruntData = this.game.data.enemies.grunt;
 
         // Chase the player
-        if (distance > gruntData.ATTACK_RANGE) {
+        if (distance > gruntData.attackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.x += direction.x * this.speed * deltaTime;
             this.mesh.position.z += direction.z * this.speed * deltaTime;
@@ -44,9 +34,9 @@ export class Enemy extends Character {
 
         // Attack
         this.attackCooldown -= deltaTime;
-        if (distance <= gruntData.ATTACK_RANGE && this.attackCooldown <= 0) {
+        if (distance <= gruntData.attackRange && this.attackCooldown <= 0) {
             this.attack();
-            this.attackCooldown = gruntData.ATTACK_COOLDOWN; // Reset cooldown
+            this.attackCooldown = gruntData.attackCooldown; // Reset cooldown
         }
     }
 
@@ -59,16 +49,16 @@ export class Enemy extends Character {
         const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
 
         if (isGuarded) {
-            this.player.takeStaminaDamage(this.game.data.player.STAMINA_COST_GUARD);
+            this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
         } else {
             this.player.takeDamage(damageToPlayer);
         }
     }
 
     _calculateDamage() {
-        let damage = this.game.data?.enemies?.grunt?.DAMAGE || 10; // fallback value
+        let damage = this.game.data.enemies.grunt.damage;
         if (this.player.isDefenseBuffed) {
-            damage *= this.game.data?.player?.DEFENSE_BUFF_MULTIPLIER || 0.5; // fallback value
+            damage *= this.game.data.player.attackBuffMultiplier;
         }
         return damage;
     }

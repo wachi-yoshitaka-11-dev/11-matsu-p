@@ -1,0 +1,7 @@
+feat: Migrate to data-driven architecture and camelCase constants
+
+- Unified all JSON key names in `public/data` to camelCase.
+- Updated all references to JSON data in relevant JavaScript files.
+- Consolidated constants in `public/src/utils/constants.js` into a `GameConstants` object and converted to camelCase.
+- Corrected constant references in `public/src/core/components/physics-component.js` and `public/src/world/field.js`.
+- Verified that changes do not introduce regressions through Playwright tests.

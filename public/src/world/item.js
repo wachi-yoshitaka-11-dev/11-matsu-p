@@ -3,12 +3,12 @@ import * as THREE from 'three';
 export class Item {
     constructor(type, position, game) {
         this.type = type;
-        let itemData = game.data.items?.generic; // Add defensive check
+        let itemData = game.data.items.generic;
         if (!itemData) {
             console.warn('Item data for generic not found. Using default values.');
-            itemData = { PICKUP_RANGE: 0.5, SPHERE_RADIUS: 0.2, GEOMETRY_SEGMENTS: 8 };
+            itemData = { pickupRange: 0.5, sphereRadius: 0.2, geometrySegments: 8 };
         }
-        const geometry = new THREE.SphereGeometry(itemData.SPHERE_RADIUS, itemData.GEOMETRY_SEGMENTS, itemData.GEOMETRY_SEGMENTS);
+        const geometry = new THREE.SphereGeometry(itemData.sphereRadius, itemData.geometrySegments, itemData.geometrySegments);
         const material = new THREE.MeshStandardMaterial({ color: this.getColorForType(type) });
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.copy(position);

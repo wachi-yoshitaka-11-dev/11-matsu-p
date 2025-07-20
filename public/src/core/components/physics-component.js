@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GRAVITY } from '../../utils/constants.js';
+import { GameConstants } from '../../utils/constants.js';
 
 export class PhysicsComponent {
     constructor(object, field) {
@@ -19,7 +19,7 @@ export class PhysicsComponent {
         const previousY = this.object.position.y;
 
         // Apply gravity
-        this.velocity.y -= GRAVITY * deltaTime;
+        this.velocity.y -= GameConstants.gravity * deltaTime;
         this.object.position.y += this.velocity.y * deltaTime;
 
         // Ground collision detection
