@@ -3,15 +3,21 @@ import { Character } from './character.js';
 
 export class Boss extends Character {
     constructor(game, player) {
-        const geometry = new THREE.BoxGeometry(1, 1, 1); // Larger than enemy
-        const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
-        super(game, geometry, material, { hp: 200, speed: game.data.enemies.boss.speed });
+        const model = game.assetLoader.getAsset('boss');
+        if (model) {
+            super(game, model.clone(), null, { hp: 200, speed: game.data.enemies.boss.speed });
+        } else {
+            const geometry = new THREE.BoxGeometry(2, 2, 2);
+            const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
+            super(game, geometry, material, { hp: 200, speed: game.data.enemies.boss.speed });
+        }
 
         this.player = player;
 
-        // Set initial position dynamically based on field height
         const initialPosition = this.game.data.enemies.boss.initialPosition;
-        const y = this.game.field.getHeightAt(initialPosition.x, initialPosition.z) + this.mesh.geometry.parameters.height / 2;
+        const box = new THREE.Box3().setFromObject(this.mesh);
+        const height = box.getSize(new THREE.Vector3()).y;
+        const y = this.game.field.getHeightAt(initialPosition.x, initialPosition.z) + height / 2;
         this.mesh.position.set(initialPosition.x, y, initialPosition.z);
 
         this.attackCooldown = this.game.data.enemies.boss.attackCooldown;

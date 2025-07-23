@@ -8,9 +8,14 @@ export class InputController {
         this.game = game;
         this.canvas = canvas; // Keep a reference to the canvas
         this.keys = {};
-        this.mouse = { x: 0, y: 0 };
+        this.mouse = { x: 0, y: 0, wheelDelta: 0 };
         this.isCharging = false;
         this.chargeStartTime = 0;
+
+        // Camera rotation variables
+        this.cameraYaw = 0; // Y-axis rotation (left/right)
+        this.cameraPitch = 0; // X-axis rotation (up/down)
+        this.cameraSensitivity = 0.002; // Adjust as needed
 
         this.setupEventListeners();
     }
@@ -28,15 +33,7 @@ export class InputController {
                 strongAttackRange: weaponData.rangeStrongAttack,
             };
         }
-        // Return a default object if data not found
-        return {
-            attackRange: 1,
-            attackSpeed: 500,
-            staminaCost: 10,
-            damage: 5,
-            maxStrongDamage: 20,
-            strongAttackRange: 1.5,
-        };
+        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, strongAttackRange: 1.5 };
     }
 
     setupEventListeners() {
@@ -44,12 +41,18 @@ export class InputController {
         document.addEventListener('keyup', (e) => this.keys[e.code] = false);
 
         document.addEventListener('mousemove', (e) => {
-            // If pointer is locked, update mouse movement
             if (document.pointerLockElement) {
-                this.mouse.x = e.movementX || 0;
-                this.mouse.y = e.movementY || 0;
+                this.cameraYaw -= e.movementX * this.cameraSensitivity;
+                this.cameraPitch -= e.movementY * this.cameraSensitivity;
+
+                // Clamp vertical rotation to prevent camera flipping
+                this.cameraPitch = Math.max(-Math.PI / 4, Math.min(Math.PI / 8, this.cameraPitch));
             }
         });
+
+        document.addEventListener('wheel', (e) => {
+            this.mouse.wheelDelta = e.deltaY; // Store wheel delta
+        }, { passive: false });
 
         this.canvas.addEventListener('click', () => {
             if (typeof window.playwright === 'undefined') {
@@ -59,25 +62,18 @@ export class InputController {
 
         document.addEventListener('mousedown', (e) => {
             const params = this._getWeaponParams();
-
-            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) { // Left click
+            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) {
                 this.player.isAttacking = true;
                 this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
-                this.game.playSound('attack');
-
-                // Attack Hit Detection
+                this.game.playSound('weak-attack');
                 this.game.enemies.forEach(enemy => {
-                    const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                    if (distance < params.attackRange) {
+                    if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
                         enemy.takeDamage(params.damage);
                     }
                 });
-
-                setTimeout(() => {
-                    this.player.isAttacking = false;
-                }, params.attackSpeed);
-            } else if (e.button === 2 && !this.player.isAttacking) { // Right click
+                setTimeout(() => { this.player.isAttacking = false; }, params.attackSpeed);
+            } else if (e.button === 2 && !this.player.isAttacking) {
                 this.isCharging = true;
                 this.chargeStartTime = Date.now();
                 this.player.startChargingEffect();
@@ -87,135 +83,164 @@ export class InputController {
         document.addEventListener('mouseup', (e) => {
             if (e.button === 2 && this.isCharging) {
                 const params = this._getWeaponParams();
-
                 this.isCharging = false;
                 this.player.stopChargingEffect();
                 const chargeTime = Date.now() - this.chargeStartTime;
                 const damage = Math.min(10 + chargeTime / 100, params.maxStrongDamage);
                 const staminaCost = Math.floor(damage / 2);
-
                 if (this.player.stamina >= staminaCost) {
                     this.player.stamina -= staminaCost;
-                    // Strong Attack Hit Detection
+                    this.game.playSound('strong-attack');
                     this.game.enemies.forEach(enemy => {
-                        const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                        let finalDamage = damage;
-                        if (this.player.isAttackBuffed) {
-                            finalDamage *= this.player.attackBuffMultiplier;
-                        }
-                        if (distance < params.strongAttackRange) {
+                        let finalDamage = this.player.isAttackBuffed ? damage * this.player.attackBuffMultiplier : damage;
+                        if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.strongAttackRange) {
                             enemy.takeDamage(finalDamage);
                         }
                     });
-                } else {
                 }
             }
         });
     }
 
     update(deltaTime) {
-        if (this.player.isDead) return;
+        if (this.game.gameState !== 'playing') return;
 
-        let speed = 0.1;
-        const rotationSpeed = 0.05;
-
-        // Dash
-        this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
-        if (this.player.isDashing) {
-            speed *= this.game.data.player.dashSpeedMultiplier;
-            this.player.stamina -= this.game.data.player.staminaCostDash * deltaTime; // Use data-driven stamina cost
+        if (this.player.isDead) {
+            this.player.physics.velocity.x = 0;
+            this.player.physics.velocity.z = 0;
+            return;
         }
 
-        // Player movement
-        if (!this.player.isRolling && !this.player.isGuarding) {
-            if (this.keys['KeyW']) {
-                this.player.mesh.translateZ(-speed);
+        const isTryingToRoll = this.keys['ControlLeft'];
+        const canRoll = !this.player.isRolling && this.player.stamina >= this.game.data.player.staminaCostRoll;
+
+        if (isTryingToRoll && canRoll) {
+            this.player.isRolling = true;
+            this.player.stamina -= this.game.data.player.staminaCostRoll;
+            this.game.playSound('rolling');
+
+            const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(this.player.mesh.quaternion);
+            const rollSpeed = this.game.data.player.rollDistance / (this.game.data.player.rollDuration / 1000);
+
+            this.player.physics.velocity.x = rollDirection.x * rollSpeed;
+            this.player.physics.velocity.z = rollDirection.z * rollSpeed;
+
+            setTimeout(() => { this.player.isRolling = false; }, this.game.data.player.rollDuration);
+        }
+
+        if (!this.player.isRolling) {
+            this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
+            if (this.player.isDashing) {
+                this.player.stamina -= this.game.data.player.staminaCostDash * deltaTime;
             }
-            if (this.keys['KeyS']) {
-                this.player.mesh.translateZ(speed);
-            }
-            if (this.keys['KeyA']) {
-                this.player.mesh.translateX(-speed);
-            }
-            if (this.keys['KeyD']) {
-                this.player.mesh.translateX(speed);
+
+            // Player movement based on camera direction
+            const speed = 5.0;
+            const moveDirection = new THREE.Vector3();
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+            right.y = 0;
+            right.normalize();
+
+            if (this.keys['KeyW']) moveDirection.add(forward);
+            if (this.keys['KeyS']) moveDirection.sub(forward);
+            if (this.keys['KeyA']) moveDirection.sub(right);
+            if (this.keys['KeyD']) moveDirection.add(right);
+
+            if (moveDirection.lengthSq() > 0) {
+                moveDirection.normalize();
+                const currentSpeed = this.player.isDashing ? speed * this.game.data.player.dashSpeedMultiplier : speed;
+                this.player.physics.velocity.x = moveDirection.x * currentSpeed;
+                this.player.physics.velocity.z = moveDirection.z * currentSpeed;
+
+                // Rotate player to face movement direction
+                const targetAngle = Math.atan2(moveDirection.x, moveDirection.z);
+                const targetQuaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetAngle);
+                this.player.mesh.quaternion.slerp(targetQuaternion, 0.2);
+            } else {
+                this.player.physics.velocity.x = 0;
+                this.player.physics.velocity.z = 0;
             }
         }
 
-        // Guard
         this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;
         if (this.player.isGuarding) {
             this.player.stamina -= (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
         }
 
-        // Lock-on
+        // Lock-on logic
         if (this.keys['Tab']) {
             if (!this.player.isLockedOn) {
-                let closestEnemy = null;
-                let minDistance = Infinity;
-                this.game.enemies.forEach(enemy => {
-                    const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestEnemy = enemy;
-                    }
-                });
+                let closestEnemy = this.game.enemies.sort((a, b) => a.mesh.position.distanceTo(this.player.mesh.position) - b.mesh.position.distanceTo(this.player.mesh.position))[0];
                 if (closestEnemy) {
                     this.player.isLockedOn = true;
                     this.player.lockedOnTarget = closestEnemy;
+                    this.game.playSound('lock-on');
                 }
             } else {
                 this.player.isLockedOn = false;
                 this.player.lockedOnTarget = null;
             }
-            this.keys['Tab'] = false; // Prevent continuous toggling
+            this.keys['Tab'] = false;
         }
 
-        // Use Item
-        if (this.keys['Digit1']) {
-            this.player.useItem(0);
-            this.keys['Digit1'] = false; // Prevent continuous use
+        // Camera update
+        if (this.player.isLockedOn && this.player.lockedOnTarget) {
+            // If locked on, make camera look at the target
+            const targetPosition = this.player.lockedOnTarget.mesh.position;
+            const playerPosition = this.player.mesh.position;
+
+            const midPoint = new THREE.Vector3().addVectors(playerPosition, targetPosition).multiplyScalar(0.5);
+            const cameraOffset = new THREE.Vector3(0, 2, 5); // Fixed offset for locked-on view
+            cameraOffset.applyQuaternion(this.player.mesh.quaternion); // Apply player's rotation to offset
+            this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
+            this.camera.lookAt(midPoint);
+        } else {
+            // Free camera movement
+            const cameraQuaternion = new THREE.Quaternion();
+            cameraQuaternion.setFromEuler(new THREE.Euler(this.cameraPitch, this.cameraYaw, 0, 'YXZ'));
+            this.camera.quaternion.copy(cameraQuaternion);
+
+            const cameraOffset = new THREE.Vector3(0, 2, 5); // Offset from player
+            cameraOffset.applyQuaternion(this.camera.quaternion); // Apply camera's own rotation
+            this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
         }
 
-        // Switch Weapon
+
+        if (this.keys['Digit1']) { this.player.useItem(0); this.keys['Digit1'] = false; }
         if (this.keys['Digit2']) {
             this.player.currentWeaponIndex = (this.player.currentWeaponIndex + 1) % this.player.weapons.length;
-            console.log(`Switched to ${this.player.weapons[this.player.currentWeaponIndex]}`);
-            this.keys['Digit2'] = false; // Prevent continuous switching
+            this.game.playSound('switch-weapon');
+            this.keys['Digit2'] = false;
         }
 
-        // Use Skill (Projectile)
         if (this.keys['Digit3']) {
-            const skillData = this.game.data.skills.shockwave;
+            const skillData = this.game.data.skills.projectile;
             if (!this.player.isUsingSkill && this.player.fp >= skillData.fpCost) {
                 this.player.isUsingSkill = true;
                 this.player.fp -= skillData.fpCost;
                 this.player.showSkillEffect();
-                console.log('Used Skill: Shockwave!');
-
+                this.game.playSound('use-skill-projectile');
                 const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
                 const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction, this.game);
                 this.game.projectiles.push(projectile);
                 this.game.sceneManager.add(projectile.mesh);
-
-                setTimeout(() => {
-                    this.player.isUsingSkill = false;
-                }, skillData.duration);
+                setTimeout(() => { this.player.isUsingSkill = false; }, skillData.duration);
             }
             this.keys['Digit3'] = false;
         }
 
-        // Use Skill (Buff)
         if (this.keys['Digit4']) {
             const buffData = this.game.data.skills.buff;
             if (!this.player.isUsingSkill && this.player.fp >= buffData.fpCost) {
                 this.player.isUsingSkill = true;
                 this.player.fp -= buffData.fpCost;
-                console.log('Used Skill: Buff!');
-
+                this.game.playSound('use-skill-buff');
                 this.player.applyAttackBuff();
                 this.player.applyDefenseBuff();
-
                 setTimeout(() => {
                     this.player.removeAttackBuff();
                     this.player.removeDefenseBuff();
@@ -225,45 +250,22 @@ export class InputController {
             this.keys['Digit4'] = false;
         }
 
-        // Interact with NPC
         if (this.keys['KeyE']) {
             this.game.npcs.forEach(npc => {
-                const distance = this.player.mesh.position.distanceTo(npc.mesh.position);
-                if (distance < this.game.data.enemies.npc.interactionRange) {
+                if (this.player.mesh.position.distanceTo(npc.mesh.position) < this.game.data.enemies.npc.interactionRange) {
                     npc.interact();
+                    this.game.playSound('talk');
                 }
             });
             this.keys['KeyE'] = false;
         }
 
-        // Pause
-        if (this.keys['Escape']) {
-            this.game.togglePause();
-            this.keys['Escape'] = false;
-        }
+        if (this.keys['Escape']) { this.game.togglePause(); this.keys['Escape'] = false; }
 
-        // Jump
         if (this.keys['Space'] && this.player.onGround && this.player.stamina >= this.game.data.player.staminaCostJump) {
-            this.player.physics.velocity.y = this.game.data.player.jumpPower; // ジャンプ力
+            this.player.physics.velocity.y = this.game.data.player.jumpPower;
             this.player.stamina -= this.game.data.player.staminaCostJump;
+            this.game.playSound('jump');
         }
-
-        // Rolling
-        if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= this.game.data.player.staminaCostRoll) {
-            this.player.isRolling = true;
-            this.player.stamina -= this.game.data.player.staminaCostRoll;
-            // TODO: Add rolling animation and movement. The player should move forward quickly for a short duration.
-            setTimeout(() => {
-                this.player.isRolling = false;
-            }, this.game.data.player.rollDuration); // 0.5 seconds for rolling
-        }
-
-        // Player rotation based on mouse
-        if (!this.player.isLockedOn) {
-            this.player.mesh.rotation.y -= this.mouse.x * rotationSpeed;
-        }
-
-        // Reset mouse delta
-        this.mouse.x = 0;
     }
 }

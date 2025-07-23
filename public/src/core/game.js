@@ -52,6 +52,9 @@ export class Game {
         this.sceneManager.init();
         await this.loadGameData();
         await this.loadAudio();
+        await this.loadModels();
+
+        this.titleScreen.enableInteraction(); // ロード完了後にクリックを有効にする
 
         this.field = new Field();
         this.sceneManager.add(this.field.mesh);
@@ -66,10 +69,7 @@ export class Game {
         // 5. 敵やアイテムなどを生成してシーンとゲーム管理リストに追加
         const enemyX = 5;
         const enemyZ = 0;
-        const tempEnemy = new Enemy(this, this.player, new THREE.Vector3(0,0,0)); // Create a temporary enemy to get its height
-        const enemyY = this.field.getHeightAt(enemyX, enemyZ) + tempEnemy.mesh.geometry.parameters.height / 2;
-        tempEnemy.dispose(); // Dispose the temporary enemy
-        const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, enemyY, enemyZ));
+        const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, 0, enemyZ));
         this.enemies.push(enemy);
         this.sceneManager.add(enemy.mesh);
 
@@ -98,11 +98,34 @@ export class Game {
         const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
         this.bgm.setBuffer(bgmBuffer);
         this.bgm.setLoop(true);
-        this.bgm.setVolume(0.5);
+        this.bgm.setVolume(0.2);
 
-        this.audioBuffers['attack'] = await this.assetLoader.loadAudio('attack', 'assets/audio/attack.mp3');
         this.audioBuffers['damage'] = await this.assetLoader.loadAudio('damage', 'assets/audio/damage.mp3');
         this.audioBuffers['death'] = await this.assetLoader.loadAudio('death', 'assets/audio/death.mp3');
+        this.audioBuffers['guard'] = await this.assetLoader.loadAudio('guard', 'assets/audio/guard.mp3');
+        this.audioBuffers['jump'] = await this.assetLoader.loadAudio('jump', 'assets/audio/jump.mp3');
+        this.audioBuffers['lock-on'] = await this.assetLoader.loadAudio('lock-on', 'assets/audio/lock-on.mp3');
+        this.audioBuffers['pause'] = await this.assetLoader.loadAudio('pause', 'assets/audio/pause.mp3');
+        this.audioBuffers['rolling'] = await this.assetLoader.loadAudio('rolling', 'assets/audio/rolling.mp3');
+        this.audioBuffers['start'] = await this.assetLoader.loadAudio('start', 'assets/audio/start.mp3');
+        this.audioBuffers['strong-attack'] = await this.assetLoader.loadAudio('strong-attack', 'assets/audio/strong-attack.mp3');
+        this.audioBuffers['switch-weapon'] = await this.assetLoader.loadAudio('switch-weapon', 'assets/audio/switch-weapon.mp3');
+        this.audioBuffers['talk'] = await this.assetLoader.loadAudio('talk', 'assets/audio/talk.mp3');
+        this.audioBuffers['use-item'] = await this.assetLoader.loadAudio('use-item', 'assets/audio/use-item.mp3');
+        this.audioBuffers['use-skill-buff'] = await this.assetLoader.loadAudio('use-skill-buff', 'assets/audio/use-skill-buff.mp3');
+        this.audioBuffers['use-skill-projectile'] = await this.assetLoader.loadAudio('use-skill-projectile', 'assets/audio/use-skill-projectile.mp3');
+        this.audioBuffers['weak-attack'] = await this.assetLoader.loadAudio('weak-attack', 'assets/audio/weak-attack.mp3');
+    }
+
+    async loadModels() {
+        const models = ['player', 'enemy', 'boss', 'npc'];
+        for (const modelName of models) {
+            try {
+                await this.assetLoader.loadGLTF(modelName, `assets/models/${modelName}.glb`);
+            } catch (error) {
+                console.error(`Could not load model ${modelName}. A placeholder will be used.`);
+            }
+        }
     }
 
     startGame() {
@@ -117,6 +140,7 @@ export class Game {
         if (!this.bgm.isPlaying) {
             this.bgm.play();
         }
+        this.playSound('start');
         // Request pointer lock now that the game has started from a user click
         this.sceneManager.renderer.domElement.requestPointerLock();
     }
@@ -125,10 +149,12 @@ export class Game {
         if (this.gameState === GameState.PLAYING) {
             this.gameState = GameState.PAUSED;
             this.pauseMenu.toggle(true);
+            this.bgm.pause(); // BGMを停止
             document.exitPointerLock();
         } else if (this.gameState === GameState.PAUSED) {
             this.gameState = GameState.PLAYING;
             this.pauseMenu.toggle(false);
+            this.bgm.play(); // BGMを再開
             this.sceneManager.renderer.domElement.requestPointerLock();
         }
     }
@@ -230,32 +256,15 @@ export class Game {
 
         // Update camera and HUD regardless of the state (as long as not paused)
         if (this.gameState !== GameState.PAUSED) {
-            if (this.player?.isLockedOn && this.player?.lockedOnTarget) {
-                const targetPosition = this.player.lockedOnTarget.mesh.position;
-                const playerPosition = this.player.mesh.position;
-
-                const midPoint = new THREE.Vector3().addVectors(playerPosition, targetPosition).multiplyScalar(0.5);
-                const cameraPosition = new THREE.Vector3().subVectors(playerPosition, targetPosition).normalize().multiplyScalar(5).add(midPoint);
-                cameraPosition.y = playerPosition.y + 2;
-
-                this.sceneManager.camera.position.copy(cameraPosition);
-                this.sceneManager.camera.lookAt(midPoint);
-            } else if (this.player) {
-                const cameraOffset = new THREE.Vector3(0, 2, 5);
-                cameraOffset.applyQuaternion(this.player.mesh.quaternion);
-                this.sceneManager.camera.position.copy(this.player.mesh.position).add(cameraOffset);
-                this.sceneManager.camera.lookAt(this.player.mesh.position);
-            }
-
             this.hud?.update();
         }
 
         this.sceneManager.render();
     }
 
-    animate() {
+    animate = () => {
         if (!this.isManualUpdate) {
-            requestAnimationFrame(this.animate.bind(this));
+            requestAnimationFrame(this.animate);
         }
 
         const deltaTime = this.clock.getDelta();

@@ -3,12 +3,21 @@ import { Character } from './character.js';
 
 export class Enemy extends Character {
     constructor(game, player, position) {
-        const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-        const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-        super(game, geometry, material, { hp: 30, speed: game.data.enemies.grunt.speed });
+        const model = game.assetLoader.getAsset('enemy');
+        if (model) {
+            super(game, model.clone(), null, { hp: 30, speed: game.data.enemies.grunt.speed });
+        } else {
+            const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
+            const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+            super(game, geometry, material, { hp: 30, speed: game.data.enemies.grunt.speed });
+        }
 
         this.player = player;
-        this.mesh.position.copy(position);
+
+        const box = new THREE.Box3().setFromObject(this.mesh);
+        const height = box.getSize(new THREE.Vector3()).y;
+        const y = game.field.getHeightAt(position.x, position.z) + height / 2;
+        this.mesh.position.set(position.x, y, position.z);
 
         this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
         this.experience = 10;
@@ -50,8 +59,10 @@ export class Enemy extends Character {
 
         if (isGuarded) {
             this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
+            this.game.playSound('guard'); // ガード成功時にガード音を再生
         } else {
             this.player.takeDamage(damageToPlayer);
+            this.game.playSound('damage'); // ガードしていない場合はダメージ音を再生
         }
     }
 

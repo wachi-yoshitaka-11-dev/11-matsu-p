@@ -4,10 +4,20 @@ export class Npc {
     constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game) {
         this.game = game;
         this.dialogue = dialogue;
-        const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
-        const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.copy(position);
+
+        const model = game.assetLoader.getAsset('npc');
+        if (model) {
+            this.mesh = model.clone();
+        } else {
+            const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
+            const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+            this.mesh = new THREE.Mesh(geometry, material);
+        }
+
+        const box = new THREE.Box3().setFromObject(this.mesh);
+        const height = box.getSize(new THREE.Vector3()).y;
+        const y = game.field.getHeightAt(position.x, position.z) + height / 2;
+        this.mesh.position.set(position.x, y, position.z);
 
         this.interactionPrompt = this.createInteractionPrompt();
         this.mesh.add(this.interactionPrompt);

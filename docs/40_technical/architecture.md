@@ -37,7 +37,7 @@ src/
 │   ├── Field.js        # 地形や背景の生成
 │   └── Light.js        # ライトの設定
 ├── controls/
-│   └── InputController.js # キーボード・マウス入力の管理
+│   └── InputController.js # キーボード・マウス入力、およびカメラの管理
 ├── ui/
 │   └── Hud.js          # 画面表示（HPゲージなど）
 ├── utils/

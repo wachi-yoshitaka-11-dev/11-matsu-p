@@ -2,9 +2,9 @@ import * as THREE from 'three';
 
 export class Projectile {
     constructor(startPosition, direction, game) {
-        let skillData = game.data.skills.shockwave;
+        let skillData = game.data.skills.projectile;
         if (!skillData) {
-            console.warn('Skill data for shockwave not found. Using default values.');
+            console.warn('Skill data for projectile not found. Using default values.');
             skillData = { fpCost: 20, duration: 1000, speed: 10, lifespan: 2, damage: 30 };
         }
         const geometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);

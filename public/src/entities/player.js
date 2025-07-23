@@ -3,9 +3,17 @@ import { Character } from './character.js';
 
 export class Player extends Character {
     constructor(game) {
-        const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        super(game, geometry, material, { hp: game.data.player.maxHp });
+        const loadedModel = game.assetLoader.getAsset('player'); // GLTFモデルを取得
+
+        if (loadedModel instanceof THREE.Group) { // THREE.Group のインスタンスであるか厳密にチェック
+            super(game, loadedModel, null, { hp: game.data.player.maxHp });
+        } else {
+            // GLTFモデルのロードに失敗した場合、または THREE.Group でない場合のフォールバック
+            console.warn('GLTF player model not loaded or not a THREE.Group. Falling back to BoxGeometry.');
+            const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
+            const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            super(game, geometry, material, { hp: game.data.player.maxHp });
+        }
 
         // Player-specific stats
         this.maxFp = game.data.player.maxFp;
@@ -32,8 +40,12 @@ export class Player extends Character {
         this.isDefenseBuffed = false;
 
         // Effects
-        this.originalColor = this.mesh.material.color.clone();
-        this.effectTimeout = null;
+        this.originalColor = null; // Initialize to null by default
+
+        // Only set originalColor if this.mesh is a THREE.Mesh and has a material
+        if (this.mesh instanceof THREE.Mesh && this.mesh.material) {
+            this.originalColor = this.mesh.material.color.clone();
+        }
 
         this.spawn();
     }
@@ -42,7 +54,11 @@ export class Player extends Character {
         const spawnPoint = this.game.data.player.initialSpawnPoint || { x: 0, z: 0 };
         const x = spawnPoint.x;
         const z = spawnPoint.z;
-        const y = this.game.field.getHeightAt(x, z) + this.mesh.geometry.parameters.height / 2;
+        
+        const box = new THREE.Box3().setFromObject(this.mesh);
+        const height = box.getSize(new THREE.Vector3()).y;
+        const y = this.game.field.getHeightAt(x, z) + height / 2;
+
         this.mesh.position.set(x, y, z);
         if (this.physics) {
             this.physics.velocity.set(0, 0, 0);
@@ -88,7 +104,6 @@ export class Player extends Character {
     takeDamage(amount) {
         if (this.isInvincible) return;
         super.takeDamage(amount); // Use parent method for HP reduction
-        this.game.hud.showDamageEffect();
         this.game.playSound('damage');
     }
 
@@ -127,38 +142,10 @@ export class Player extends Character {
                 this.hp += itemData.healAmount;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
+            this.game.playSound('use-item');
             // Add more item types here as needed
 
             this.inventory.splice(index, 1); // Consume item
-        }
-    }
-
-    // Visual effect methods
-    showAttackEffect() {
-        this.mesh.material.color.set(0xffffff); // White
-        this.clearEffectTimeout();
-        this.effectTimeout = setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
-    }
-
-    showSkillEffect() {
-        this.mesh.material.color.set(0x8a2be2); // BlueViolet
-        this.clearEffectTimeout();
-        this.effectTimeout = setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
-    }
-
-    startChargingEffect() {
-        this.mesh.material.color.set(0xffff00); // Yellow
-        this.clearEffectTimeout();
-    }
-
-    stopChargingEffect() {
-        this.mesh.material.color.copy(this.originalColor);
-    }
-
-    clearEffectTimeout() {
-        if (this.effectTimeout) {
-            clearTimeout(this.effectTimeout);
-            this.effectTimeout = null;
         }
     }
 

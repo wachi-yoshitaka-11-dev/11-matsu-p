@@ -3,8 +3,8 @@ import { GameConstants } from '../../utils/constants.js';
 
 export class PhysicsComponent {
     constructor(object, field) {
-        if (!object || !(object instanceof THREE.Mesh)) {
-            throw new Error('PhysicsComponent: Invalid object provided. Must be a THREE.Mesh.');
+        if (!object || !(object instanceof THREE.Object3D)) {
+            throw new Error('PhysicsComponent: Invalid object provided. Must be a THREE.Object3D.');
         }
         if (!field) {
             throw new Error('PhysicsComponent: Invalid field provided.');
@@ -22,13 +22,18 @@ export class PhysicsComponent {
         this.velocity.y -= GameConstants.gravity * deltaTime;
         this.object.position.y += this.velocity.y * deltaTime;
 
+        // Apply horizontal velocity (X and Z)
+        this.object.position.x += this.velocity.x * deltaTime;
+        this.object.position.z += this.velocity.z * deltaTime;
+
         // Ground collision detection
         if (!this.field.getHeightAt) {
             console.warn('PhysicsComponent: Field object does not implement getHeightAt method');
             return;
         }
         const groundHeight = this.field.getHeightAt(this.object.position.x, this.object.position.z);
-        const objectHeight = this.object.geometry.parameters.height; // Assuming simple geometry
+        const box = new THREE.Box3().setFromObject(this.object);
+        const objectHeight = box.getSize(new THREE.Vector3()).y;
         const objectBottomY = this.object.position.y - objectHeight / 2;
 
         // Check if the object has passed through the ground in this frame

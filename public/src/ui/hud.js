@@ -33,10 +33,6 @@ export class Hud {
         this.weaponDisplay = this.createWeaponDisplay();
         this.container.appendChild(this.weaponDisplay);
 
-        this.damageOverlay = document.createElement('div');
-        this.damageOverlay.id = 'damage-overlay';
-        document.body.appendChild(this.damageOverlay);
-
         this.addStyles();
     }
 
@@ -147,17 +143,6 @@ export class Hud {
         this.deathOverlay.style.opacity = 0;
     }
 
-    showDamageEffect() {
-        if (this.damageEffectTimeout) {
-            clearTimeout(this.damageEffectTimeout);
-        }
-        this.damageOverlay.classList.add('active');
-        this.damageEffectTimeout = setTimeout(() => {
-            this.damageOverlay.classList.remove('active');
-            this.damageEffectTimeout = null;
-        }, 200); // Effect duration
-    }
-
     addStyles() {
         const style = document.createElement('style');
         style.textContent = `
@@ -235,21 +220,6 @@ export class Hud {
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;
                 border: 1px solid white;
-            }
-            #damage-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 0, 0, 0.5);
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.1s;
-                z-index: 99;
-            }
-            #damage-overlay.active {
-                opacity: 1;
             }
         `;
         document.head.appendChild(style);

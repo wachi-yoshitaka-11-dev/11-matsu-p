@@ -1,7 +1,8 @@
 {
-    "jumpPower": 5,
+    "jumpPower": 7,
     "dashSpeedMultiplier": 2.0,
     "rollDuration": 500,
+    "rollDistance": 4.0,
     "respawnDelay": 3000,
     "levelUpExpMultiplier": 1.5,
     "statusPointsPerLevel": 5,
