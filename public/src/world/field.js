@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Field as FieldConst } from '../utils/constants.js';
+import { Field as FieldConst, Fall } from '../utils/constants.js';
 
 export class Field {
     constructor(game) {
@@ -30,19 +30,28 @@ export class Field {
     placeObjects() {
         const treeModel = this.game.assetLoader.getAsset('tree');
         const rockModel = this.game.assetLoader.getAsset('rock');
+        const grassModel = this.game.assetLoader.getAsset('grass');
 
-        if (!treeModel && !rockModel) {
-            console.warn("Tree and Rock models not loaded. Skipping object placement.");
+        if (!treeModel && !rockModel && !grassModel) {
+            console.warn("Tree, Rock, and Grass models not loaded. Skipping object placement.");
             return;
         }
 
-        const numObjects = 50;
+        const numObjects = 500;
         const terrainHalfSize = FieldConst.terrainSize / 2;
 
         for (let i = 0; i < numObjects; i++) {
-            const isTree = Math.random() > 0.5;
-            const model = isTree ? treeModel : rockModel;
-            if (!model) continue;
+            const randomValue = Math.random();
+            let model;
+            if (randomValue < 0.33 && treeModel) {
+                model = treeModel;
+            } else if (randomValue < 0.66 && rockModel) {
+                model = rockModel;
+            } else if (grassModel) {
+                model = grassModel;
+            } else {
+                continue;
+            }
 
             const instance = model.clone();
 
@@ -62,7 +71,7 @@ export class Field {
 
         const cloudModel = this.game.assetLoader.getAsset('cloud');
         if (cloudModel) {
-            const numClouds = 10;
+            const numClouds = 100;
             const cloudHeight = 20;
             for (let i = 0; i < numClouds; i++) {
                 const instance = cloudModel.clone();
@@ -92,6 +101,7 @@ export class Field {
         if (intersects.length > 0) {
             return intersects[0].point.y;
         }
-        return 0;
+        // If no intersection, return a very low value to allow falling below the terrain
+        return Fall.maxFallDepth; // Fall.fallDeathThreshold (-100)よりも十分に低い値
     }
 }

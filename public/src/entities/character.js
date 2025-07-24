@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PhysicsComponent } from '../core/components/physics-component.js';
-import { EffectColors } from '../utils/constants.js';
+import { EffectColors, Fall } from '../utils/constants.js';
 
 export class Character {
     constructor(game, geometryOrModel, material, options = {}) {
@@ -149,6 +149,13 @@ export class Character {
     update(deltaTime) {
         if (this.isDead) return;
         this.physics.update(deltaTime);
+
+        // Check for fall death
+        if (this.mesh.position.y < Fall.fallDeathThreshold) {
+            this.hp = 0;
+            this.isDead = true;
+            this.onDeath();
+        }
     }
 
     getPosition() {

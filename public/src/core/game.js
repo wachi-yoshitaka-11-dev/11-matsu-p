@@ -133,7 +133,7 @@ export class Game {
     }
 
     async loadModels() {
-        const models = ['player', 'enemy', 'boss', 'npc', 'tree', 'rock', 'cloud', 'sun'];
+        const models = ['player', 'enemy', 'boss', 'npc', 'tree', 'rock', 'grass', 'cloud', 'sun'];
         for (const modelName of models) {
             try {
                 await this.assetLoader.loadGLTF(modelName, `assets/models/${modelName}.glb`);

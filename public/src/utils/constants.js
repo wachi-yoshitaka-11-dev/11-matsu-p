@@ -8,6 +8,11 @@ export const Field = {
     terrainSegments: 50,
 };
 
+export const Fall = {
+    fallDeathThreshold: -100,
+    maxFallDepth: -10000
+};
+
 export const EffectColors = {
     damage: 0xff0000,
     attack: 0xffff00,
