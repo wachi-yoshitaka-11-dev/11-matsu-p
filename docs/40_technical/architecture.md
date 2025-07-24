@@ -36,13 +36,15 @@ src/
 ├── world/
 │   ├── Field.js        # 地形や背景の生成
 │   └── Light.js        # ライトの設定
+│   ├── item.js         # アイテム
+│   └── projectile.js   # プロジェクタイル
 ├── controls/
 │   └── InputController.js # キーボード・マウス入力、およびカメラの管理
 ├── ui/
 │   └── Hud.js          # 画面表示（HPゲージなど）
 ├── utils/
 │   └── constants.js    # 定数管理
-└── data/             # ゲームデータ（JSONファイル）
+└── public/data/      # ゲームデータ（JSONファイル）
     ├── player.json
     ├── weapons.json
     ├── enemies.json
@@ -61,8 +63,8 @@ src/
 
 ## 5. アセット管理
 
-- **3Dモデル/テクスチャ:** 当初はThree.jsのプリミティブ形状（`BoxGeometry`, `SphereGeometry`など）と基本的なマテリアル（`MeshStandardMaterial`など）で全てを表現する。
-- **サウンド:** フリー素材サイトなどを活用し、必要に応じて追加する。
+- **3Dモデル/テクスチャ:** 当初はThree.jsのプリミティブ形状（`BoxGeometry`, `SphereGeometry`など）と基本的なマテリアル（`MeshStandardMaterial`など）で全てを表現する。ロゴ画像も追加する。
+- **サウンド:** フリー素材サイトなどを活用し、必要に応じて追加する。タイトルBGMも追加する。
 
 ## 6. コーディング規約
 

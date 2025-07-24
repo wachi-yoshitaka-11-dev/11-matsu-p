@@ -8,21 +8,19 @@ export class Field {
         const segments = FieldConst.terrainSegments;
         const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
 
-        // Generate height data
         const vertices = geometry.attributes.position.array;
         for (let i = 0; i < vertices.length; i += 3) {
-            // Simple sine wave hills
             const x = vertices[i];
             const y = vertices[i + 1];
             const z = Math.sin(x * 0.1) * 2 + Math.cos(y * 0.1) * 2;
             vertices[i + 2] = z;
         }
-        geometry.attributes.position.needsUpdate = true; // Notify Three.js that vertices have been updated
-        geometry.computeVertexNormals(); // Recalculate normals for correct lighting
+        geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals();
 
         const material = new THREE.MeshStandardMaterial({ color: 0x4a7d2c, side: THREE.DoubleSide });
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+        this.mesh.rotation.x = -Math.PI / 2;
 
         this.raycaster = new THREE.Raycaster();
 
@@ -38,7 +36,7 @@ export class Field {
             return;
         }
 
-        const numObjects = 50; // Number of trees and rocks to place
+        const numObjects = 50;
         const terrainHalfSize = FieldConst.terrainSize / 2;
 
         for (let i = 0; i < numObjects; i++) {
@@ -52,11 +50,9 @@ export class Field {
             const z = (Math.random() * FieldConst.terrainSize) - terrainHalfSize;
             const y = this.getHeightAt(x, z);
 
-            // Adjust scale if needed (example: random scale for variety)
-            const scale = Math.random() * 0.5 + 0.5; // Scale between 0.5 and 1.0
+            const scale = Math.random() * 0.5 + 0.5;
             instance.scale.set(scale, scale, scale);
 
-            // Calculate object height and adjust y position AFTER scaling
             const bbox = new THREE.Box3().setFromObject(instance);
             const objectMinY = bbox.min.y;
             instance.position.set(x, y - objectMinY, z);
@@ -64,16 +60,15 @@ export class Field {
             this.game.sceneManager.add(instance);
         }
 
-        // Place clouds
         const cloudModel = this.game.assetLoader.getAsset('cloud');
         if (cloudModel) {
             const numClouds = 10;
-            const cloudHeight = 20; // Height above terrain
+            const cloudHeight = 20;
             for (let i = 0; i < numClouds; i++) {
                 const instance = cloudModel.clone();
                 const x = (Math.random() * FieldConst.terrainSize * 2) - FieldConst.terrainSize;
                 const z = (Math.random() * FieldConst.terrainSize * 2) - FieldConst.terrainSize;
-                const y = cloudHeight + (Math.random() * 10 - 5); // Larger variation in height
+                const y = cloudHeight + (Math.random() * 10 - 5);
                 instance.position.set(x, y, z);
                 const scale = Math.random() * 0.5 + 0.5;
                 instance.scale.set(scale, scale, scale);
@@ -81,23 +76,22 @@ export class Field {
             }
         }
 
-        // Place sun
         const sunModel = this.game.assetLoader.getAsset('sun');
         if (sunModel) {
             const instance = sunModel.clone();
-            instance.position.set(FieldConst.terrainSize / 2, FieldConst.terrainSize / 2 + 10, -FieldConst.terrainSize / 2); // Fixed position
-            instance.scale.set(5, 5, 5); // Adjust size as needed
+            instance.position.set(FieldConst.terrainSize / 2, FieldConst.terrainSize / 2 + 10, -FieldConst.terrainSize / 2);
+            instance.scale.set(5, 5, 5);
             this.game.sceneManager.add(instance);
         }
     }
 
     getHeightAt(x, z) {
-        this.mesh.updateMatrixWorld(); // Ensure world matrix is up-to-date
+        this.mesh.updateMatrixWorld();
         this.raycaster.set(new THREE.Vector3(x, 50, z), new THREE.Vector3(0, -1, 0));
         const intersects = this.raycaster.intersectObject(this.mesh);
         if (intersects.length > 0) {
             return intersects[0].point.y;
         }
-        return 0; // Default height if no intersection
+        return 0;
     }
 }

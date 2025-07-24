@@ -6,16 +6,15 @@ export class InputController {
         this.player = player;
         this.camera = camera;
         this.game = game;
-        this.canvas = canvas; // Keep a reference to the canvas
+        this.canvas = canvas;
         this.keys = {};
         this.mouse = { x: 0, y: 0, wheelDelta: 0 };
         this.isCharging = false;
         this.chargeStartTime = 0;
 
-        // Camera rotation variables
-        this.cameraYaw = 0; // Y-axis rotation (left/right)
-        this.cameraPitch = 0; // X-axis rotation (up/down)
-        this.cameraSensitivity = 0.002; // Adjust as needed
+        this.cameraYaw = 0;
+        this.cameraPitch = 0;
+        this.cameraSensitivity = 0.002;
 
         this.setupEventListeners();
     }
@@ -37,30 +36,44 @@ export class InputController {
     }
 
     setupEventListeners() {
-        document.addEventListener('keydown', (e) => this.keys[e.code] = true);
-        document.addEventListener('keyup', (e) => this.keys[e.code] = false);
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Escape') {
+                this.game.togglePause();
+                this.keys[e.code] = false;
+                return;
+            }
+            if (this.game.gameState !== 'playing') return;
+            this.keys[e.code] = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (this.game.gameState !== 'playing') return;
+            this.keys[e.code] = false;
+        });
 
         document.addEventListener('mousemove', (e) => {
+            if (this.game.gameState !== 'playing') return;
             if (document.pointerLockElement) {
                 this.cameraYaw -= e.movementX * this.cameraSensitivity;
                 this.cameraPitch -= e.movementY * this.cameraSensitivity;
 
-                // Clamp vertical rotation to prevent camera flipping
                 this.cameraPitch = Math.max(-Math.PI / 4, Math.min(Math.PI / 8, this.cameraPitch));
             }
         });
 
         document.addEventListener('wheel', (e) => {
-            this.mouse.wheelDelta = e.deltaY; // Store wheel delta
+            if (this.game.gameState !== 'playing') return;
+            this.mouse.wheelDelta = e.deltaY;
         }, { passive: false });
 
         this.canvas.addEventListener('click', () => {
             if (typeof window.playwright === 'undefined') {
                 this.canvas.requestPointerLock();
             }
+            if (this.game.gameState !== 'playing') return;
         });
 
         document.addEventListener('mousedown', (e) => {
+            if (this.game.gameState !== 'playing') return;
             const params = this._getWeaponParams();
             if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) {
                 this.player.isAttacking = true;
@@ -81,6 +94,7 @@ export class InputController {
         });
 
         document.addEventListener('mouseup', (e) => {
+            if (this.game.gameState !== 'playing') return;
             if (e.button === 2 && this.isCharging) {
                 const params = this._getWeaponParams();
                 this.isCharging = false;
@@ -134,7 +148,6 @@ export class InputController {
                 this.player.stamina -= this.game.data.player.staminaCostDash * deltaTime;
             }
 
-            // Player movement based on camera direction
             const speed = 5.0;
             const moveDirection = new THREE.Vector3();
             const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
@@ -156,7 +169,6 @@ export class InputController {
                 this.player.physics.velocity.x = moveDirection.x * currentSpeed;
                 this.player.physics.velocity.z = moveDirection.z * currentSpeed;
 
-                // Rotate player to face movement direction
                 const targetAngle = Math.atan2(moveDirection.x, moveDirection.z);
                 const targetQuaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), targetAngle);
                 this.player.mesh.quaternion.slerp(targetQuaternion, 0.2);
@@ -171,7 +183,6 @@ export class InputController {
             this.player.stamina -= (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
         }
 
-        // Lock-on logic
         if (this.keys['Tab']) {
             if (!this.player.isLockedOn) {
                 let closestEnemy = this.game.enemies.sort((a, b) => a.mesh.position.distanceTo(this.player.mesh.position) - b.mesh.position.distanceTo(this.player.mesh.position))[0];
@@ -187,25 +198,22 @@ export class InputController {
             this.keys['Tab'] = false;
         }
 
-        // Camera update
         if (this.player.isLockedOn && this.player.lockedOnTarget) {
-            // If locked on, make camera look at the target
             const targetPosition = this.player.lockedOnTarget.mesh.position;
             const playerPosition = this.player.mesh.position;
 
             const midPoint = new THREE.Vector3().addVectors(playerPosition, targetPosition).multiplyScalar(0.5);
-            const cameraOffset = new THREE.Vector3(0, 2, 5); // Fixed offset for locked-on view
-            cameraOffset.applyQuaternion(this.player.mesh.quaternion); // Apply player's rotation to offset
+            const cameraOffset = new THREE.Vector3(0, 2, 5);
+            cameraOffset.applyQuaternion(this.player.mesh.quaternion);
             this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
             this.camera.lookAt(midPoint);
         } else {
-            // Free camera movement
             const cameraQuaternion = new THREE.Quaternion();
             cameraQuaternion.setFromEuler(new THREE.Euler(this.cameraPitch, this.cameraYaw, 0, 'YXZ'));
             this.camera.quaternion.copy(cameraQuaternion);
 
-            const cameraOffset = new THREE.Vector3(0, 2, 5); // Offset from player
-            cameraOffset.applyQuaternion(this.camera.quaternion); // Apply camera's own rotation
+            const cameraOffset = new THREE.Vector3(0, 2, 5);
+            cameraOffset.applyQuaternion(this.camera.quaternion);
             this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
         }
 

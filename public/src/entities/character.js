@@ -24,11 +24,9 @@ export class Character {
         this.speed = options.speed ?? defaults.speed;
         this.isDead = false;
 
-        // For damage effects
-        this.originalColors = new Map(); // Stores original colors for all sub-meshes
-        this.effectTimeout = null; // For managing effect timeouts
+        this.originalColors = new Map();
+        this.effectTimeout = null;
 
-        // Store initial colors of all sub-meshes
         this.mesh.traverse(object => {
             if (object.isMesh && object.material) {
                 if (Array.isArray(object.material)) {
@@ -44,7 +42,6 @@ export class Character {
         });
     }
 
-    // Clears any active effect timeout
     clearEffectTimeout() {
         if (this.effectTimeout) {
             clearTimeout(this.effectTimeout);
@@ -52,11 +49,9 @@ export class Character {
         }
     }
 
-    // Sets the color of the mesh(es)
     _setMeshColor(color) {
         this.mesh.traverse(object => {
             if (object.isMesh && object.material) {
-                // Store original color if not already stored
                 if (Array.isArray(object.material)) {
                     object.material.forEach((mat, index) => {
                         const key = `${object.uuid}-${index}`;
@@ -77,7 +72,6 @@ export class Character {
         });
     }
 
-    // Resets the color of the mesh(es) to their original state
     _resetMeshColor() {
         this.mesh.traverse(object => {
             if (object.isMesh && object.material) {
@@ -98,17 +92,15 @@ export class Character {
         });
     }
 
-    // Shows a temporary damage effect (flashes red)
     showDamageEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.damage); // Flash red
-        this._startEffectTimeout(100); // Revert after 100ms
+        this._setMeshColor(EffectColors.damage);
+        this._startEffectTimeout(100);
     }
 
-    // Generic effect methods (moved from Player.js)
     showAttackEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.attack); // Bright Yellow
+        this._setMeshColor(EffectColors.attack);
         this._startEffectTimeout(150);
     }
 
@@ -125,15 +117,14 @@ export class Character {
     }
 
     startChargingEffect() {
-        this.clearEffectTimeout(); // Clear any existing timeout
-        this._setMeshColor(EffectColors.charge); // Magenta
+        this.clearEffectTimeout();
+        this._setMeshColor(EffectColors.charge);
     }
 
     stopChargingEffect() {
         this._resetMeshColor();
     }
 
-    // Helper to manage effect timeouts
     _startEffectTimeout(duration) {
         this.clearEffectTimeout();
         this.effectTimeout = setTimeout(() => {
@@ -145,7 +136,7 @@ export class Character {
         if (this.isDead) return;
 
         this.hp -= amount;
-        this.showDamageEffect(); // ダメージエフェクトを呼び出す
+        this.showDamageEffect();
         if (this.hp <= 0) {
             this.hp = 0;
             this.isDead = true;
@@ -167,13 +158,12 @@ export class Character {
     placeOnGround(x, z) {
         const groundY = this.game.field.getHeightAt(x, z);
 
-        // To correctly place the model on the ground, we need to find the offset from the model's origin to its lowest point.
-        // We do this by temporarily moving the mesh to the origin to calculate its bounding box in local space.
         const tempPosition = this.mesh.position.clone();
         this.mesh.position.set(0, 0, 0);
+        this.mesh.updateMatrixWorld(true);
         const bbox = new THREE.Box3().setFromObject(this.mesh);
         const modelMinY = bbox.min.y;
-        this.mesh.position.copy(tempPosition); // Restore original position before setting the final one
+        this.mesh.position.copy(tempPosition);
 
         this.mesh.position.set(x, groundY - modelMinY, z);
     }

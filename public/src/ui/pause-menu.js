@@ -13,8 +13,6 @@ export class PauseMenu {
         resumeButton.addEventListener('click', () => this.game.togglePause());
         this.container.appendChild(resumeButton);
 
-        // TODO: Add settings like volume control
-
         document.body.appendChild(this.container);
     }
 

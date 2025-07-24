@@ -22,14 +22,13 @@ export class Boss extends Character {
     }
 
     update(deltaTime) {
-        super.update(deltaTime); // Handle physics and death check
+        super.update(deltaTime);
 
         if (this.isDead) return;
 
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         const bossData = this.game.data.enemies.boss;
 
-        // Simple AI: Chase and attack
         if (distance > bossData.normalAttackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.add(direction.multiplyScalar(this.speed * deltaTime));
@@ -40,9 +39,7 @@ export class Boss extends Character {
         this.attackCooldown -= deltaTime;
         if (distance <= bossData.normalAttackRange && this.attackCooldown <= 0) {
             this.player.takeDamage(bossData.normalAttackDamage);
-            this.attackCooldown = bossData.attackCooldown; // Reset cooldown
+            this.attackCooldown = bossData.attackCooldown;
         }
     }
-
-    // takeDamage is inherited from Character
 }

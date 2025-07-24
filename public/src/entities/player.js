@@ -3,43 +3,36 @@ import { Character } from './character.js';
 
 export class Player extends Character {
     constructor(game) {
-        const loadedModel = game.assetLoader.getAsset('player'); // GLTFモデルを取得
+        const loadedModel = game.assetLoader.getAsset('player');
 
-        if (loadedModel instanceof THREE.Group) { // THREE.Group のインスタンスであるか厳密にチェック
+        if (loadedModel instanceof THREE.Group) {
             super(game, loadedModel, null, { hp: game.data.player.maxHp });
         } else {
-            // GLTFモデルのロードに失敗した場合、または THREE.Group でない場合のフォールバック
             console.warn('GLTF player model not loaded or not a THREE.Group. Falling back to BoxGeometry.');
             const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
             const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
             super(game, geometry, material, { hp: game.data.player.maxHp });
         }
 
-        // Player-specific stats
         this.maxFp = game.data.player.maxFp;
         this.fp = this.maxFp;
         this.maxStamina = game.data.player.maxStamina;
         this.stamina = this.maxStamina;
 
-        // Leveling and inventory
         this.level = game.data.player.initialLevel;
         this.experience = game.data.player.initialExperience;
         this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
         this.statusPoints = game.data.player.initialStatusPoints;
         this.inventory = [];
 
-        // Weapons and skills
         this.weapons = ['sword', 'claws'];
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
 
-        // Buffs
         this.attackBuffMultiplier = 1.0;
         this.defenseBuffMultiplier = 1.0;
         this.isAttackBuffed = false;
         this.isDefenseBuffed = false;
-
-        // Effects
 
         this.spawn();
     }
@@ -59,11 +52,11 @@ export class Player extends Character {
         this.fp = this.maxFp;
         this.isDead = false;
         this.game.hud.hideDeathScreen();
-        this.game.reloadGame(); // Delegate to game.js
+        this.game.reloadGame();
     }
 
     update(deltaTime) {
-        super.update(deltaTime); // Call parent update for physics
+        super.update(deltaTime);
 
         if (this.isDead) return;
 
@@ -73,7 +66,6 @@ export class Player extends Character {
             this.mesh.lookAt(this.lockedOnTarget.mesh.position);
         }
 
-        // Stamina regeneration
         if (!this.isDashing && !this.isGuarding && !this.isAttacking && !this.isRolling) {
             this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
             if (this.stamina > this.maxStamina) {
@@ -90,7 +82,7 @@ export class Player extends Character {
 
     takeDamage(amount) {
         if (this.isInvincible) return;
-        super.takeDamage(amount); // Use parent method for HP reduction
+        super.takeDamage(amount);
         this.game.playSound('damage');
     }
 
@@ -118,11 +110,11 @@ export class Player extends Character {
     useItem(index) {
         if (this.inventory.length > index) {
             const itemType = this.inventory[index];
-            const itemData = this.game.data.items[itemType]; // Get item data from game.data
+            const itemData = this.game.data.items[itemType];
 
             if (!itemData) {
                 console.warn(`Unknown item type: ${itemType}`);
-                return; // Do not consume unknown items
+                return;
             }
 
             if (itemType === 'potion') {
@@ -130,9 +122,8 @@ export class Player extends Character {
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
             this.game.playSound('use-item');
-            // Add more item types here as needed
 
-            this.inventory.splice(index, 1); // Consume item
+            this.inventory.splice(index, 1);
         }
     }
 

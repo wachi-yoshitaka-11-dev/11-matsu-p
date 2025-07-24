@@ -39,7 +39,7 @@ export class Game {
 
         this.listener = new THREE.AudioListener();
         this.sceneManager.camera.add(this.listener);
-        this.bgm = new THREE.Audio(this.listener);
+        this.gameBGM = new THREE.Audio(this.listener);
         this.audioBuffers = {};
 
         this.gameState = GameState.TITLE;
@@ -50,11 +50,26 @@ export class Game {
 
     async init() {
         this.sceneManager.init();
+        this.titleScreen.showSplash();
+
+        const loadStartTime = Date.now();
+
         await this.loadGameData();
         await this.loadAudio();
         await this.loadModels();
 
-        this.titleScreen.enableInteraction(); // ロード完了後にクリックを有効にする
+        const elapsedTime = Date.now() - loadStartTime;
+        const minDisplayTime = 2000;
+        const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+        setTimeout(() => {
+            this.titleScreen.showMenu();
+            this.titleBGM = new THREE.Audio(this.listener);
+            this.titleBGM.setBuffer(this.audioBuffers['title-bgm']);
+            this.titleBGM.setLoop(true);
+            this.titleBGM.setVolume(0.5);
+            this.titleBGM.play();
+        }, remainingTime);
 
         this.field = new Field(this);
         this.sceneManager.add(this.field.mesh);
@@ -66,7 +81,6 @@ export class Game {
 
         this.inputController = new InputController(this.player, this.sceneManager.camera, this, this.sceneManager.renderer.domElement);
 
-        // 5. 敵やアイテムなどを生成してシーンとゲーム管理リストに追加
         const enemyX = 5;
         const enemyZ = 0;
         const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, 0, enemyZ));
@@ -95,11 +109,12 @@ export class Game {
     }
 
     async loadAudio() {
-        const bgmBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/bgm.mp3');
-        this.bgm.setBuffer(bgmBuffer);
-        this.bgm.setLoop(true);
-        this.bgm.setVolume(0.2);
+        const gameBGMBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/game-bgm.mp3');
+        this.gameBGM.setBuffer(gameBGMBuffer);
+        this.gameBGM.setLoop(true);
+        this.gameBGM.setVolume(0.2);
 
+        this.audioBuffers['title-bgm'] = await this.assetLoader.loadAudio('title-bgm', 'assets/audio/title-bgm.mp3');
         this.audioBuffers['damage'] = await this.assetLoader.loadAudio('damage', 'assets/audio/damage.mp3');
         this.audioBuffers['death'] = await this.assetLoader.loadAudio('death', 'assets/audio/death.mp3');
         this.audioBuffers['guard'] = await this.assetLoader.loadAudio('guard', 'assets/audio/guard.mp3');
@@ -137,8 +152,12 @@ export class Game {
             this.titleScreen.dispose();
             this.titleScreen = null;
         }
-        if (!this.bgm.isPlaying) {
-            this.bgm.play();
+        // タイトルBGMを停止し、ゲームBGMを再生
+        if (this.titleBGM && this.titleBGM.isPlaying) {
+            this.titleBGM.stop();
+        }
+        if (!this.gameBGM.isPlaying) {
+            this.gameBGM.play();
         }
         this.playSound('start');
         // Request pointer lock now that the game has started from a user click
@@ -149,12 +168,12 @@ export class Game {
         if (this.gameState === GameState.PLAYING) {
             this.gameState = GameState.PAUSED;
             this.pauseMenu.toggle(true);
-            this.bgm.pause(); // BGMを停止
+            this.gameBGM.pause(); // BGMを停止
             document.exitPointerLock();
         } else if (this.gameState === GameState.PAUSED) {
             this.gameState = GameState.PLAYING;
             this.pauseMenu.toggle(false);
-            this.bgm.play(); // BGMを再開
+            this.gameBGM.play(); // BGMを再開
             this.sceneManager.renderer.domElement.requestPointerLock();
         }
     }
@@ -187,7 +206,6 @@ export class Game {
     }
 
     _updateLoop(deltaTime) {
-        // Always update game logic, except when paused
         if (this.gameState !== GameState.PAUSED) {
             this.player?.update(deltaTime);
             this.inputController?.update(deltaTime);
@@ -254,7 +272,6 @@ export class Game {
             }
         }
 
-        // Update camera and HUD regardless of the state (as long as not paused)
         if (this.gameState !== GameState.PAUSED) {
             this.hud?.update();
         }

@@ -21,28 +21,25 @@ export class Enemy extends Character {
     }
 
     update(deltaTime) {
-        super.update(deltaTime); // Handle physics and death check
+        super.update(deltaTime);
 
         if (this.isDead) return;
 
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
         const gruntData = this.game.data.enemies.grunt;
 
-        // Chase the player
         if (distance > gruntData.attackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.x += direction.x * this.speed * deltaTime;
             this.mesh.position.z += direction.z * this.speed * deltaTime;
         }
 
-        // Look at the player
         this.mesh.lookAt(this.player.mesh.position);
 
-        // Attack
         this.attackCooldown -= deltaTime;
         if (distance <= gruntData.attackRange && this.attackCooldown <= 0) {
             this.attack();
-            this.attackCooldown = gruntData.attackCooldown; // Reset cooldown
+            this.attackCooldown = gruntData.attackCooldown;
         }
     }
 
@@ -56,10 +53,10 @@ export class Enemy extends Character {
 
         if (isGuarded) {
             this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
-            this.game.playSound('guard'); // ガード成功時にガード音を再生
+            this.game.playSound('guard');
         } else {
             this.player.takeDamage(damageToPlayer);
-            this.game.playSound('damage'); // ガードしていない場合はダメージ音を再生
+            this.game.playSound('damage');
         }
     }
 

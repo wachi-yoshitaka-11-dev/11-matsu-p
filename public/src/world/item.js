@@ -17,11 +17,11 @@ export class Item {
     getColorForType(type) {
         switch (type) {
             case 'potion':
-                return 0x00ff00; // Green
+                return 0x00ff00;
             case 'key':
-                return 0xffff00; // Yellow
+                return 0xffff00;
             default:
-                return 0xffffff; // White
+                return 0xffffff;
         }
     }
 

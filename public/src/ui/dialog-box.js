@@ -20,12 +20,12 @@ export class DialogBox {
     show(message) {
         this.messageElement.textContent = message;
         this.container.style.display = 'flex';
-        this.game.togglePause(); // Pause the game when dialog is open
+        this.game.togglePause();
     }
 
     hide() {
         this.container.style.display = 'none';
-        this.game.togglePause(); // Resume the game when dialog is closed
+        this.game.togglePause();
     }
 
     addStyles() {

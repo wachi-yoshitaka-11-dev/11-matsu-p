@@ -4,7 +4,7 @@ export class Hud {
         this.player = player;
         this.container = document.createElement('div');
         this.container.id = 'hud';
-        this.container.style.display = 'none'; // Initially hidden
+        this.container.style.display = 'none';
         document.body.appendChild(this.container);
 
         this.hpBar = this.createStatusBar('hp-bar', 'HP');
@@ -23,8 +23,8 @@ export class Hud {
         this.container.appendChild(this.hpBar.element);
         this.container.appendChild(this.fpBar.element);
         this.container.appendChild(this.staminaBar.element);
-        document.body.appendChild(this.deathOverlay); // Add overlay to body
-        this.deathOverlay.appendChild(this.deathMessage); // Add message to overlay
+        document.body.appendChild(this.deathOverlay);
+        this.deathOverlay.appendChild(this.deathMessage);
         this.container.appendChild(this.levelUpMenu.element);
 
         this.inventoryDisplay = this.createInventoryDisplay();
@@ -121,7 +121,6 @@ export class Hud {
             this.levelUpMenu.element.style.display = 'none';
         }
 
-        // Update inventory display
         this.inventoryDisplay.innerHTML = '<h3>Inventory</h3>';
         this.player.inventory.forEach(item => {
             const itemEl = document.createElement('div');
@@ -129,7 +128,6 @@ export class Hud {
             this.inventoryDisplay.appendChild(itemEl);
         });
 
-        // Update weapon display
         this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
 
         this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
@@ -167,18 +165,18 @@ export class Hud {
             }
             .status-bar-fill {
                 height: 100%;
-                background-color: #ff0000; /* Default to red for HP */
+                background-color: #ff0000;
                 transition: width 0.2s;
             }
             #fp-bar .status-bar-fill {
-                background-color: #0000ff; /* Blue for FP */
+                background-color: #0000ff;
             }
             #stamina-bar .status-bar-fill {
-                background-color: #00ff00; /* Green for Stamina */
+                background-color: #00ff00;
             }
             #death-message {
                 font-size: 5em;
-                color: #8b0000; /* DarkRed */
+                color: #8b0000;
                 text-align: center;
             }
             #death-overlay {
@@ -188,7 +186,7 @@ export class Hud {
                 width: 100%;
                 height: 100%;
                 background-color: rgba(0, 0, 0, 0.7);
-                display: none; /* Initially hidden */
+                display: none;
                 justify-content: center;
                 align-items: center;
                 opacity: 0;
@@ -215,7 +213,7 @@ export class Hud {
             }
             #weapon-display {
                 position: absolute;
-                top: 250px; /* Adjust as needed */
+                top: 250px;
                 left: 10px;
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;

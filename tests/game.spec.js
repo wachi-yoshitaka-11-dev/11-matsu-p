@@ -18,10 +18,10 @@ test.describe('Mofu Mofu Adventure - Game Startup', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000); // Wait 3 seconds after load
 
-    // Start the game by clicking the title screen
-    const titleScreen = page.locator('#title-screen');
-    await expect(titleScreen).toBeVisible({ timeout: 10000 });
-    await titleScreen.click();
+    // Start the game by clicking the 'New Game' button on the title screen
+    const newGameButton = page.locator('#title-screen #title-menu button:has-text('New Game')');
+    await expect(newGameButton).toBeVisible({ timeout: 10000 });
+    await newGameButton.click();
 
     // Wait for the game to enter the 'playing' state and HUD to be visible
     await page.waitForFunction(() => window.game && window.game.gameState === 'playing', null, { timeout: 10000 });

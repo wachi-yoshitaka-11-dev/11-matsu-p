@@ -18,15 +18,12 @@ export class PhysicsComponent {
     update(deltaTime) {
         const previousY = this.object.position.y;
 
-        // Apply gravity
         this.velocity.y -= GameConstants.gravity * deltaTime;
         this.object.position.y += this.velocity.y * deltaTime;
 
-        // Apply horizontal velocity (X and Z)
         this.object.position.x += this.velocity.x * deltaTime;
         this.object.position.z += this.velocity.z * deltaTime;
 
-        // Ground collision detection
         if (!this.field.getHeightAt) {
             console.warn('PhysicsComponent: Field object does not implement getHeightAt method');
             return;
@@ -36,7 +33,6 @@ export class PhysicsComponent {
         const objectHeight = box.getSize(new THREE.Vector3()).y;
         const objectBottomY = this.object.position.y - objectHeight / 2;
 
-        // Check if the object has passed through the ground in this frame
         if (this.velocity.y <= 0 && objectBottomY <= groundHeight && previousY >= groundHeight) {
             this.object.position.y = groundHeight + objectHeight / 2;
             this.velocity.y = 0;

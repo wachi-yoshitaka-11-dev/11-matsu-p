@@ -15,6 +15,6 @@
         "initialPosition": { "x": 10, "y": 0.5, "z": 10 }
     },
     "npc": {
-        "interactionRange": 2
+        "interactionRange": 5
     }
 }

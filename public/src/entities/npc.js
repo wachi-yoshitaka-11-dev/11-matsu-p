@@ -22,23 +22,28 @@ export class Npc extends Character {
 
     createInteractionPrompt() {
         const prompt = new THREE.Group();
-        // Simple text prompt using canvas texture
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        const fontSize = 20;
+        const fontSize = 32;
         context.font = `Bold ${fontSize}px Arial`;
-        const textWidth = context.measureText('[E] Talk').width;
-        canvas.width = textWidth;
-        canvas.height = fontSize;
+        const text = '[E] Talk';
+        const textWidth = context.measureText(text).width;
+        
+        canvas.width = textWidth + 10;
+        canvas.height = fontSize + 10;
+        
         context.font = `Bold ${fontSize}px Arial`;
         context.fillStyle = "white";
-        context.fillText('[E] Talk', 0, fontSize);
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
         const texture = new THREE.CanvasTexture(canvas);
 
         const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
         const sprite = new THREE.Sprite(material);
-        sprite.scale.set(canvas.width / 100, canvas.height / 100, 1);
-        sprite.position.y = 1.5;
+        sprite.scale.set(canvas.width * 0.01, canvas.height * 0.01, 1);
+        sprite.position.y = 3.0;
+        sprite.renderOrder = 999;
         prompt.add(sprite);
         prompt.visible = false;
         return prompt;
