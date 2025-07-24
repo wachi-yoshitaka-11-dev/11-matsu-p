@@ -43,13 +43,18 @@ export class Character {
                 // Store original color if not already stored
                 if (Array.isArray(object.material)) {
                     object.material.forEach((mat, index) => {
-                        if (mat.color && !this.originalColors.has(`${object.uuid}-${index}`)) {
-                            this.originalColors.set(`${object.uuid}-${index}`, mat.color.clone());
+                        const key = `${object.uuid}-${index}`;
+                        if (mat.color) {
+                            if (!this.originalColors.has(key)) {
+                                this.originalColors.set(key, mat.color.clone());
+                            }
+                            mat.color.set(color);
                         }
-                        if (mat.color) mat.color.set(color);
                     });
-                } else if (object.material.color && !this.originalColors.has(object.uuid)) {
-                    this.originalColors.set(object.uuid, object.material.color.clone());
+                } else if (object.material.color) {
+                    if (!this.originalColors.has(object.uuid)) {
+                        this.originalColors.set(object.uuid, object.material.color.clone());
+                    }
                     object.material.color.set(color);
                 }
             }
@@ -75,22 +80,24 @@ export class Character {
                 }
             }
         });
-        this.originalColors.clear(); // Clear stored colors after reset
     }
 
     // Shows a temporary damage effect (flashes red)
     showDamageEffect() {
+        this.clearEffectTimeout();
         this._setMeshColor(0xff0000); // Flash red
         this._startEffectTimeout(100); // Revert after 100ms
     }
 
     // Generic effect methods (moved from Player.js)
     showAttackEffect() {
+        this.clearEffectTimeout();
         this._setMeshColor(0xffffff); // White
         this._startEffectTimeout(100);
     }
 
     showSkillEffect() {
+        this.clearEffectTimeout();
         this._setMeshColor(0x8a2be2); // BlueViolet
         this._startEffectTimeout(100);
     }
