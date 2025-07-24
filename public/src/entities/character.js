@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PhysicsComponent } from '../core/components/physics-component.js';
+import { EffectColors } from '../utils/constants.js';
 
 export class Character {
     constructor(game, geometryOrModel, material, options = {}) {
@@ -100,26 +101,32 @@ export class Character {
     // Shows a temporary damage effect (flashes red)
     showDamageEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(0xff0000); // Flash red
+        this._setMeshColor(EffectColors.damage); // Flash red
         this._startEffectTimeout(100); // Revert after 100ms
     }
 
     // Generic effect methods (moved from Player.js)
     showAttackEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(0xffff00); // Bright Yellow
+        this._setMeshColor(EffectColors.attack); // Bright Yellow
         this._startEffectTimeout(150);
     }
 
-    showSkillEffect() {
+    showSkillProjectileEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(0x8a2be2); // BlueViolet
+        this._setMeshColor(EffectColors.skillProjectile);
+        this._startEffectTimeout(100);
+    }
+
+    showSkillBuffEffect() {
+        this.clearEffectTimeout();
+        this._setMeshColor(EffectColors.skillBuff);
         this._startEffectTimeout(100);
     }
 
     startChargingEffect() {
         this.clearEffectTimeout(); // Clear any existing timeout
-        this._setMeshColor(0xff00ff); // Magenta
+        this._setMeshColor(EffectColors.charge); // Magenta
     }
 
     stopChargingEffect() {

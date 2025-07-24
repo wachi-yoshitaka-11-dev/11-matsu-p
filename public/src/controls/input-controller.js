@@ -222,7 +222,7 @@ export class InputController {
             if (!this.player.isUsingSkill && this.player.fp >= skillData.fpCost) {
                 this.player.isUsingSkill = true;
                 this.player.fp -= skillData.fpCost;
-                this.player.showSkillEffect();
+                this.player.showSkillProjectileEffect();
                 this.game.playSound('use-skill-projectile');
                 const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
                 const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction, this.game);
@@ -239,6 +239,7 @@ export class InputController {
                 this.player.isUsingSkill = true;
                 this.player.fp -= buffData.fpCost;
                 this.game.playSound('use-skill-buff');
+                this.player.showSkillBuffEffect();
                 this.player.applyAttackBuff();
                 this.player.applyDefenseBuff();
                 setTimeout(() => {
