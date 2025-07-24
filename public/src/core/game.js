@@ -56,7 +56,7 @@ export class Game {
 
         this.titleScreen.enableInteraction(); // ロード完了後にクリックを有効にする
 
-        this.field = new Field();
+        this.field = new Field(this);
         this.sceneManager.add(this.field.mesh);
 
         this.player = new Player(this);
@@ -118,7 +118,7 @@ export class Game {
     }
 
     async loadModels() {
-        const models = ['player', 'enemy', 'boss', 'npc'];
+        const models = ['player', 'enemy', 'boss', 'npc', 'tree', 'rock', 'cloud', 'sun'];
         for (const modelName of models) {
             try {
                 await this.assetLoader.loadGLTF(modelName, `assets/models/${modelName}.glb`);

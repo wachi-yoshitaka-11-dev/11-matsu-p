@@ -46,14 +46,7 @@ export class Player extends Character {
 
     spawn() {
         const spawnPoint = this.game.data.player.initialSpawnPoint || { x: 0, z: 0 };
-        const x = spawnPoint.x;
-        const z = spawnPoint.z;
-        
-        const box = new THREE.Box3().setFromObject(this.mesh);
-        const height = box.getSize(new THREE.Vector3()).y;
-        const y = this.game.field.getHeightAt(x, z) + height / 2;
-
-        this.mesh.position.set(x, y, z);
+        this.placeOnGround(spawnPoint.x, spawnPoint.z);
         if (this.physics) {
             this.physics.velocity.set(0, 0, 0);
         }

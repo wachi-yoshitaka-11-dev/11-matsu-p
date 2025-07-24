@@ -164,6 +164,20 @@ export class Character {
         return this.mesh.position;
     }
 
+    placeOnGround(x, z) {
+        const groundY = this.game.field.getHeightAt(x, z);
+
+        // To correctly place the model on the ground, we need to find the offset from the model's origin to its lowest point.
+        // We do this by temporarily moving the mesh to the origin to calculate its bounding box in local space.
+        const tempPosition = this.mesh.position.clone();
+        this.mesh.position.set(0, 0, 0);
+        const bbox = new THREE.Box3().setFromObject(this.mesh);
+        const modelMinY = bbox.min.y;
+        this.mesh.position.copy(tempPosition); // Restore original position before setting the final one
+
+        this.mesh.position.set(x, groundY - modelMinY, z);
+    }
+
     dispose() {
         if (this.mesh instanceof THREE.Group) {
             this.mesh.traverse(object => {

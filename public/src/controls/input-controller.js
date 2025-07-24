@@ -224,7 +224,8 @@ export class InputController {
                 this.player.fp -= skillData.fpCost;
                 this.player.showSkillProjectileEffect();
                 this.game.playSound('use-skill-projectile');
-                const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
+                const direction = new THREE.Vector3();
+                this.player.mesh.getWorldDirection(direction);
                 const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction, this.game);
                 this.game.projectiles.push(projectile);
                 this.game.sceneManager.add(projectile.mesh);

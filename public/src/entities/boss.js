@@ -15,10 +15,7 @@ export class Boss extends Character {
         this.player = player;
 
         const initialPosition = this.game.data.enemies.boss.initialPosition;
-        const box = new THREE.Box3().setFromObject(this.mesh);
-        const height = box.getSize(new THREE.Vector3()).y;
-        const y = this.game.field.getHeightAt(initialPosition.x, initialPosition.z) + height / 2;
-        this.mesh.position.set(initialPosition.x, y, initialPosition.z);
+        this.placeOnGround(initialPosition.x, initialPosition.z);
 
         this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
         this.experience = 100;

@@ -14,10 +14,7 @@ export class Enemy extends Character {
 
         this.player = player;
 
-        const box = new THREE.Box3().setFromObject(this.mesh);
-        const height = box.getSize(new THREE.Vector3()).y;
-        const y = game.field.getHeightAt(position.x, position.z) + height / 2;
-        this.mesh.position.set(position.x, y, position.z);
+        this.placeOnGround(position.x, position.z);
 
         this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
         this.experience = 10;

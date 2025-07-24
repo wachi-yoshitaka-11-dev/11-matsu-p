@@ -1,23 +1,20 @@
 import * as THREE from 'three';
+import { Character } from './character.js';
 
-export class Npc {
+export class Npc extends Character {
     constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game) {
-        this.game = game;
-        this.dialogue = dialogue;
-
         const model = game.assetLoader.getAsset('npc');
         if (model) {
-            this.mesh = model.clone();
+            super(game, model.clone(), null, {});
         } else {
             const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
             const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-            this.mesh = new THREE.Mesh(geometry, material);
+            super(game, geometry, material, {});
         }
 
-        const box = new THREE.Box3().setFromObject(this.mesh);
-        const height = box.getSize(new THREE.Vector3()).y;
-        const y = game.field.getHeightAt(position.x, position.z) + height / 2;
-        this.mesh.position.set(position.x, y, position.z);
+        this.dialogue = dialogue;
+
+        this.placeOnGround(position.x, position.z);
 
         this.interactionPrompt = this.createInteractionPrompt();
         this.mesh.add(this.interactionPrompt);
