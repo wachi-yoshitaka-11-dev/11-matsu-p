@@ -40,12 +40,6 @@ export class Player extends Character {
         this.isDefenseBuffed = false;
 
         // Effects
-        this.originalColor = null; // Initialize to null by default
-
-        // Only set originalColor if this.mesh is a THREE.Mesh and has a material
-        if (this.mesh instanceof THREE.Mesh && this.mesh.material) {
-            this.originalColor = this.mesh.material.color.clone();
-        }
 
         this.spawn();
     }

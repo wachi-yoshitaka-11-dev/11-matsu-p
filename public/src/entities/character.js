@@ -26,6 +26,21 @@ export class Character {
         // For damage effects
         this.originalColors = new Map(); // Stores original colors for all sub-meshes
         this.effectTimeout = null; // For managing effect timeouts
+
+        // Store initial colors of all sub-meshes
+        this.mesh.traverse(object => {
+            if (object.isMesh && object.material) {
+                if (Array.isArray(object.material)) {
+                    object.material.forEach((mat, index) => {
+                        if (mat.color) {
+                            this.originalColors.set(`${object.uuid}-${index}`, mat.color.clone());
+                        }
+                    });
+                } else if (object.material.color) {
+                    this.originalColors.set(object.uuid, object.material.color.clone());
+                }
+            }
+        });
     }
 
     // Clears any active effect timeout
@@ -92,8 +107,8 @@ export class Character {
     // Generic effect methods (moved from Player.js)
     showAttackEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(0xffffff); // White
-        this._startEffectTimeout(100);
+        this._setMeshColor(0xffff00); // Bright Yellow
+        this._startEffectTimeout(150);
     }
 
     showSkillEffect() {
@@ -104,7 +119,7 @@ export class Character {
 
     startChargingEffect() {
         this.clearEffectTimeout(); // Clear any existing timeout
-        this._setMeshColor(0xffff00); // Yellow
+        this._setMeshColor(0xff00ff); // Magenta
     }
 
     stopChargingEffect() {
