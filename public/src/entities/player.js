@@ -6,7 +6,7 @@ export class Player extends Character {
         const loadedModel = game.assetLoader.getAsset('player');
 
         if (loadedModel instanceof THREE.Group) {
-            super(game, loadedModel, null, { hp: game.data.player.maxHp });
+            super(game, loadedModel, null, { hp: game.data.player.maxHp, modelName: 'player' });
         } else {
             console.warn('GLTF player model not loaded or not a THREE.Group. Falling back to BoxGeometry.');
             const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
@@ -28,6 +28,10 @@ export class Player extends Character {
         this.weapons = ['sword', 'claws'];
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
+        this.isAttacking = false;
+        this.isWeakAttacking = false;
+        this.isStrongAttacking = false;
+        this.isRolling = false;
 
         this.attackBuffMultiplier = 1.0;
         this.defenseBuffMultiplier = 1.0;
@@ -35,6 +39,23 @@ export class Player extends Character {
         this.isDefenseBuffed = false;
 
         this.spawn();
+
+        // Listen for animation finished event
+        if (this.mixer) {
+            this.mixer.addEventListener('finished', (e) => {
+                const clipName = e.action.getClip().name;
+                if (clipName.startsWith('attack-')) {
+                    this.isAttacking = false;
+                    this.isWeakAttacking = false;
+                    this.isStrongAttacking = false;
+                } else if (clipName === 'roll') {
+                    this.isRolling = false;
+                }
+
+                // After a one-shot animation, determine the next logical state
+                this.updateAnimation();
+            });
+        }
     }
 
     spawn() {
@@ -57,14 +78,7 @@ export class Player extends Character {
 
     update(deltaTime) {
         super.update(deltaTime);
-
-        if (this.isDead) return;
-
-        this.onGround = this.physics.onGround;
-
-        if (this.isLockedOn && this.lockedOnTarget) {
-            this.mesh.lookAt(this.lockedOnTarget.mesh.position);
-        }
+        this.updateAnimation();
 
         if (!this.isDashing && !this.isGuarding && !this.isAttacking && !this.isRolling) {
             this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
@@ -72,6 +86,38 @@ export class Player extends Character {
                 this.stamina = this.maxStamina;
             }
         }
+    }
+
+    updateAnimation() {
+        if (this.isDead) {
+            this.playAnimation('die');
+            return;
+        }
+
+        // Don't switch animations if a one-shot animation is in progress
+        if (this.isAttacking || this.isStrongAttacking || this.isRolling) {
+            return;
+        }
+
+        this.onGround = this.physics.onGround;
+
+        if (this.isLockedOn && this.lockedOnTarget) {
+            this.mesh.lookAt(this.lockedOnTarget.mesh.position);
+        }
+
+        let newAnimation = 'idle';
+
+        if (this.isGuarding) {
+            newAnimation = 'guard';
+        } else if (this.physics.velocity.y > 0 && !this.onGround) {
+            newAnimation = 'jump';
+        } else if (this.isDashing) {
+            newAnimation = 'sprint';
+        } else if (new THREE.Vector2(this.physics.velocity.x, this.physics.velocity.z).length() > 0.1) {
+            newAnimation = 'walk';
+        }
+
+        this.playAnimation(newAnimation);
     }
 
     onDeath() {

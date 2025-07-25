@@ -5,7 +5,7 @@ export class Boss extends Character {
     constructor(game, player) {
         const model = game.assetLoader.getAsset('boss');
         if (model) {
-            super(game, model.clone(), null, { hp: 200, speed: game.data.enemies.boss.speed });
+            super(game, model.clone(), null, { hp: 200, speed: game.data.enemies.boss.speed, modelName: 'boss' });
         } else {
             const geometry = new THREE.BoxGeometry(2, 2, 2);
             const material = new THREE.MeshStandardMaterial({ color: 0x880000 });

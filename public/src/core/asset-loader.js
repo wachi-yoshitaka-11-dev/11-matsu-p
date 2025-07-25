@@ -12,6 +12,9 @@ export class AssetLoader {
         try {
             const gltf = await this.gltfLoader.loadAsync(path);
             this.assets[name] = gltf.scene;
+            if (gltf.animations && gltf.animations.length > 0) {
+                this.assets[`${name}-animations`] = gltf.animations;
+            }
             return gltf.scene;
         } catch (error) {
             console.error(`Error loading GLTF ${path}:`, error);

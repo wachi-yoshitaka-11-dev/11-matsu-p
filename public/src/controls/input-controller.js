@@ -77,15 +77,16 @@ export class InputController {
             const params = this._getWeaponParams();
             if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) {
                 this.player.isAttacking = true;
+                this.player.isWeakAttacking = true;
                 this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
+                this.player.playAnimation('attack-melee-right'); // Trigger animation directly
                 this.game.playSound('weak-attack');
                 this.game.enemies.forEach(enemy => {
                     if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
                         enemy.takeDamage(params.damage);
                     }
                 });
-                setTimeout(() => { this.player.isAttacking = false; }, params.attackSpeed);
             } else if (e.button === 2 && !this.player.isAttacking) {
                 this.isCharging = true;
                 this.chargeStartTime = Date.now();
@@ -104,6 +105,8 @@ export class InputController {
                 const staminaCost = Math.floor(damage / 2);
                 if (this.player.stamina >= staminaCost) {
                     this.player.stamina -= staminaCost;
+                    this.player.isStrongAttacking = true;
+                    this.player.playAnimation('attack-melee-left'); // Trigger animation directly
                     this.game.playSound('strong-attack');
                     this.game.enemies.forEach(enemy => {
                         let finalDamage = this.player.isAttackBuffed ? damage * this.player.attackBuffMultiplier : damage;
@@ -131,6 +134,7 @@ export class InputController {
         if (isTryingToRoll && canRoll) {
             this.player.isRolling = true;
             this.player.stamina -= this.game.data.player.staminaCostRoll;
+            this.player.playAnimation('roll'); // Trigger animation directly
             this.game.playSound('rolling');
 
             const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(this.player.mesh.quaternion);
@@ -163,7 +167,7 @@ export class InputController {
             if (this.keys['KeyA']) moveDirection.sub(right);
             if (this.keys['KeyD']) moveDirection.add(right);
 
-            if (moveDirection.lengthSq() > 0) {
+            if (moveDirection.lengthSq() > 0.001) { // Use a small threshold
                 moveDirection.normalize();
                 const currentSpeed = this.player.isDashing ? speed * this.game.data.player.dashSpeedMultiplier : speed;
                 this.player.physics.velocity.x = moveDirection.x * currentSpeed;
@@ -176,6 +180,8 @@ export class InputController {
                 this.player.physics.velocity.x = 0;
                 this.player.physics.velocity.z = 0;
             }
+        } else {
+            // If rolling, we let the rolling velocity take over and don't apply new input
         }
 
         this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;

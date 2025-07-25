@@ -5,7 +5,7 @@ export class Npc extends Character {
     constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game) {
         const model = game.assetLoader.getAsset('npc');
         if (model) {
-            super(game, model.clone(), null, {});
+            super(game, model.clone(), null, { modelName: 'npc' });
         } else {
             const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
             const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });

@@ -8,9 +8,15 @@ export class Character {
 
         if (geometryOrModel instanceof THREE.Group) {
             this.mesh = geometryOrModel;
+            this.mixer = new THREE.AnimationMixer(this.mesh);
+            this.animations = game.assetLoader.getAsset(`${options.modelName}-animations`);
+            if (this.animations && this.animations.length > 0) {
+                this.playAnimation('idle'); // Assuming 'idle' is a common animation name
+            }
         } else {
             this.mesh = new THREE.Mesh(geometryOrModel, material);
         }
+        this.currentAnimationName = null;
 
         this.physics = new PhysicsComponent(this.mesh, this.game.field);
 
@@ -132,6 +138,33 @@ export class Character {
         }, duration);
     }
 
+    playAnimation(name) {
+        if (!this.mixer || !this.animations || this.currentAnimationName === name) return;
+
+        const clip = THREE.AnimationClip.findByName(this.animations, name);
+        if (clip) {
+            const newAction = this.mixer.clipAction(clip);
+
+            const isOneShot = name.startsWith('attack-') || name === 'die' || name === 'roll';
+            if (isOneShot) {
+                newAction.setLoop(THREE.LoopOnce);
+                newAction.clampWhenFinished = true;
+            } else {
+                newAction.setLoop(THREE.LoopRepeat);
+            }
+
+            if (this.currentAction) {
+                this.currentAction.fadeOut(0.2);
+            }
+
+            newAction.reset().fadeIn(0.2).play();
+            this.currentAction = newAction;
+            this.currentAnimationName = name;
+        } else {
+            // console.warn(`Animation clip "${name}" not found.`);
+        }
+    }
+
     takeDamage(amount) {
         if (this.isDead) return;
 
@@ -147,10 +180,19 @@ export class Character {
     onDeath() {}
 
     update(deltaTime) {
-        if (this.isDead) return;
+        // Always update physics, even if dead, to allow continuous falling
         this.physics.update(deltaTime);
 
-        // Check for fall death
+        if (this.mixer) {
+            this.mixer.update(deltaTime);
+        }
+
+        if (this.isDead) {
+            // If dead, only allow physics updates, skip other logic
+            return;
+        }
+
+        // Check for fall death (only if not already dead)
         if (this.mesh.position.y < Fall.fallDeathThreshold) {
             this.hp = 0;
             this.isDead = true;

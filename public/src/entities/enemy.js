@@ -5,7 +5,7 @@ export class Enemy extends Character {
     constructor(game, player, position) {
         const model = game.assetLoader.getAsset('enemy');
         if (model) {
-            super(game, model.clone(), null, { hp: 30, speed: game.data.enemies.grunt.speed });
+            super(game, model.clone(), null, { hp: 30, speed: game.data.enemies.grunt.speed, modelName: 'enemy' });
         } else {
             const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
             const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
