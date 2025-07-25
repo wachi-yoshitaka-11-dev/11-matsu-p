@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { AnimationNames, AssetNames } from '../utils/constants.js';
 
 export class Player extends Character {
     constructor(game) {
-        const loadedModel = game.assetLoader.getAsset('player');
+        const loadedModel = game.assetLoader.getAsset(AssetNames.PLAYER_MODEL);
 
         if (loadedModel instanceof THREE.Group) {
-            super(game, loadedModel, null, { hp: game.data.player.maxHp, modelName: 'player' });
+            super(game, loadedModel, null, { hp: game.data.player.maxHp, modelName: AssetNames.PLAYER_MODEL, textureName: AssetNames.PLAYER_TEXTURE });
         } else {
             console.warn('GLTF player model not loaded or not a THREE.Group. Falling back to BoxGeometry.');
             const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
@@ -48,7 +49,7 @@ export class Player extends Character {
                     this.isAttacking = false;
                     this.isWeakAttacking = false;
                     this.isStrongAttacking = false;
-                } else if (clipName === 'roll') {
+                } else if (clipName === AnimationNames.ROLLING) {
                     this.isRolling = false;
                 }
 
@@ -67,12 +68,6 @@ export class Player extends Character {
     }
 
     respawn() {
-        this.spawn();
-        this.hp = this.maxHp;
-        this.stamina = this.maxStamina;
-        this.fp = this.maxFp;
-        this.isDead = false;
-        this.game.hud.hideDeathScreen();
         this.game.reloadGame();
     }
 
@@ -90,7 +85,7 @@ export class Player extends Character {
 
     updateAnimation() {
         if (this.isDead) {
-            this.playAnimation('die');
+            this.playAnimation(AnimationNames.DIE);
             return;
         }
 
@@ -105,16 +100,18 @@ export class Player extends Character {
             this.mesh.lookAt(this.lockedOnTarget.mesh.position);
         }
 
-        let newAnimation = 'idle';
+        let newAnimation = AnimationNames.IDLE;
 
         if (this.isGuarding) {
-            newAnimation = 'guard';
+            newAnimation = AnimationNames.GUARD;
+        } else if (this.isRolling) {
+            newAnimation = AnimationNames.ROLLING;
         } else if (this.physics.velocity.y > 0 && !this.onGround) {
-            newAnimation = 'jump';
+            newAnimation = AnimationNames.JUMP;
         } else if (this.isDashing) {
-            newAnimation = 'sprint';
+            newAnimation = AnimationNames.DASH;
         } else if (new THREE.Vector2(this.physics.velocity.x, this.physics.velocity.z).length() > 0.1) {
-            newAnimation = 'walk';
+            newAnimation = AnimationNames.WALK;
         }
 
         this.playAnimation(newAnimation);
@@ -167,7 +164,8 @@ export class Player extends Character {
                 this.hp += itemData.healAmount;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }
-            this.game.playSound('use-item');
+            this.playAnimation(AnimationNames.USE_ITEM); // Use interact-right for item use
+            this.game.playSound(AssetNames.SFX_USE_ITEM);
 
             this.inventory.splice(index, 1);
         }

@@ -1,16 +1,46 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { AudioLoader } from 'three';
+import * as THREE from 'three';
 
 export class AssetLoader {
     constructor() {
         this.gltfLoader = new GLTFLoader();
-        this.audioLoader = new AudioLoader();
+        this.audioLoader = new THREE.AudioLoader();
+        this.textureLoader = new THREE.TextureLoader();
         this.assets = {};
+    }
+
+    async loadTexture(name, path) {
+        try {
+            const texture = await this.textureLoader.loadAsync(path);
+            texture.colorSpace = THREE.SRGBColorSpace; // Set sRGB encoding for correct color representation
+            texture.wrapS = THREE.RepeatWrapping; // Repeat texture horizontally
+            texture.wrapT = THREE.RepeatWrapping; // Repeat texture vertically
+            texture.flipY = false; // Prevent texture from being flipped upside down
+            this.assets[name] = texture;
+            return texture;
+        } catch (error) {
+            console.error(`Error loading texture ${path}:`, error);
+            throw error;
+        }
     }
 
     async loadGLTF(name, path) {
         try {
             const gltf = await this.gltfLoader.loadAsync(path);
+
+            // Prevent GLTFLoader from loading embedded textures
+            gltf.scene.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    const materials = Array.isArray(child.material) ? child.material : [child.material];
+                    materials.forEach(material => {
+                        if (material.map) {
+                            material.map = null;
+                            material.needsUpdate = true;
+                        }
+                    });
+                }
+            });
+
             this.assets[name] = gltf.scene;
             if (gltf.animations && gltf.animations.length > 0) {
                 this.assets[`${name}-animations`] = gltf.animations;

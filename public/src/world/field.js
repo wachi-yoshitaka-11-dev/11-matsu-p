@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { Field as FieldConst, Fall } from '../utils/constants.js';
+import { Field as FieldConst, Fall, AssetNames } from '../utils/constants.js';
+import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class Field {
     constructor(game) {
         this.game = game;
-        const size = FieldConst.terrainSize;
-        const segments = FieldConst.terrainSegments;
+        const size = FieldConst.TERRAIN_SIZE;
+        const segments = FieldConst.TERRAIN_SEGMENTS;
         const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
 
         const vertices = geometry.attributes.position.array;
@@ -28,70 +29,119 @@ export class Field {
     }
 
     placeObjects() {
-        const treeModel = this.game.assetLoader.getAsset('tree');
-        const rockModel = this.game.assetLoader.getAsset('rock');
-        const grassModel = this.game.assetLoader.getAsset('grass');
+        const treeModel = this.game.assetLoader.getAsset(AssetNames.TREE_MODEL);
+        const rockModel = this.game.assetLoader.getAsset(AssetNames.ROCK_MODEL);
+        const grassModel = this.game.assetLoader.getAsset(AssetNames.GRASS_MODEL);
 
         if (!treeModel && !rockModel && !grassModel) {
             console.warn("Tree, Rock, and Grass models not loaded. Skipping object placement.");
             return;
         }
 
-        const numObjects = 500;
-        const terrainHalfSize = FieldConst.terrainSize / 2;
+        const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2; // Define terrainHalfSize here
 
-        for (let i = 0; i < numObjects; i++) {
-            const randomValue = Math.random();
-            let model;
-            if (randomValue < 0.33 && treeModel) {
-                model = treeModel;
-            } else if (randomValue < 0.66 && rockModel) {
-                model = rockModel;
-            } else if (grassModel) {
-                model = grassModel;
-            } else {
-                continue;
-            }
-
-            const instance = model.clone();
-
-            const x = (Math.random() * FieldConst.terrainSize) - terrainHalfSize;
-            const z = (Math.random() * FieldConst.terrainSize) - terrainHalfSize;
-            const y = this.getHeightAt(x, z);
-
-            const scale = Math.random() * 0.5 + 0.5;
-            instance.scale.set(scale, scale, scale);
-
-            const bbox = new THREE.Box3().setFromObject(instance);
-            const objectMinY = bbox.min.y;
-            instance.position.set(x, y - objectMinY, z);
-
-            this.game.sceneManager.add(instance);
+        // Place trees
+        for (let i = 0; i < FieldConst.TREE_COUNT; i++) {
+            this._placeObject(treeModel, FieldConst.TREE_MIN_SCALE, FieldConst.TREE_MAX_SCALE, (model) => {
+                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const y = this.getHeightAt(x, z);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const objectMinY = bbox.min.y;
+                return new THREE.Vector3(x, y - objectMinY, z);
+            });
         }
 
-        const cloudModel = this.game.assetLoader.getAsset('cloud');
+        // Place rocks
+        for (let i = 0; i < FieldConst.ROCK_COUNT; i++) {
+            this._placeObject(rockModel, FieldConst.ROCK_MIN_SCALE, FieldConst.ROCK_MAX_SCALE, (model) => {
+                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const y = this.getHeightAt(x, z);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const objectMinY = bbox.min.y;
+                return new THREE.Vector3(x, y - objectMinY, z);
+            });
+        }
+
+        // Place grass
+        for (let i = 0; i < FieldConst.GRASS_COUNT; i++) {
+            this._placeObject(grassModel, FieldConst.GRASS_MIN_SCALE, FieldConst.GRASS_MAX_SCALE, (model) => {
+                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const y = this.getHeightAt(x, z);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const objectMinY = bbox.min.y;
+                return new THREE.Vector3(x, y - objectMinY, z);
+            });
+        }
+
+        // Place clouds
+        const cloudModel = this.game.assetLoader.getAsset(AssetNames.CLOUD_MODEL);
         if (cloudModel) {
-            const numClouds = 100;
-            const cloudHeight = 20;
-            for (let i = 0; i < numClouds; i++) {
-                const instance = cloudModel.clone();
-                const x = (Math.random() * FieldConst.terrainSize * 2) - FieldConst.terrainSize;
-                const z = (Math.random() * FieldConst.terrainSize * 2) - FieldConst.terrainSize;
-                const y = cloudHeight + (Math.random() * 10 - 5);
-                instance.position.set(x, y, z);
-                const scale = Math.random() * 0.5 + 0.5;
-                instance.scale.set(scale, scale, scale);
-                this.game.sceneManager.add(instance);
+            // Apply texture to cloud model
+            const cloudTexture = this.game.assetLoader.getAsset(AssetNames.CLOUD_TEXTURE);
+            if (cloudTexture) {
+                applyTextureToObject(cloudModel, cloudTexture);
+                this._setObjectTransparency(cloudModel, FieldConst.CLOUD_OPACITY);
+            }
+
+            for (let i = 0; i < FieldConst.CLOUD_COUNT; i++) {
+                this._placeObject(cloudModel, FieldConst.CLOUD_MIN_SCALE, FieldConst.CLOUD_MAX_SCALE, () => {
+                    const x = (Math.random() * FieldConst.TERRAIN_SIZE * 2) - terrainHalfSize;
+                    const z = (Math.random() * FieldConst.TERRAIN_SIZE * 2) - terrainHalfSize;
+                    const y = 20 + (Math.random() * 10 - 5); // Cloud height
+                    return new THREE.Vector3(x, y, z);
+                });
             }
         }
 
-        const sunModel = this.game.assetLoader.getAsset('sun');
+        // Place sun
+        const sunModel = this.game.assetLoader.getAsset(AssetNames.SUN_MODEL);
         if (sunModel) {
-            const instance = sunModel.clone();
-            instance.position.set(FieldConst.terrainSize / 2, FieldConst.terrainSize / 2 + 10, -FieldConst.terrainSize / 2);
-            instance.scale.set(5, 5, 5);
-            this.game.sceneManager.add(instance);
+            // Apply texture to sun model
+            const sunTexture = this.game.assetLoader.getAsset(AssetNames.SUN_TEXTURE);
+            if (sunTexture) {
+                applyTextureToObject(sunModel, sunTexture);
+                this._setObjectTransparency(sunModel, FieldConst.SUN_OPACITY);
+            }
+
+            for (let i = 0; i < FieldConst.SUN_COUNT; i++) {
+                this._placeObject(sunModel, FieldConst.SUN_MIN_SCALE, FieldConst.SUN_MAX_SCALE, () => {
+                    return new THREE.Vector3(FieldConst.TERRAIN_SIZE / 2, FieldConst.TERRAIN_SIZE / 2 + 10, -FieldConst.TERRAIN_SIZE / 2);
+                });
+            }
         }
+    }
+
+    _placeObject(model, minScale, maxScale, getPosition) {
+        const instance = model.clone();
+
+        // Apply texture if available
+        const textureName = `${model.name.toUpperCase()}_TEXTURE`;
+        const texture = this.game.assetLoader.getAsset(AssetNames[textureName]);
+        if (texture) {
+            applyTextureToObject(instance, texture);
+        }
+
+        const scale = Math.random() * (maxScale - minScale) + minScale;
+        instance.scale.set(scale, scale, scale);
+
+        instance.position.copy(getPosition(instance));
+
+        this.game.sceneManager.add(instance);
+    }
+
+    _setObjectTransparency(object, opacity) {
+        object.traverse((child) => {
+            if (child.isMesh && child.material) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                materials.forEach(material => {
+                    material.transparent = true;
+                    material.opacity = opacity;
+                });
+            }
+        });
     }
 
     getHeightAt(x, z) {
@@ -102,6 +152,6 @@ export class Field {
             return intersects[0].point.y;
         }
         // If no intersection, return a very low value to allow falling below the terrain
-        return Fall.maxFallDepth; // Fall.fallDeathThreshold (-100)よりも十分に低い値
+        return Fall.MAX_FALL_DEPTH; // Fall.fallDeathThreshold (-100)よりも十分に低い値
     }
 }

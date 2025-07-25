@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PhysicsComponent } from '../core/components/physics-component.js';
-import { EffectColors, Fall } from '../utils/constants.js';
+import { EffectColors, Fall, AssetNames } from '../utils/constants.js';
+import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class Character {
     constructor(game, geometryOrModel, material, options = {}) {
@@ -12,6 +13,14 @@ export class Character {
             this.animations = game.assetLoader.getAsset(`${options.modelName}-animations`);
             if (this.animations && this.animations.length > 0) {
                 this.playAnimation('idle'); // Assuming 'idle' is a common animation name
+            }
+
+            // Apply texture if available
+            const texture = game.assetLoader.getAsset(options.textureName);
+            if (texture) {
+                applyTextureToObject(this.mesh, texture);
+            } else {
+                console.warn(`Texture asset for ${options.modelName} not found.`);
             }
         } else {
             this.mesh = new THREE.Mesh(geometryOrModel, material);
@@ -100,31 +109,31 @@ export class Character {
 
     showDamageEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.damage);
+        this._setMeshColor(EffectColors.DAMAGE);
         this._startEffectTimeout(100);
     }
 
     showAttackEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.attack);
+        this._setMeshColor(EffectColors.ATTACK);
         this._startEffectTimeout(150);
     }
 
     showSkillProjectileEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.skillProjectile);
+        this._setMeshColor(EffectColors.SKILL_PROJECTILE);
         this._startEffectTimeout(100);
     }
 
     showSkillBuffEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.skillBuff);
+        this._setMeshColor(EffectColors.SKILL_BUFF);
         this._startEffectTimeout(100);
     }
 
     startChargingEffect() {
         this.clearEffectTimeout();
-        this._setMeshColor(EffectColors.charge);
+        this._setMeshColor(EffectColors.CHARGE);
     }
 
     stopChargingEffect() {
@@ -193,7 +202,7 @@ export class Character {
         }
 
         // Check for fall death (only if not already dead)
-        if (this.mesh.position.y < Fall.fallDeathThreshold) {
+        if (this.mesh.position.y < Fall.FALL_DEATH_THRESHOLD) {
             this.hp = 0;
             this.isDead = true;
             this.onDeath();
@@ -207,14 +216,12 @@ export class Character {
     placeOnGround(x, z) {
         const groundY = this.game.field.getHeightAt(x, z);
 
-        const tempPosition = this.mesh.position.clone();
-        this.mesh.position.set(0, 0, 0);
-        this.mesh.updateMatrixWorld(true);
+        // Calculate the offset from the mesh's origin to its bottom
         const bbox = new THREE.Box3().setFromObject(this.mesh);
-        const modelMinY = bbox.min.y;
-        this.mesh.position.copy(tempPosition);
+        const objectHeight = bbox.max.y - bbox.min.y;
+        const offsetToBottom = bbox.min.y - this.mesh.position.y;
 
-        this.mesh.position.set(x, groundY - modelMinY, z);
+        this.mesh.position.set(x, groundY - offsetToBottom, z);
     }
 
     dispose() {

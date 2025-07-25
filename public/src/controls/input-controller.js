@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
+import { AnimationNames, AssetNames } from '../utils/constants.js';
 
 export class InputController {
     constructor(player, camera, game, canvas) {
@@ -80,8 +81,8 @@ export class InputController {
                 this.player.isWeakAttacking = true;
                 this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
-                this.player.playAnimation('attack-melee-right'); // Trigger animation directly
-                this.game.playSound('weak-attack');
+                this.player.playAnimation(AnimationNames.WEAK_ATTACK); // Trigger animation directly
+                this.game.playSound(AssetNames.SFX_WEAK_ATTACK);
                 this.game.enemies.forEach(enemy => {
                     if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
                         enemy.takeDamage(params.damage);
@@ -106,7 +107,7 @@ export class InputController {
                 if (this.player.stamina >= staminaCost) {
                     this.player.stamina -= staminaCost;
                     this.player.isStrongAttacking = true;
-                    this.player.playAnimation('attack-melee-left'); // Trigger animation directly
+                    this.player.playAnimation(AnimationNames.STRONG_ATTACK); // Trigger animation directly
                     this.game.playSound('strong-attack');
                     this.game.enemies.forEach(enemy => {
                         let finalDamage = this.player.isAttackBuffed ? damage * this.player.attackBuffMultiplier : damage;
@@ -134,7 +135,7 @@ export class InputController {
         if (isTryingToRoll && canRoll) {
             this.player.isRolling = true;
             this.player.stamina -= this.game.data.player.staminaCostRoll;
-            this.player.playAnimation('roll'); // Trigger animation directly
+            this.player.playAnimation(AnimationNames.ROLLING); // Trigger animation directly
             this.game.playSound('rolling');
 
             const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(this.player.mesh.quaternion);
@@ -195,7 +196,7 @@ export class InputController {
                 if (closestEnemy) {
                     this.player.isLockedOn = true;
                     this.player.lockedOnTarget = closestEnemy;
-                    this.game.playSound('lock-on');
+                    this.game.playSound(AssetNames.SFX_LOCK_ON);
                 }
             } else {
                 this.player.isLockedOn = false;
@@ -237,6 +238,7 @@ export class InputController {
                 this.player.isUsingSkill = true;
                 this.player.fp -= skillData.fpCost;
                 this.player.showSkillProjectileEffect();
+                this.player.playAnimation(AnimationNames.USE_SKILL_PROJECTILE); // Skill projectile animation substitute
                 this.game.playSound('use-skill-projectile');
                 const direction = new THREE.Vector3();
                 this.player.mesh.getWorldDirection(direction);
@@ -255,6 +257,7 @@ export class InputController {
                 this.player.fp -= buffData.fpCost;
                 this.game.playSound('use-skill-buff');
                 this.player.showSkillBuffEffect();
+                this.player.playAnimation(AnimationNames.USE_SKILL_BUFF); // Skill buff animation substitute
                 this.player.applyAttackBuff();
                 this.player.applyDefenseBuff();
                 setTimeout(() => {
@@ -270,6 +273,7 @@ export class InputController {
             this.game.npcs.forEach(npc => {
                 if (this.player.mesh.position.distanceTo(npc.mesh.position) < this.game.data.enemies.npc.interactionRange) {
                     npc.interact();
+                    this.player.playAnimation(AnimationNames.TALK); // NPC interaction animation substitute
                     this.game.playSound('talk');
                 }
             });
@@ -281,7 +285,7 @@ export class InputController {
         if (this.keys['Space'] && this.player.onGround && this.player.stamina >= this.game.data.player.staminaCostJump) {
             this.player.physics.velocity.y = this.game.data.player.jumpPower;
             this.player.stamina -= this.game.data.player.staminaCostJump;
-            this.game.playSound('jump');
+            this.game.playSound(AssetNames.SFX_JUMP);
         }
     }
 }

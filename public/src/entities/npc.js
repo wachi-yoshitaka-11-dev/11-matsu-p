@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { AssetNames } from '../utils/constants.js';
 
 export class Npc extends Character {
-    constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game) {
-        const model = game.assetLoader.getAsset('npc');
+    constructor(dialogue, position = new THREE.Vector3(-5, 0.5, -5), game, options = {}) {
+        const model = game.assetLoader.getAsset(AssetNames.NPC_MODEL);
         if (model) {
-            super(game, model.clone(), null, { modelName: 'npc' });
+            super(game, model.clone(), null, { modelName: AssetNames.NPC_MODEL, textureName: AssetNames.NPC_TEXTURE });
         } else {
             const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
             const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });

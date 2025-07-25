@@ -75,7 +75,7 @@ export class TitleScreen {
                 color: white;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-end; /* ボタンを下に寄せる */
                 align-items: center;
                 font-family: sans-serif;
                 z-index: 100;
@@ -105,24 +105,37 @@ export class TitleScreen {
             #title-menu {
                 display: flex;
                 flex-direction: column;
-                gap: 15px;
+                gap: 5px;
+                margin-bottom: 50px; /* ボタン全体を画面下から持ち上げる */
             }
             #title-menu button {
                 padding: 12px 25px;
                 font-size: 1.5em;
-                background-color: #4CAF50;
+                background-color: transparent; /* 背景なし */
                 color: white;
-                border: none;
-                border-radius: 8px;
+                border: none; /* 枠線なし */
+                /* border-radius: 8px; */ /* 角丸を削除 */
                 cursor: pointer;
-                transition: background-color 0.3s ease;
-                width: 250px;
+                transition: background-color 0.3s ease, color 0.3s ease;
+                width: 350px;
+                /* 文字に枠線をつける */
+                text-shadow: 
+                    -1px -1px 0 #000,
+                    1px -1px 0 #000,
+                    -1px 1px 0 #000,
+                    1px 1px 0 #000; /* 黒いアウトライン */
             }
             #title-menu button:hover:not(:disabled) {
-                background-color: #45a049;
+                background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%); /* 楕円形のぼかし効果を明るく */
+                color: white;
+                text-shadow: 
+                    -1px -1px 0 #000,
+                    1px -1px 0 #000,
+                    -1px 1px 0 #000,
+                    1px 1px 0 #000; /* ホバー時も黒いアウトラインを維持 */
             }
             #title-menu button:disabled {
-                background-color: #666;
+                background-color: transparent; /* 無効なボタンも背景なし */
                 cursor: not-allowed;
                 opacity: 0.7;
             }

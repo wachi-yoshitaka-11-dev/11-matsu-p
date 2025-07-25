@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { AssetNames } from '../utils/constants.js';
 
 export class Enemy extends Character {
-    constructor(game, player, position) {
-        const model = game.assetLoader.getAsset('enemy');
+    constructor(game, player, position, options = {}) {
+        const model = game.assetLoader.getAsset(AssetNames.ENEMY_MODEL);
         if (model) {
-            super(game, model.clone(), null, { hp: 30, speed: game.data.enemies.grunt.speed, modelName: 'enemy' });
+            super(game, model.clone(), null, { hp: 30, speed: game.data.enemies.grunt.speed, modelName: AssetNames.ENEMY_MODEL, textureName: AssetNames.ENEMY_TEXTURE });
         } else {
             const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
             const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });

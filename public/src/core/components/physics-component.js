@@ -18,7 +18,7 @@ export class PhysicsComponent {
     update(deltaTime) {
         const previousY = this.object.position.y;
 
-        this.velocity.y -= GameConstants.gravity * deltaTime;
+        this.velocity.y -= GameConstants.GRAVITY * deltaTime;
         this.object.position.y += this.velocity.y * deltaTime;
 
         this.object.position.x += this.velocity.x * deltaTime;

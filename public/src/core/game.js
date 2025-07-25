@@ -12,6 +12,7 @@ import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
+import { AssetNames } from '../utils/constants.js';
 
 const GameState = {
     TITLE: 'title',
@@ -65,7 +66,7 @@ export class Game {
         setTimeout(() => {
             this.titleScreen.showMenu();
             this.titleBGM = new THREE.Audio(this.listener);
-            this.titleBGM.setBuffer(this.audioBuffers['title-bgm']);
+            this.titleBGM.setBuffer(this.audioBuffers[AssetNames.BGM_TITLE]);
             this.titleBGM.setLoop(true);
             this.titleBGM.setVolume(0.5);
             this.titleBGM.play();
@@ -74,7 +75,7 @@ export class Game {
         this.field = new Field(this);
         this.sceneManager.add(this.field.mesh);
 
-        this.player = new Player(this);
+        this.player = new Player(this, { modelName: AssetNames.PLAYER_MODEL, textureName: AssetNames.PLAYER_TEXTURE });
         this.sceneManager.add(this.player.mesh);
 
         this.hud = new Hud(this, this.player);
@@ -83,7 +84,7 @@ export class Game {
 
         const enemyX = 5;
         const enemyZ = 0;
-        const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, 0, enemyZ));
+        const enemy = new Enemy(this, this.player, new THREE.Vector3(enemyX, 0, enemyZ), { modelName: AssetNames.ENEMY_MODEL, textureName: AssetNames.ENEMY_TEXTURE });
         this.enemies.push(enemy);
         this.sceneManager.add(enemy.mesh);
 
@@ -91,11 +92,11 @@ export class Game {
         this.items.push(item);
         this.sceneManager.add(item.mesh);
 
-        const boss = new Boss(this, this.player);
+        const boss = new Boss(this, this.player, { modelName: AssetNames.BOSS_MODEL, textureName: AssetNames.BOSS_TEXTURE });
         this.boss = boss;
         this.sceneManager.add(boss.mesh);
 
-        const npc = new Npc('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5), this);
+        const npc = new Npc('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5), this, { modelName: AssetNames.NPC_MODEL, textureName: AssetNames.NPC_TEXTURE });
         this.npcs.push(npc);
         this.sceneManager.add(npc.mesh);
     }
@@ -109,36 +110,53 @@ export class Game {
     }
 
     async loadAudio() {
-        const gameBGMBuffer = await this.assetLoader.loadAudio('bgm', 'assets/audio/game-bgm.mp3');
+        const gameBGMBuffer = await this.assetLoader.loadAudio(AssetNames.BGM_GAME, `assets/audio/${AssetNames.BGM_GAME}.mp3`);
         this.gameBGM.setBuffer(gameBGMBuffer);
         this.gameBGM.setLoop(true);
         this.gameBGM.setVolume(0.2);
 
-        this.audioBuffers['title-bgm'] = await this.assetLoader.loadAudio('title-bgm', 'assets/audio/title-bgm.mp3');
-        this.audioBuffers['damage'] = await this.assetLoader.loadAudio('damage', 'assets/audio/damage.mp3');
-        this.audioBuffers['death'] = await this.assetLoader.loadAudio('death', 'assets/audio/death.mp3');
-        this.audioBuffers['guard'] = await this.assetLoader.loadAudio('guard', 'assets/audio/guard.mp3');
-        this.audioBuffers['jump'] = await this.assetLoader.loadAudio('jump', 'assets/audio/jump.mp3');
-        this.audioBuffers['lock-on'] = await this.assetLoader.loadAudio('lock-on', 'assets/audio/lock-on.mp3');
-        this.audioBuffers['pause'] = await this.assetLoader.loadAudio('pause', 'assets/audio/pause.mp3');
-        this.audioBuffers['rolling'] = await this.assetLoader.loadAudio('rolling', 'assets/audio/rolling.mp3');
-        this.audioBuffers['start'] = await this.assetLoader.loadAudio('start', 'assets/audio/start.mp3');
-        this.audioBuffers['strong-attack'] = await this.assetLoader.loadAudio('strong-attack', 'assets/audio/strong-attack.mp3');
-        this.audioBuffers['switch-weapon'] = await this.assetLoader.loadAudio('switch-weapon', 'assets/audio/switch-weapon.mp3');
-        this.audioBuffers['talk'] = await this.assetLoader.loadAudio('talk', 'assets/audio/talk.mp3');
-        this.audioBuffers['use-item'] = await this.assetLoader.loadAudio('use-item', 'assets/audio/use-item.mp3');
-        this.audioBuffers['use-skill-buff'] = await this.assetLoader.loadAudio('use-skill-buff', 'assets/audio/use-skill-buff.mp3');
-        this.audioBuffers['use-skill-projectile'] = await this.assetLoader.loadAudio('use-skill-projectile', 'assets/audio/use-skill-projectile.mp3');
-        this.audioBuffers['weak-attack'] = await this.assetLoader.loadAudio('weak-attack', 'assets/audio/weak-attack.mp3');
+        this.audioBuffers[AssetNames.BGM_TITLE] = await this.assetLoader.loadAudio(AssetNames.BGM_TITLE, `assets/audio/${AssetNames.BGM_TITLE}.mp3`);
+        this.audioBuffers[AssetNames.SFX_DAMAGE] = await this.assetLoader.loadAudio(AssetNames.SFX_DAMAGE, `assets/audio/${AssetNames.SFX_DAMAGE}.mp3`);
+        this.audioBuffers[AssetNames.SFX_DEATH] = await this.assetLoader.loadAudio(AssetNames.SFX_DEATH, `assets/audio/${AssetNames.SFX_DEATH}.mp3`);
+        this.audioBuffers[AssetNames.SFX_GUARD] = await this.assetLoader.loadAudio(AssetNames.SFX_GUARD, `assets/audio/${AssetNames.SFX_GUARD}.mp3`);
+        this.audioBuffers[AssetNames.SFX_JUMP] = await this.assetLoader.loadAudio(AssetNames.SFX_JUMP, `assets/audio/${AssetNames.SFX_JUMP}.mp3`);
+        this.audioBuffers[AssetNames.SFX_LOCK_ON] = await this.assetLoader.loadAudio(AssetNames.SFX_LOCK_ON, `assets/audio/${AssetNames.SFX_LOCK_ON}.mp3`);
+        this.audioBuffers[AssetNames.SFX_PAUSE] = await this.assetLoader.loadAudio(AssetNames.SFX_PAUSE, `assets/audio/${AssetNames.SFX_PAUSE}.mp3`);
+        this.audioBuffers[AssetNames.SFX_ROLLING] = await this.assetLoader.loadAudio(AssetNames.SFX_ROLLING, `assets/audio/${AssetNames.SFX_ROLLING}.mp3`);
+        this.audioBuffers[AssetNames.SFX_START] = await this.assetLoader.loadAudio(AssetNames.SFX_START, `assets/audio/${AssetNames.SFX_START}.mp3`);
+        this.audioBuffers[AssetNames.SFX_STRONG_ATTACK] = await this.assetLoader.loadAudio(AssetNames.SFX_STRONG_ATTACK, `assets/audio/${AssetNames.SFX_STRONG_ATTACK}.mp3`);
+        this.audioBuffers[AssetNames.SFX_SWITCH_WEAPON] = await this.assetLoader.loadAudio(AssetNames.SFX_SWITCH_WEAPON, `assets/audio/${AssetNames.SFX_SWITCH_WEAPON}.mp3`);
+        this.audioBuffers[AssetNames.SFX_TALK] = await this.assetLoader.loadAudio(AssetNames.SFX_TALK, `assets/audio/${AssetNames.SFX_TALK}.mp3`);
+        this.audioBuffers[AssetNames.SFX_USE_ITEM] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_ITEM, `assets/audio/${AssetNames.SFX_USE_ITEM}.mp3`);
+        this.audioBuffers[AssetNames.SFX_USE_SKILL_BUFF] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_SKILL_BUFF, `assets/audio/${AssetNames.SFX_USE_SKILL_BUFF}.mp3`);
+        this.audioBuffers[AssetNames.SFX_USE_SKILL_PROJECTILE] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_SKILL_PROJECTILE, `assets/audio/${AssetNames.SFX_USE_SKILL_PROJECTILE}.mp3`);
+        this.audioBuffers[AssetNames.SFX_WEAK_ATTACK] = await this.assetLoader.loadAudio(AssetNames.SFX_WEAK_ATTACK, `assets/audio/${AssetNames.SFX_WEAK_ATTACK}.mp3`);
     }
 
     async loadModels() {
-        const models = ['player', 'enemy', 'boss', 'npc', 'tree', 'rock', 'grass', 'cloud', 'sun'];
-        for (const modelName of models) {
+        const assetsToLoad = [
+            { model: AssetNames.PLAYER_MODEL, texture: AssetNames.PLAYER_TEXTURE },
+            { model: AssetNames.ENEMY_MODEL, texture: AssetNames.ENEMY_TEXTURE },
+            { model: AssetNames.BOSS_MODEL, texture: AssetNames.BOSS_TEXTURE },
+            { model: AssetNames.NPC_MODEL, texture: AssetNames.NPC_TEXTURE },
+            { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
+            { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
+            { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },
+            { model: AssetNames.CLOUD_MODEL, texture: AssetNames.CLOUD_TEXTURE },
+            { model: AssetNames.SUN_MODEL, texture: AssetNames.SUN_TEXTURE },
+        ];
+
+        for (const asset of assetsToLoad) {
             try {
-                await this.assetLoader.loadGLTF(modelName, `assets/models/${modelName}.glb`);
+                await this.assetLoader.loadGLTF(asset.model, `assets/models/${asset.model}.glb`);
+                const texturePath = `assets/textures/${asset.model}.png`;
+                try {
+                    await this.assetLoader.loadTexture(asset.texture, texturePath);
+                } catch (textureError) {
+                    console.warn(`Texture for ${asset.model} not found at ${texturePath}. Using default material.`);
+                }
             } catch (error) {
-                console.error(`Could not load model ${modelName}. A placeholder will be used.`);
+                console.error(`Could not load model ${asset.model}. A placeholder will be used.`);
             }
         }
     }
@@ -159,9 +177,22 @@ export class Game {
         if (!this.gameBGM.isPlaying) {
             this.gameBGM.play();
         }
-        this.playSound('start');
+        this.playSound(AssetNames.SFX_START);
         // Request pointer lock now that the game has started from a user click
         this.sceneManager.renderer.domElement.requestPointerLock();
+    }
+
+    isTextureAppliedToModel(modelName) {
+        const model = this.assetLoader.getAsset(modelName);
+        if (!model) return false;
+
+        let textureApplied = false;
+        model.traverse((child) => {
+            if (child.isMesh && child.material && child.material.map) {
+                textureApplied = true;
+            }
+        });
+        return textureApplied;
     }
 
     togglePause() {
