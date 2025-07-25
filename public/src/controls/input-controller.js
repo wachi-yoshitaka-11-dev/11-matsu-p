@@ -81,7 +81,7 @@ export class InputController {
                 this.player.isWeakAttacking = true;
                 this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
-                this.player.playAnimation(AnimationNames.WEAK_ATTACK); // Trigger animation directly
+                this.player.playAnimation(AnimationNames.WEAK_ATTACK);
                 this.game.playSound(AssetNames.SFX_WEAK_ATTACK);
                 this.game.enemies.forEach(enemy => {
                     if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
@@ -107,8 +107,8 @@ export class InputController {
                 if (this.player.stamina >= staminaCost) {
                     this.player.stamina -= staminaCost;
                     this.player.isStrongAttacking = true;
-                    this.player.playAnimation(AnimationNames.STRONG_ATTACK); // Trigger animation directly
-                    this.game.playSound('strong-attack');
+                    this.player.playAnimation(AnimationNames.STRONG_ATTACK);
+                    this.game.playSound(AssetNames.SFX_STRONG_ATTACK);
                     this.game.enemies.forEach(enemy => {
                         let finalDamage = this.player.isAttackBuffed ? damage * this.player.attackBuffMultiplier : damage;
                         if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.strongAttackRange) {
@@ -135,7 +135,7 @@ export class InputController {
         if (isTryingToRoll && canRoll) {
             this.player.isRolling = true;
             this.player.stamina -= this.game.data.player.staminaCostRoll;
-            this.player.playAnimation(AnimationNames.ROLLING); // Trigger animation directly
+            this.player.playAnimation(AnimationNames.ROLLING);
             this.game.playSound('rolling');
 
             const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(this.player.mesh.quaternion);
@@ -168,7 +168,7 @@ export class InputController {
             if (this.keys['KeyA']) moveDirection.sub(right);
             if (this.keys['KeyD']) moveDirection.add(right);
 
-            if (moveDirection.lengthSq() > 0.001) { // Use a small threshold
+            if (moveDirection.lengthSq() > 0.001) {
                 moveDirection.normalize();
                 const currentSpeed = this.player.isDashing ? speed * this.game.data.player.dashSpeedMultiplier : speed;
                 this.player.physics.velocity.x = moveDirection.x * currentSpeed;
@@ -238,7 +238,7 @@ export class InputController {
                 this.player.isUsingSkill = true;
                 this.player.fp -= skillData.fpCost;
                 this.player.showSkillProjectileEffect();
-                this.player.playAnimation(AnimationNames.USE_SKILL_PROJECTILE); // Skill projectile animation substitute
+                this.player.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
                 this.game.playSound('use-skill-projectile');
                 const direction = new THREE.Vector3();
                 this.player.mesh.getWorldDirection(direction);
@@ -257,7 +257,7 @@ export class InputController {
                 this.player.fp -= buffData.fpCost;
                 this.game.playSound('use-skill-buff');
                 this.player.showSkillBuffEffect();
-                this.player.playAnimation(AnimationNames.USE_SKILL_BUFF); // Skill buff animation substitute
+                this.player.playAnimation(AnimationNames.USE_SKILL_BUFF);
                 this.player.applyAttackBuff();
                 this.player.applyDefenseBuff();
                 setTimeout(() => {
@@ -273,7 +273,7 @@ export class InputController {
             this.game.npcs.forEach(npc => {
                 if (this.player.mesh.position.distanceTo(npc.mesh.position) < this.game.data.enemies.npc.interactionRange) {
                     npc.interact();
-                    this.player.playAnimation(AnimationNames.TALK); // NPC interaction animation substitute
+                    this.player.playAnimation(AnimationNames.TALK);
                     this.game.playSound('talk');
                 }
             });

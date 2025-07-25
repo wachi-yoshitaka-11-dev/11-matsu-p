@@ -170,7 +170,6 @@ export class Game {
             this.titleScreen.dispose();
             this.titleScreen = null;
         }
-        // タイトルBGMを停止し、ゲームBGMを再生
         if (this.titleBGM && this.titleBGM.isPlaying) {
             this.titleBGM.stop();
         }
@@ -178,7 +177,6 @@ export class Game {
             this.gameBGM.play();
         }
         this.playSound(AssetNames.SFX_START);
-        // Request pointer lock now that the game has started from a user click
         this.sceneManager.renderer.domElement.requestPointerLock();
     }
 

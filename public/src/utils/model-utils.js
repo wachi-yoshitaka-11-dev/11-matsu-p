@@ -1,11 +1,6 @@
 import * as THREE from 'three';
 
-/**
- * Applies a given texture to all MeshStandardMaterial or MeshBasicMaterial instances within an Object3D.
- * If a material does not have a map property, a warning is logged.
- * @param {THREE.Object3D} object The object to apply the texture to.
- * @param {THREE.Texture} texture The texture to apply.
- */
+
 export function applyTextureToObject(object, texture) {
     if (!object || !texture) {
         console.warn('applyTextureToObject: Invalid object or texture provided.');

@@ -5,11 +5,11 @@ html, body {
 
 body {
     margin: 0;
-    overflow: hidden; /* スクロールバーを消す */
+    overflow: hidden;
 }
 
 canvas {
-    display: block; /* canvas要素のデフォルトのマージンを消す */
+    display: block;
 }
 
 #title-screen {

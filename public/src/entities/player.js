@@ -9,7 +9,6 @@ export class Player extends Character {
         if (loadedModel instanceof THREE.Group) {
             super(game, loadedModel, null, { hp: game.data.player.maxHp, modelName: AssetNames.PLAYER_MODEL, textureName: AssetNames.PLAYER_TEXTURE });
         } else {
-            console.warn('GLTF player model not loaded or not a THREE.Group. Falling back to BoxGeometry.');
             const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
             const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
             super(game, geometry, material, { hp: game.data.player.maxHp });

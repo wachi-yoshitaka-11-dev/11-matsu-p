@@ -19,8 +19,6 @@ export class Character {
             const texture = game.assetLoader.getAsset(options.textureName);
             if (texture) {
                 applyTextureToObject(this.mesh, texture);
-            } else {
-                console.warn(`Texture asset for ${options.modelName} not found.`);
             }
         } else {
             this.mesh = new THREE.Mesh(geometryOrModel, material);
@@ -169,8 +167,6 @@ export class Character {
             newAction.reset().fadeIn(0.2).play();
             this.currentAction = newAction;
             this.currentAnimationName = name;
-        } else {
-            // console.warn(`Animation clip "${name}" not found.`);
         }
     }
 

@@ -34,7 +34,6 @@ export class Field {
         const grassModel = this.game.assetLoader.getAsset(AssetNames.GRASS_MODEL);
 
         if (!treeModel && !rockModel && !grassModel) {
-            console.warn("Tree, Rock, and Grass models not loaded. Skipping object placement.");
             return;
         }
 

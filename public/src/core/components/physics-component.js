@@ -24,10 +24,7 @@ export class PhysicsComponent {
         this.object.position.x += this.velocity.x * deltaTime;
         this.object.position.z += this.velocity.z * deltaTime;
 
-        if (!this.field.getHeightAt) {
-            console.warn('PhysicsComponent: Field object does not implement getHeightAt method');
-            return;
-        }
+        
         const groundHeight = this.field.getHeightAt(this.object.position.x, this.object.position.z);
         const box = new THREE.Box3().setFromObject(this.object);
         const objectHeight = box.getSize(new THREE.Vector3()).y;

@@ -12,10 +12,10 @@ export class AssetLoader {
     async loadTexture(name, path) {
         try {
             const texture = await this.textureLoader.loadAsync(path);
-            texture.colorSpace = THREE.SRGBColorSpace; // Set sRGB encoding for correct color representation
-            texture.wrapS = THREE.RepeatWrapping; // Repeat texture horizontally
-            texture.wrapT = THREE.RepeatWrapping; // Repeat texture vertically
-            texture.flipY = false; // Prevent texture from being flipped upside down
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.flipY = false;
             this.assets[name] = texture;
             return texture;
         } catch (error) {

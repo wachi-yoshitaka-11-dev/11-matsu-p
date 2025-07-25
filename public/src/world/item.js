@@ -5,7 +5,6 @@ export class Item {
         this.type = type;
         let itemData = game.data.items.generic;
         if (!itemData) {
-            console.warn('Item data for generic not found. Using default values.');
             itemData = { pickupRange: 0.5, sphereRadius: 0.2, geometrySegments: 8 };
         }
         const geometry = new THREE.SphereGeometry(itemData.sphereRadius, itemData.geometrySegments, itemData.geometrySegments);
