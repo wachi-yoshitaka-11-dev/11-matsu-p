@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PhysicsComponent } from '../core/components/physics-component.js';
-import { EffectColors, Fall, AssetNames } from '../utils/constants.js';
+import { EffectColors, Fall, AnimationNames } from '../utils/constants.js';
 import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class Character {
@@ -12,7 +12,7 @@ export class Character {
             this.mixer = new THREE.AnimationMixer(this.mesh);
             this.animations = game.assetLoader.getAsset(`${options.modelName}-animations`);
             if (this.animations && this.animations.length > 0) {
-                this.playAnimation('idle'); // Assuming 'idle' is a common animation name
+                this.playAnimation(AnimationNames.IDLE);
             }
 
             // Apply texture if available
@@ -152,7 +152,7 @@ export class Character {
         if (clip) {
             const newAction = this.mixer.clipAction(clip);
 
-            const isOneShot = name.startsWith('attack-') || name === 'die' || name === 'roll';
+            const isOneShot = name === AnimationNames.WEAK_ATTACK || name === AnimationNames.STRONG_ATTACK || name === AnimationNames.DIE || name === AnimationNames.ROLLING;
             if (isOneShot) {
                 newAction.setLoop(THREE.LoopOnce);
                 newAction.clampWhenFinished = true;

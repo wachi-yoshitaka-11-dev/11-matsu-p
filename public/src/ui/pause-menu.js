@@ -10,7 +10,10 @@ export class PauseMenu {
 
         const resumeButton = document.createElement('button');
         resumeButton.textContent = 'Resume';
-        resumeButton.addEventListener('click', () => this.game.togglePause());
+        resumeButton.addEventListener('click', () => {
+            this.game.togglePause();
+            this.game.setPauseMenuVisibility(false);
+        });
         this.container.appendChild(resumeButton);
 
         document.body.appendChild(this.container);

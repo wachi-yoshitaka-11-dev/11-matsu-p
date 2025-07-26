@@ -18,7 +18,7 @@ export class Enemy extends Character {
         this.placeOnGround(position.x, position.z);
 
         this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
-        this.experience = 10;
+        this.experience = this.game.data.enemies.grunt.experience;
     }
 
     update(deltaTime) {
@@ -54,10 +54,10 @@ export class Enemy extends Character {
 
         if (isGuarded) {
             this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
-            this.game.playSound('guard');
+            this.game.playSound(AssetNames.SFX_GUARD);
         } else {
             this.player.takeDamage(damageToPlayer);
-            this.game.playSound('damage');
+            this.game.playSound(AssetNames.SFX_DAMAGE);
         }
     }
 

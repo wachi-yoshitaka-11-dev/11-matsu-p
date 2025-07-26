@@ -12,13 +12,7 @@ import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
-import { AssetNames } from '../utils/constants.js';
-
-const GameState = {
-    TITLE: 'title',
-    PLAYING: 'playing',
-    PAUSED: 'paused'
-};
+import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 
 export class Game {
     constructor() {
@@ -40,7 +34,7 @@ export class Game {
 
         this.listener = new THREE.AudioListener();
         this.sceneManager.camera.add(this.listener);
-        this.gameBGM = new THREE.Audio(this.listener);
+        this.playingBGM = new THREE.Audio(this.listener);
         this.audioBuffers = {};
 
         this.gameState = GameState.TITLE;
@@ -68,7 +62,7 @@ export class Game {
             this.titleBGM = new THREE.Audio(this.listener);
             this.titleBGM.setBuffer(this.audioBuffers[AssetNames.BGM_TITLE]);
             this.titleBGM.setLoop(true);
-            this.titleBGM.setVolume(0.5);
+            this.titleBGM.setVolume(0.2);
             this.titleBGM.play();
         }, remainingTime);
 
@@ -88,12 +82,13 @@ export class Game {
         this.enemies.push(enemy);
         this.sceneManager.add(enemy.mesh);
 
-        const item = new Item('potion', new THREE.Vector3(3, 0.2, 3), this);
+        const item = new Item(ItemTypes.POTION, new THREE.Vector3(3, 0.2, 3), this);
         this.items.push(item);
         this.sceneManager.add(item.mesh);
 
         const boss = new Boss(this, this.player, { modelName: AssetNames.BOSS_MODEL, textureName: AssetNames.BOSS_TEXTURE });
         this.boss = boss;
+        this.enemies.push(boss); // Add boss to enemies array
         this.sceneManager.add(boss.mesh);
 
         const npc = new Npc('こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。', new THREE.Vector3(-5, 0.5, -5), this, { modelName: AssetNames.NPC_MODEL, textureName: AssetNames.NPC_TEXTURE });
@@ -110,10 +105,10 @@ export class Game {
     }
 
     async loadAudio() {
-        const gameBGMBuffer = await this.assetLoader.loadAudio(AssetNames.BGM_GAME, `assets/audio/${AssetNames.BGM_GAME}.mp3`);
-        this.gameBGM.setBuffer(gameBGMBuffer);
-        this.gameBGM.setLoop(true);
-        this.gameBGM.setVolume(0.2);
+        const playingBGMBuffer = await this.assetLoader.loadAudio(AssetNames.BGM_PLAYING, `assets/audio/${AssetNames.BGM_PLAYING}.mp3`);
+        this.playingBGM.setBuffer(playingBGMBuffer);
+        this.playingBGM.setLoop(true);
+        this.playingBGM.setVolume(0.2);
 
         this.audioBuffers[AssetNames.BGM_TITLE] = await this.assetLoader.loadAudio(AssetNames.BGM_TITLE, `assets/audio/${AssetNames.BGM_TITLE}.mp3`);
         this.audioBuffers[AssetNames.SFX_DAMAGE] = await this.assetLoader.loadAudio(AssetNames.SFX_DAMAGE, `assets/audio/${AssetNames.SFX_DAMAGE}.mp3`);
@@ -124,6 +119,7 @@ export class Game {
         this.audioBuffers[AssetNames.SFX_PAUSE] = await this.assetLoader.loadAudio(AssetNames.SFX_PAUSE, `assets/audio/${AssetNames.SFX_PAUSE}.mp3`);
         this.audioBuffers[AssetNames.SFX_ROLLING] = await this.assetLoader.loadAudio(AssetNames.SFX_ROLLING, `assets/audio/${AssetNames.SFX_ROLLING}.mp3`);
         this.audioBuffers[AssetNames.SFX_START] = await this.assetLoader.loadAudio(AssetNames.SFX_START, `assets/audio/${AssetNames.SFX_START}.mp3`);
+        this.audioBuffers[AssetNames.SFX_LEVEL_UP] = await this.assetLoader.loadAudio(AssetNames.SFX_LEVEL_UP, `assets/audio/${AssetNames.SFX_LEVEL_UP}.mp3`);
         this.audioBuffers[AssetNames.SFX_STRONG_ATTACK] = await this.assetLoader.loadAudio(AssetNames.SFX_STRONG_ATTACK, `assets/audio/${AssetNames.SFX_STRONG_ATTACK}.mp3`);
         this.audioBuffers[AssetNames.SFX_SWITCH_WEAPON] = await this.assetLoader.loadAudio(AssetNames.SFX_SWITCH_WEAPON, `assets/audio/${AssetNames.SFX_SWITCH_WEAPON}.mp3`);
         this.audioBuffers[AssetNames.SFX_TALK] = await this.assetLoader.loadAudio(AssetNames.SFX_TALK, `assets/audio/${AssetNames.SFX_TALK}.mp3`);
@@ -131,6 +127,7 @@ export class Game {
         this.audioBuffers[AssetNames.SFX_USE_SKILL_BUFF] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_SKILL_BUFF, `assets/audio/${AssetNames.SFX_USE_SKILL_BUFF}.mp3`);
         this.audioBuffers[AssetNames.SFX_USE_SKILL_PROJECTILE] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_SKILL_PROJECTILE, `assets/audio/${AssetNames.SFX_USE_SKILL_PROJECTILE}.mp3`);
         this.audioBuffers[AssetNames.SFX_WEAK_ATTACK] = await this.assetLoader.loadAudio(AssetNames.SFX_WEAK_ATTACK, `assets/audio/${AssetNames.SFX_WEAK_ATTACK}.mp3`);
+        this.audioBuffers[AssetNames.SFX_CLICK] = await this.assetLoader.loadAudio(AssetNames.SFX_CLICK, `assets/audio/${AssetNames.SFX_CLICK}.mp3`);
     }
 
     async loadModels() {
@@ -173,8 +170,8 @@ export class Game {
         if (this.titleBGM && this.titleBGM.isPlaying) {
             this.titleBGM.stop();
         }
-        if (!this.gameBGM.isPlaying) {
-            this.gameBGM.play();
+        if (!this.playingBGM.isPlaying) {
+            this.playingBGM.play();
         }
         this.playSound(AssetNames.SFX_START);
         this.sceneManager.renderer.domElement.requestPointerLock();
@@ -196,15 +193,17 @@ export class Game {
     togglePause() {
         if (this.gameState === GameState.PLAYING) {
             this.gameState = GameState.PAUSED;
-            this.pauseMenu.toggle(true);
-            this.gameBGM.pause(); // BGMを停止
+            this.playingBGM.pause(); // BGMを停止
             document.exitPointerLock();
         } else if (this.gameState === GameState.PAUSED) {
             this.gameState = GameState.PLAYING;
-            this.pauseMenu.toggle(false);
-            this.gameBGM.play(); // BGMを再開
+            this.playingBGM.play(); // BGMを再開
             this.sceneManager.renderer.domElement.requestPointerLock();
         }
+    }
+
+    setPauseMenuVisibility(visible) {
+        this.pauseMenu.toggle(visible);
     }
 
     reloadGame() {

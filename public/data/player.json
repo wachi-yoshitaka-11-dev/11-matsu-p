@@ -18,6 +18,6 @@
     "maxStamina": 100,
     "initialLevel": 1,
     "initialExperience": 0,
-    "initialExpToNextLevel": 100,
+    "initialExpToNextLevel": 10,
     "initialStatusPoints": 0
 }

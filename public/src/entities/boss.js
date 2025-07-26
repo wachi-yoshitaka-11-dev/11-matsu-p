@@ -19,7 +19,7 @@ export class Boss extends Character {
         this.placeOnGround(initialPosition.x, initialPosition.z);
 
         this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
-        this.experience = 100;
+        this.experience = this.game.data.enemies.boss.experience;
     }
 
     update(deltaTime) {

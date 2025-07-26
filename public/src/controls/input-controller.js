@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
-import { AnimationNames, AssetNames } from '../utils/constants.js';
+import { AnimationNames, AssetNames, GameState } from '../utils/constants.js';
 
 export class InputController {
     constructor(player, camera, game, canvas) {
@@ -39,20 +39,26 @@ export class InputController {
     setupEventListeners() {
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Escape') {
-                this.game.togglePause();
+                if (this.game.gameState === GameState.PLAYING) {
+                    this.game.togglePause();
+                    this.game.setPauseMenuVisibility(true);
+                } else if (this.game.gameState === GameState.PAUSED) {
+                    this.game.togglePause();
+                    this.game.setPauseMenuVisibility(false);
+                }
                 this.keys[e.code] = false;
                 return;
             }
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
             this.keys[e.code] = true;
         });
         document.addEventListener('keyup', (e) => {
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
             this.keys[e.code] = false;
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
             if (document.pointerLockElement) {
                 this.cameraYaw -= e.movementX * this.cameraSensitivity;
                 this.cameraPitch -= e.movementY * this.cameraSensitivity;
@@ -62,7 +68,7 @@ export class InputController {
         });
 
         document.addEventListener('wheel', (e) => {
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
             this.mouse.wheelDelta = e.deltaY;
         }, { passive: false });
 
@@ -70,11 +76,11 @@ export class InputController {
             if (typeof window.playwright === 'undefined') {
                 this.canvas.requestPointerLock();
             }
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
         });
 
         document.addEventListener('mousedown', (e) => {
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
             const params = this._getWeaponParams();
             if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) {
                 this.player.isAttacking = true;
@@ -96,7 +102,7 @@ export class InputController {
         });
 
         document.addEventListener('mouseup', (e) => {
-            if (this.game.gameState !== 'playing') return;
+            if (this.game.gameState !== GameState.PLAYING) return;
             if (e.button === 2 && this.isCharging) {
                 const params = this._getWeaponParams();
                 this.isCharging = false;
@@ -121,7 +127,7 @@ export class InputController {
     }
 
     update(deltaTime) {
-        if (this.game.gameState !== 'playing') return;
+        if (this.game.gameState !== GameState.PLAYING) return;
 
         if (this.player.isDead) {
             this.player.physics.velocity.x = 0;
@@ -136,7 +142,7 @@ export class InputController {
             this.player.isRolling = true;
             this.player.stamina -= this.game.data.player.staminaCostRoll;
             this.player.playAnimation(AnimationNames.ROLLING);
-            this.game.playSound('rolling');
+            this.game.playSound(AssetNames.SFX_ROLLING);
 
             const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(this.player.mesh.quaternion);
             const rollSpeed = this.game.data.player.rollDistance / (this.game.data.player.rollDuration / 1000);
@@ -228,7 +234,7 @@ export class InputController {
         if (this.keys['Digit1']) { this.player.useItem(0); this.keys['Digit1'] = false; }
         if (this.keys['Digit2']) {
             this.player.currentWeaponIndex = (this.player.currentWeaponIndex + 1) % this.player.weapons.length;
-            this.game.playSound('switch-weapon');
+            this.game.playSound(AssetNames.SFX_SWITCH_WEAPON);
             this.keys['Digit2'] = false;
         }
 
@@ -239,7 +245,7 @@ export class InputController {
                 this.player.fp -= skillData.fpCost;
                 this.player.showSkillProjectileEffect();
                 this.player.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
-                this.game.playSound('use-skill-projectile');
+                this.game.playSound(AssetNames.SFX_USE_SKILL_PROJECTILE);
                 const direction = new THREE.Vector3();
                 this.player.mesh.getWorldDirection(direction);
                 const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction, this.game);
@@ -255,7 +261,7 @@ export class InputController {
             if (!this.player.isUsingSkill && this.player.fp >= buffData.fpCost) {
                 this.player.isUsingSkill = true;
                 this.player.fp -= buffData.fpCost;
-                this.game.playSound('use-skill-buff');
+                this.game.playSound(AssetNames.SFX_USE_SKILL_BUFF);
                 this.player.showSkillBuffEffect();
                 this.player.playAnimation(AnimationNames.USE_SKILL_BUFF);
                 this.player.applyAttackBuff();
@@ -274,13 +280,11 @@ export class InputController {
                 if (this.player.mesh.position.distanceTo(npc.mesh.position) < this.game.data.enemies.npc.interactionRange) {
                     npc.interact();
                     this.player.playAnimation(AnimationNames.TALK);
-                    this.game.playSound('talk');
+                    this.game.playSound(AssetNames.SFX_TALK);
                 }
             });
             this.keys['KeyE'] = false;
         }
-
-        if (this.keys['Escape']) { this.game.togglePause(); this.keys['Escape'] = false; }
 
         if (this.keys['Space'] && this.player.onGround && this.player.stamina >= this.game.data.player.staminaCostJump) {
             this.player.physics.velocity.y = this.game.data.player.jumpPower;

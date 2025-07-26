@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ItemTypes } from '../utils/constants.js';
 
 export class Item {
     constructor(type, position, game) {
@@ -15,10 +16,8 @@ export class Item {
 
     getColorForType(type) {
         switch (type) {
-            case 'potion':
+            case ItemTypes.POTION:
                 return 0x00ff00;
-            case 'key':
-                return 0xffff00;
             default:
                 return 0xffffff;
         }

@@ -60,8 +60,8 @@ export const AssetNames = {
     SUN_MODEL: 'sun',
 
     // Audio
-    BGM_GAME: 'game-bgm',
-    BGM_TITLE: 'title-bgm',
+    BGM_PLAYING: 'bgm-playing',
+    BGM_TITLE: 'bgm-title',
     SFX_DAMAGE: 'damage',
     SFX_DEATH: 'death',
     SFX_GUARD: 'guard',
@@ -70,6 +70,7 @@ export const AssetNames = {
     SFX_PAUSE: 'pause',
     SFX_ROLLING: 'rolling',
     SFX_START: 'start',
+    SFX_LEVEL_UP: 'level-up',
     SFX_STRONG_ATTACK: 'strong-attack',
     SFX_SWITCH_WEAPON: 'switch-weapon',
     SFX_TALK: 'talk',
@@ -77,6 +78,7 @@ export const AssetNames = {
     SFX_USE_SKILL_BUFF: 'use-skill-buff',
     SFX_USE_SKILL_PROJECTILE: 'use-skill-projectile',
     SFX_WEAK_ATTACK: 'weak-attack',
+    SFX_CLICK: 'click',
 
     // Textures
     PLAYER_TEXTURE: 'player-texture',
@@ -94,14 +96,24 @@ export const AnimationNames = {
     IDLE: 'idle',
     WALK: 'walk',
     DASH: 'sprint',
-    ROLLING: 'wheelchair-move-forward', // Substitute
-    JUMP: 'sit', // Substitute
+    ROLLING: 'wheelchair-move-forward',
+    JUMP: 'sit',
     DIE: 'die',
     WEAK_ATTACK: 'attack-melee-right',
     STRONG_ATTACK: 'attack-melee-left',
-    GUARD: 'holding-right', // Substitute
-    TALK: 'interact-left', // Substitute
-    USE_ITEM: 'interact-right', // Substitute
-    USE_SKILL_BUFF: 'interact-right', // Substitute
-    USE_SKILL_PROJECTILE: 'attack-kick-right', // Substitute
+    GUARD: 'holding-right',
+    TALK: 'interact-left',
+    USE_ITEM: 'interact-right',
+    USE_SKILL_BUFF: 'interact-right',
+    USE_SKILL_PROJECTILE: 'attack-kick-right',
+};
+
+export const GameState = {
+    TITLE: 'title',
+    PLAYING: 'playing',
+    PAUSED: 'paused'
+};
+
+export const ItemTypes = {
+    POTION: 'potion'
 };

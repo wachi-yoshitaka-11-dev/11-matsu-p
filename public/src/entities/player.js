@@ -44,7 +44,7 @@ export class Player extends Character {
         if (this.mixer) {
             this.mixer.addEventListener('finished', (e) => {
                 const clipName = e.action.getClip().name;
-                if (clipName.startsWith('attack-')) {
+                if (clipName === AnimationNames.WEAK_ATTACK || clipName === AnimationNames.STRONG_ATTACK) {
                     this.isAttacking = false;
                     this.isWeakAttacking = false;
                     this.isStrongAttacking = false;
@@ -117,7 +117,7 @@ export class Player extends Character {
     }
 
     onDeath() {
-        this.game.playSound('death');
+        this.game.playSound(AssetNames.SFX_DEATH);
         this.game.hud.showDeathScreen();
         setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
     }
@@ -125,7 +125,7 @@ export class Player extends Character {
     takeDamage(amount) {
         if (this.isInvincible) return;
         super.takeDamage(amount);
-        this.game.playSound('damage');
+        this.game.playSound(AssetNames.SFX_DAMAGE);
     }
 
     takeStaminaDamage(amount) {
@@ -147,6 +147,10 @@ export class Player extends Character {
         this.experience -= this.experienceToNextLevel;
         this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier);
         this.statusPoints += this.game.data.player.statusPointsPerLevel;
+        this.hp = this.maxHp;
+        this.fp = this.maxFp;
+        this.stamina = this.maxStamina;
+        this.game.playSound(AssetNames.SFX_LEVEL_UP);
     }
 
     useItem(index) {
@@ -159,7 +163,7 @@ export class Player extends Character {
                 return;
             }
 
-            if (itemType === 'potion') {
+            if (itemType === ItemTypes.POTION) {
                 this.hp += itemData.healAmount;
                 if (this.hp > this.maxHp) this.hp = this.maxHp;
             }

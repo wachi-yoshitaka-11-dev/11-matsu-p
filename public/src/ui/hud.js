@@ -1,3 +1,5 @@
+import { GameState, AssetNames } from '../utils/constants.js';
+
 export class Hud {
     constructor(game, player) {
         this.game = game;
@@ -6,6 +8,11 @@ export class Hud {
         this.container.id = 'hud';
         this.container.style.display = 'none';
         document.body.appendChild(this.container);
+
+        this.initialMaxHp = this.game.data.player.maxHp;
+        this.initialMaxFp = this.game.data.player.maxFp;
+        this.initialMaxStamina = this.game.data.player.maxStamina;
+        this.baseBarWidth = 200; // Corresponds to the initial 200px width in CSS
 
         this.hpBar = this.createStatusBar('hp-bar', 'HP');
         this.fpBar = this.createStatusBar('fp-bar', 'FP');
@@ -80,6 +87,14 @@ export class Hud {
             if (this.player.statusPoints > 0) {
                 onClick();
                 this.player.statusPoints--;
+                this.game.playSound(AssetNames.SFX_CLICK);
+                if (this.player.statusPoints === 0) {
+                    this.game.togglePause(); // Only unpause if no more points
+                    this.game.setPauseMenuVisibility(false);
+                } else {
+                    // Update the displayed status points immediately
+                    this._updateStatusPointsDisplay();
+                }
             }
         });
         return button;
@@ -112,11 +127,22 @@ export class Hud {
         this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
         this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
 
+        // Dynamically adjust the background bar width based on max stats
+        this.hpBar.element.querySelector('.status-bar-background').style.width = 
+            `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+        this.fpBar.element.querySelector('.status-bar-background').style.width = 
+            `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+        this.staminaBar.element.querySelector('.status-bar-background').style.width = 
+            `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+
         this.deathMessage.style.display = this.player.isDead ? 'block' : 'none';
 
         if (this.player.statusPoints > 0) {
             this.levelUpMenu.element.style.display = 'block';
-            this.levelUpMenu.points.textContent = `Status Points: ${this.player.statusPoints}`;
+            this._updateStatusPointsDisplay();
+            if (this.game.gameState === GameState.PLAYING) {
+                this.game.togglePause();
+            }
         } else {
             this.levelUpMenu.element.style.display = 'none';
         }
@@ -131,6 +157,10 @@ export class Hud {
         this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
 
         this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
+    }
+
+    _updateStatusPointsDisplay() {
+        this.levelUpMenu.points.textContent = `Status Points: ${this.player.statusPoints}`;
     }
 
     showDeathScreen() {
@@ -158,7 +188,6 @@ export class Hud {
                 font-size: 12px;
             }
             .status-bar-background {
-                width: 200px;
                 height: 15px;
                 background-color: rgba(0, 0, 0, 0.5);
                 border: 1px solid #fff;
@@ -202,6 +231,7 @@ export class Hud {
                 padding: 20px;
                 border: 2px solid white;
                 display: none;
+                z-index: 102;
             }
             #inventory {
                 position: absolute;

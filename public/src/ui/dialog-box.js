@@ -21,11 +21,13 @@ export class DialogBox {
         this.messageElement.textContent = message;
         this.container.style.display = 'flex';
         this.game.togglePause();
+        this.game.setPauseMenuVisibility(false);
     }
 
     hide() {
         this.container.style.display = 'none';
         this.game.togglePause();
+        this.game.setPauseMenuVisibility(false);
     }
 
     addStyles() {

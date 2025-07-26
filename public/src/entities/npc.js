@@ -29,10 +29,10 @@ export class Npc extends Character {
         context.font = `Bold ${fontSize}px Arial`;
         const text = '[E] Talk';
         const textWidth = context.measureText(text).width;
-        
+
         canvas.width = textWidth + 10;
         canvas.height = fontSize + 10;
-        
+
         context.font = `Bold ${fontSize}px Arial`;
         context.fillStyle = "white";
         context.textAlign = 'center';

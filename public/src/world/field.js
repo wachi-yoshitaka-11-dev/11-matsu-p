@@ -40,8 +40,9 @@ export class Field {
         const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2; // Define terrainHalfSize here
 
         // Place trees
+        const treeTexture = this.game.assetLoader.getAsset(AssetNames.TREE_TEXTURE);
         for (let i = 0; i < FieldConst.TREE_COUNT; i++) {
-            this._placeObject(treeModel, FieldConst.TREE_MIN_SCALE, FieldConst.TREE_MAX_SCALE, (model) => {
+            this._placeObject(treeModel, treeTexture, FieldConst.TREE_MIN_SCALE, FieldConst.TREE_MAX_SCALE, (model) => {
                 const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
                 const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
                 const y = this.getHeightAt(x, z);
@@ -52,8 +53,9 @@ export class Field {
         }
 
         // Place rocks
+        const rockTexture = this.game.assetLoader.getAsset(AssetNames.ROCK_TEXTURE);
         for (let i = 0; i < FieldConst.ROCK_COUNT; i++) {
-            this._placeObject(rockModel, FieldConst.ROCK_MIN_SCALE, FieldConst.ROCK_MAX_SCALE, (model) => {
+            this._placeObject(rockModel, rockTexture, FieldConst.ROCK_MIN_SCALE, FieldConst.ROCK_MAX_SCALE, (model) => {
                 const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
                 const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
                 const y = this.getHeightAt(x, z);
@@ -64,8 +66,9 @@ export class Field {
         }
 
         // Place grass
+        const grassTexture = this.game.assetLoader.getAsset(AssetNames.GRASS_TEXTURE);
         for (let i = 0; i < FieldConst.GRASS_COUNT; i++) {
-            this._placeObject(grassModel, FieldConst.GRASS_MIN_SCALE, FieldConst.GRASS_MAX_SCALE, (model) => {
+            this._placeObject(grassModel, grassTexture, FieldConst.GRASS_MIN_SCALE, FieldConst.GRASS_MAX_SCALE, (model) => {
                 const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
                 const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
                 const y = this.getHeightAt(x, z);
@@ -78,15 +81,13 @@ export class Field {
         // Place clouds
         const cloudModel = this.game.assetLoader.getAsset(AssetNames.CLOUD_MODEL);
         if (cloudModel) {
-            // Apply texture to cloud model
             const cloudTexture = this.game.assetLoader.getAsset(AssetNames.CLOUD_TEXTURE);
             if (cloudTexture) {
-                applyTextureToObject(cloudModel, cloudTexture);
                 this._setObjectTransparency(cloudModel, FieldConst.CLOUD_OPACITY);
             }
 
             for (let i = 0; i < FieldConst.CLOUD_COUNT; i++) {
-                this._placeObject(cloudModel, FieldConst.CLOUD_MIN_SCALE, FieldConst.CLOUD_MAX_SCALE, () => {
+                this._placeObject(cloudModel, cloudTexture, FieldConst.CLOUD_MIN_SCALE, FieldConst.CLOUD_MAX_SCALE, () => {
                     const x = (Math.random() * FieldConst.TERRAIN_SIZE * 2) - terrainHalfSize;
                     const z = (Math.random() * FieldConst.TERRAIN_SIZE * 2) - terrainHalfSize;
                     const y = 20 + (Math.random() * 10 - 5); // Cloud height
@@ -98,27 +99,22 @@ export class Field {
         // Place sun
         const sunModel = this.game.assetLoader.getAsset(AssetNames.SUN_MODEL);
         if (sunModel) {
-            // Apply texture to sun model
             const sunTexture = this.game.assetLoader.getAsset(AssetNames.SUN_TEXTURE);
             if (sunTexture) {
-                applyTextureToObject(sunModel, sunTexture);
                 this._setObjectTransparency(sunModel, FieldConst.SUN_OPACITY);
             }
 
             for (let i = 0; i < FieldConst.SUN_COUNT; i++) {
-                this._placeObject(sunModel, FieldConst.SUN_MIN_SCALE, FieldConst.SUN_MAX_SCALE, () => {
+                this._placeObject(sunModel, sunTexture, FieldConst.SUN_MIN_SCALE, FieldConst.SUN_MAX_SCALE, () => {
                     return new THREE.Vector3(FieldConst.TERRAIN_SIZE / 2, FieldConst.TERRAIN_SIZE / 2 + 10, -FieldConst.TERRAIN_SIZE / 2);
                 });
             }
         }
     }
 
-    _placeObject(model, minScale, maxScale, getPosition) {
+    _placeObject(model, texture, minScale, maxScale, getPosition) {
         const instance = model.clone();
 
-        // Apply texture if available
-        const textureName = `${model.name.toUpperCase()}_TEXTURE`;
-        const texture = this.game.assetLoader.getAsset(AssetNames[textureName]);
         if (texture) {
             applyTextureToObject(instance, texture);
         }
@@ -151,6 +147,6 @@ export class Field {
             return intersects[0].point.y;
         }
         // If no intersection, return a very low value to allow falling below the terrain
-        return Fall.MAX_FALL_DEPTH; // Fall.fallDeathThreshold (-100)よりも十分に低い値
+        return Fall.MAX_FALL_DEPTH;
     }
 }
