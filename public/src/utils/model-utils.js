@@ -12,12 +12,13 @@ export function applyTextureToObject(object, texture) {
             // Ensure material is an array for multi-material objects
             const materials = Array.isArray(child.material) ? child.material : [child.material];
 
-            materials.forEach(material => {
+            const newMaterials = materials.map(material => {
                 const newMaterial = new THREE.MeshStandardMaterial({
                     map: texture,
                 });
-                child.material = newMaterial;
+                return newMaterial;
             });
+            child.material = Array.isArray(child.material) ? newMaterials : newMaterials[0];
         }
     });
 }

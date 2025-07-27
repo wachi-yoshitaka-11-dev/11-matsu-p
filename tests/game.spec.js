@@ -1,24 +1,30 @@
 const { test, expect } = require('@playwright/test');
 
+async function setupNetworkRoutes(page) {
+  await page.route('https://unpkg.com/three@0.160.0/build/three.module.js', route => {
+    route.fulfill({ path: require('path').join(__dirname, '../node_modules/three/build/three.module.js') });
+  });
+  await page.route('https://unpkg.com/three@0.160.0/examples/jsm/**', route => {
+    const url = route.request().url();
+    const jsmPath = url.substring(url.indexOf('/jsm/') + 5);
+    const localPath = require('path').join(__dirname, '../node_modules/three/examples/jsm/', jsmPath);
+    route.fulfill({ path: localPath });
+  });
+}
+
 test.describe('Mofu Mofu Adventure - Startup Test', () => {
   test('should display the title screen on startup', async ({ page }) => {
-    // Intercept network requests to serve local files
-    await page.route('https://unpkg.com/three@0.160.0/build/three.module.js', route => {
-      route.fulfill({ path: require('path').join(__dirname, '../node_modules/three/build/three.module.js') });
-    });
-    await page.route('https://unpkg.com/three@0.160.0/examples/jsm/**', route => {
-      const url = route.request().url();
-      const jsmPath = url.substring(url.indexOf('/jsm/') + 5);
-      const localPath = require('path').join(__dirname, '../node_modules/three/examples/jsm/', jsmPath);
-      route.fulfill({ path: localPath });
-    });
+    await setupNetworkRoutes(page);
 
     // Go to the game page
     await page.goto('/');
 
-    // Wait for assets to load and title screen to be visible
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000); // Give some time for assets to load and splash screen to transition
+    // Wait for splash screen to complete and title screen to be ready
+    await page.waitForFunction(() => 
+      document.querySelector("#title-screen #title-menu button")?.offsetParent !== null,
+      null, 
+      { timeout: 10000 }
+    );
 
     // Check if the "New Game" button is visible on the title screen
     const newGameButton = page.locator("#title-screen #title-menu button:has-text('New Game')");
@@ -26,23 +32,17 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
   });
 
   test('should start the game when "New Game" is clicked', async ({ page }) => {
-    // Intercept network requests to serve local files
-    await page.route('https://unpkg.com/three@0.160.0/build/three.module.js', route => {
-      route.fulfill({ path: require('path').join(__dirname, '../node_modules/three/build/three.module.js') });
-    });
-    await page.route('https://unpkg.com/three@0.160.0/examples/jsm/**', route => {
-      const url = route.request().url();
-      const jsmPath = url.substring(url.indexOf('/jsm/') + 5);
-      const localPath = require('path').join(__dirname, '../node_modules/three/examples/jsm/', jsmPath);
-      route.fulfill({ path: localPath });
-    });
+    await setupNetworkRoutes(page);
 
     // Go to the game page
     await page.goto('/');
 
     // Wait for the title screen to be fully visible
-    await page.waitForLoadState('networkidle');
-    await page.waitForTimeout(3000); // Wait for assets to load
+    await page.waitForFunction(() => 
+      document.querySelector("#title-screen #title-menu button")?.offsetParent !== null,
+      null, 
+      { timeout: 10000 }
+    );
 
     const newGameButton = page.locator("#title-screen #title-menu button:has-text('New Game')");
     await expect(newGameButton).toBeVisible({ timeout: 10000 });

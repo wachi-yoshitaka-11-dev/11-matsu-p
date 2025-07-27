@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { AssetNames } from '../utils/constants.js';
+import { AssetNames, AnimationNames } from '../utils/constants.js';
 
 export class Boss extends Character {
     constructor(game, player, options = {}) {
@@ -20,7 +20,16 @@ export class Boss extends Character {
 
         this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
         this.experience = this.game.data.enemies.boss.experience;
-        this.bossData = this.game.data.enemies.boss;
+        this.isAttacking = false;
+
+        if (this.mixer) {
+            this.mixer.addEventListener('finished', (e) => {
+                const clipName = e.action.getClip().name;
+                if (clipName === AnimationNames.ATTACK_STRONG) {
+                    this.isAttacking = false;
+                }
+            });
+        }
     }
 
     update(deltaTime) {
@@ -28,9 +37,11 @@ export class Boss extends Character {
 
         if (this.isDead) return;
 
+        this.updateAnimation();
+
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
 
-        if (distance > this.bossData.normalAttackRange) {
+        if (distance > this.game.data.enemies.boss.normalAttackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.add(direction.multiplyScalar(this.speed * deltaTime));
         }
@@ -38,10 +49,30 @@ export class Boss extends Character {
         this.mesh.lookAt(this.player.mesh.position);
 
         this.attackCooldown -= deltaTime;
-        if (distance <= this.bossData.normalAttackRange && this.attackCooldown <= 0) {
-            this.player.takeDamage(this.bossData.normalAttackDamage);
-            this.attackCooldown = this.bossData.attackCooldown;
+        if (distance <= this.game.data.enemies.boss.normalAttackRange && this.attackCooldown <= 0) {
+            this.attack();
+            this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
         }
+    }
+
+    updateAnimation() {
+        // 攻撃アニメーション中は他のアニメーションに切り替えない
+        if (this.isAttacking) {
+            return;
+        }
+
+        const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+
+        if (distance > this.game.data.enemies.boss.normalAttackRange) {
+            this.playAnimation(AnimationNames.WALK);
+        } else {
+            this.playAnimation(AnimationNames.IDLE);
+        }
+    }
+
+    attack() {
+        this.playAnimation(AnimationNames.ATTACK_STRONG);
+        this.player.takeDamage(this.game.data.enemies.boss.normalAttackDamage);
     }
 
     onDeath() {

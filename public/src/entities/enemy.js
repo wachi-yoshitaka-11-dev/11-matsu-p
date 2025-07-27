@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { AssetNames } from '../utils/constants.js';
+import { AssetNames, AnimationNames } from '../utils/constants.js';
 
 export class Enemy extends Character {
     constructor(game, player, position, options = {}) {
@@ -19,6 +19,16 @@ export class Enemy extends Character {
 
         this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
         this.experience = this.game.data.enemies.grunt.experience;
+        this.isAttacking = false;
+
+        if (this.mixer) {
+            this.mixer.addEventListener('finished', (e) => {
+                const clipName = e.action.getClip().name;
+                if (clipName === AnimationNames.ATTACK_WEAK) {
+                    this.isAttacking = false;
+                }
+            });
+        }
     }
 
     update(deltaTime) {
@@ -26,10 +36,11 @@ export class Enemy extends Character {
 
         if (this.isDead) return;
 
-        const distance = this.mesh.position.distanceTo(this.player.mesh.position);
-        const gruntData = this.game.data.enemies.grunt;
+        this.updateAnimation();
 
-        if (distance > gruntData.attackRange) {
+        const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+
+        if (distance > this.game.data.enemies.grunt.attackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.x += direction.x * this.speed * deltaTime;
             this.mesh.position.z += direction.z * this.speed * deltaTime;
@@ -38,13 +49,29 @@ export class Enemy extends Character {
         this.mesh.lookAt(this.player.mesh.position);
 
         this.attackCooldown -= deltaTime;
-        if (distance <= gruntData.attackRange && this.attackCooldown <= 0) {
+        if (distance <= this.game.data.enemies.grunt.attackRange && this.attackCooldown <= 0) {
             this.attack();
-            this.attackCooldown = gruntData.attackCooldown;
+            this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
+        }
+    }
+
+    updateAnimation() {
+        // 攻撃アニメーション中は他のアニメーションに切り替えない
+        if (this.isAttacking) {
+            return;
+        }
+
+        const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+
+        if (distance > this.game.data.enemies.grunt.attackRange) {
+            this.playAnimation(AnimationNames.WALK);
+        } else {
+            this.playAnimation(AnimationNames.IDLE);
         }
     }
 
     attack() {
+        this.playAnimation(AnimationNames.ATTACK_WEAK);
         const toPlayer = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
         const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
         const angle = toPlayer.angleTo(playerForward);

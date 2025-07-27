@@ -28,7 +28,7 @@ export class Game {
         this.enemies = [];
         this.items = [];
         this.projectiles = [];
-        this.itemsToRemove = [];
+        
         this.boss = null;
         this.npcs = [];
         this.data = {};
@@ -287,7 +287,7 @@ export class Game {
                     if (!shouldRemove) {
                         for (const enemy of this.enemies) {
                             const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                            const hitRange = this.data.skills.projectile.hitRange;
+                            const hitRange = this.data.skills?.projectile?.hitRange || 1.0;
                             if (distance < hitRange) {
                                 enemy.takeDamage(projectile.damage);
                                 shouldRemove = true;

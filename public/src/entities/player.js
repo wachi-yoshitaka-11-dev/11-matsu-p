@@ -87,7 +87,7 @@ export class Player extends Character {
         }
 
         // Don't switch animations if a one-shot animation is in progress
-        if (this.isAttacking || this.isAttackingStrong || this.isRolling) {
+        if (this.isAttacking || this.isRolling) {
             return;
         }
 
@@ -122,7 +122,7 @@ export class Player extends Character {
 
     takeDamage(amount) {
         if (this.isInvincible) return;
-        const finalDamage = amount * this.defenseBuffMultiplier;
+        const finalDamage = amount / this.defenseBuffMultiplier;
         super.takeDamage(finalDamage);
         this.game.playSound(AssetNames.SFX_DAMAGE);
     }

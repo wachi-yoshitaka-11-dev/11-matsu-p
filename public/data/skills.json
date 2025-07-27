@@ -11,6 +11,6 @@
         "fpCost": 30,
         "duration": 10000,
         "attackBuffMultiplier": 1.5,
-        "defenseBuffMultiplier": 0.7
+        "defenseBuffMultiplier": 1.5
     }
 }

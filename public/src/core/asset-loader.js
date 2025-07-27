@@ -66,6 +66,10 @@ export class AssetLoader {
     }
 
     getAsset(name) {
+        if (!(name in this.assets)) {
+            console.warn(`Asset '${name}' not found in cache`);
+            return null;
+        }
         return this.assets[name];
     }
 

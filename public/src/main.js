@@ -6,6 +6,11 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
 }
 
 (async () => {
-    await game.init();
-    game.start();
+    try {
+        await game.init();
+        game.start();
+    } catch (error) {
+        console.error('Failed to initialize game:', error);
+        // Optionally show user-friendly error message
+    }
 })();

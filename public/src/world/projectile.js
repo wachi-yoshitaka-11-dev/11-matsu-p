@@ -2,10 +2,8 @@ import * as THREE from 'three';
 
 export class Projectile {
     constructor(startPosition, direction, game) {
-        let skillData = game.data.skills.projectile;
-        if (!skillData) {
-            skillData = { fpCost: 20, duration: 1000, speed: 10, lifespan: 2, damage: 30 };
-        }
+        const defaultSkillData = { fpCost: 20, duration: 1000, speed: 10, lifespan: 2, damage: 30 };
+        const skillData = game.data.skills?.projectile || defaultSkillData;
         const geometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);
         const material = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00 });
         this.mesh = new THREE.Mesh(geometry, material);
