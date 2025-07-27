@@ -1,68 +1,68 @@
 export class TitleScreen {
-    constructor(onStart) {
-        this.onStart = onStart;
-        this.container = document.createElement('div');
-        this.container.id = 'title-screen';
+  constructor(onStart) {
+    this.onStart = onStart;
+    this.container = document.createElement('div');
+    this.container.id = 'title-screen';
 
-        this.splashOverlay = document.createElement('div');
-        this.splashOverlay.id = 'splash-overlay';
-        this.container.appendChild(this.splashOverlay);
+    this.splashOverlay = document.createElement('div');
+    this.splashOverlay.id = 'splash-overlay';
+    this.container.appendChild(this.splashOverlay);
 
-        this.logoImage = document.createElement('img');
-        this.logoImage.src = './assets/images/logo.png';
-        this.logoImage.id = 'splash-logo';
-        this.splashOverlay.appendChild(this.logoImage);
+    this.logoImage = document.createElement('img');
+    this.logoImage.src = './assets/images/logo.png';
+    this.logoImage.id = 'splash-logo';
+    this.splashOverlay.appendChild(this.logoImage);
 
-        this.menuContainer = document.createElement('div');
-        this.menuContainer.id = 'title-menu';
+    this.menuContainer = document.createElement('div');
+    this.menuContainer.id = 'title-menu';
 
-        this.newGameButton = document.createElement('button');
-        this.newGameButton.textContent = 'New Game';
-        this.newGameButton.addEventListener('click', this.onStart);
-        this.menuContainer.appendChild(this.newGameButton);
+    this.newGameButton = document.createElement('button');
+    this.newGameButton.textContent = 'New Game';
+    this.newGameButton.addEventListener('click', this.onStart);
+    this.menuContainer.appendChild(this.newGameButton);
 
-        this.continueButton = document.createElement('button');
-        this.continueButton.textContent = 'Continue (Coming Soon)';
-        this.continueButton.disabled = true;
-        this.menuContainer.appendChild(this.continueButton);
+    this.continueButton = document.createElement('button');
+    this.continueButton.textContent = 'Continue (Coming Soon)';
+    this.continueButton.disabled = true;
+    this.menuContainer.appendChild(this.continueButton);
 
-        this.optionsButton = document.createElement('button');
-        this.optionsButton.textContent = 'Options (Coming Soon)';
-        this.optionsButton.disabled = true;
-        this.menuContainer.appendChild(this.optionsButton);
+    this.optionsButton = document.createElement('button');
+    this.optionsButton.textContent = 'Options (Coming Soon)';
+    this.optionsButton.disabled = true;
+    this.menuContainer.appendChild(this.optionsButton);
 
-        this.container.appendChild(this.menuContainer);
+    this.container.appendChild(this.menuContainer);
 
-        document.body.appendChild(this.container);
-        this.addStyles();
-        this.showSplash();
+    document.body.appendChild(this.container);
+    this.addStyles();
+    this.showSplash();
+  }
+
+  showSplash() {
+    this.splashOverlay.style.display = 'flex';
+    this.logoImage.style.display = 'block';
+    this.menuContainer.style.display = 'none';
+  }
+
+  showMenu() {
+    this.splashOverlay.style.display = 'none';
+    this.logoImage.style.display = 'none';
+    this.menuContainer.style.display = 'flex';
+  }
+
+  dispose() {
+    if (this.container) {
+      this.newGameButton.removeEventListener('click', this.onStart);
+      if (this.container.parentNode) {
+        this.container.parentNode.removeChild(this.container);
+      }
+      this.container = null;
     }
+  }
 
-    showSplash() {
-        this.splashOverlay.style.display = 'flex';
-        this.logoImage.style.display = 'block';
-        this.menuContainer.style.display = 'none';
-    }
-
-    showMenu() {
-        this.splashOverlay.style.display = 'none';
-        this.logoImage.style.display = 'none';
-        this.menuContainer.style.display = 'flex';
-    }
-
-    dispose() {
-        if (this.container) {
-            this.newGameButton.removeEventListener('click', this.onStart);
-            if (this.container.parentNode) {
-                this.container.parentNode.removeChild(this.container);
-            }
-            this.container = null;
-        }
-    }
-
-    addStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  addStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
             #title-screen {
                 position: fixed;
                 top: 0;
@@ -139,6 +139,6 @@ export class TitleScreen {
                 opacity: 0.7;
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 }

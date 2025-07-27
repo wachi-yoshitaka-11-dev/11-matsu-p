@@ -1,18 +1,18 @@
 {
-    "sword": {
-        "attackRange": 1.5,
-        "attackSpeed": 300,
-        "staminaCostAttackWeak": 10,
-        "damageAttackWeak": 10,
-        "damageAttackStrongMax": 50,
-        "attackRangeStrong": 2
-    },
-    "claws": {
-        "attackRange": 1.2,
-        "attackSpeed": 200,
-        "staminaCostAttackWeak": 7,
-        "damageAttackWeak": 8,
-        "damageAttackStrongMax": 40,
-        "attackRangeStrong": 1.8
-    }
+  "sword": {
+    "attackRange": 1.5,
+    "attackSpeed": 300,
+    "staminaCostAttackWeak": 10,
+    "damageAttackWeak": 10,
+    "damageAttackStrongMax": 50,
+    "attackRangeStrong": 2
+  },
+  "claws": {
+    "attackRange": 1.2,
+    "attackSpeed": 200,
+    "staminaCostAttackWeak": 7,
+    "damageAttackWeak": 8,
+    "damageAttackStrongMax": 40,
+    "attackRangeStrong": 1.8
+  }
 }

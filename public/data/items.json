@@ -1,10 +1,10 @@
 {
-    "potion": {
-        "healAmount": 20
-    },
-    "generic": {
-        "pickupRange": 0.5,
-        "sphereRadius": 0.2,
-        "geometrySegments": 8
-    }
+  "potion": {
+    "healAmount": 20
+  },
+  "generic": {
+    "pickupRange": 0.5,
+    "sphereRadius": 0.2,
+    "geometrySegments": 8
+  }
 }

@@ -1,16 +1,16 @@
 {
-    "projectile": {
-        "fpCost": 20,
-        "duration": 1000,
-        "speed": 10,
-        "lifespan": 2000,
-        "damage": 30,
-        "hitRange": 1.0
-    },
-    "buff": {
-        "fpCost": 30,
-        "duration": 10000,
-        "attackBuffMultiplier": 1.5,
-        "defenseBuffMultiplier": 1.5
-    }
+  "projectile": {
+    "fpCost": 20,
+    "duration": 1000,
+    "speed": 10,
+    "lifespan": 2000,
+    "damage": 30,
+    "hitRange": 1.0
+  },
+  "buff": {
+    "fpCost": 30,
+    "duration": 10000,
+    "attackBuffMultiplier": 1.5,
+    "defenseBuffMultiplier": 1.5
+  }
 }
