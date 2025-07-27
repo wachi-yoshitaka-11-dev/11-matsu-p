@@ -5,8 +5,7 @@
         "staminaCostAttackWeak": 10,
         "damageAttackWeak": 10,
         "damageAttackStrongMax": 50,
-        "rangeAttackStrong": 2,
-        "projectileHitRange": 1.0
+        "rangeAttackStrong": 2
     },
     "claws": {
         "attackRange": 1.2,
@@ -14,7 +13,6 @@
         "staminaCostAttackWeak": 7,
         "damageAttackWeak": 8,
         "damageAttackStrongMax": 40,
-        "rangeAttackStrong": 1.8,
-        "projectileHitRange": 1.0
+        "rangeAttackStrong": 1.8
     }
 }

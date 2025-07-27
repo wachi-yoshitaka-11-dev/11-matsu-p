@@ -4,7 +4,8 @@
         "duration": 1000,
         "speed": 10,
         "lifespan": 2,
-        "damage": 30
+        "damage": 30,
+        "hitRange": 1.0
     },
     "buff": {
         "fpCost": 30,

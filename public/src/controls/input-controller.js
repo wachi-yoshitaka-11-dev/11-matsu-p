@@ -30,10 +30,10 @@ export class InputController {
                 staminaCost: weaponData.staminaCostAttackWeak,
                 damage: weaponData.damageAttackWeak,
                 maxStrongDamage: weaponData.damageAttackStrongMax,
-                AttackStrongRange: weaponData.rangeAttackStrong,
+                attackStrongRange: weaponData.rangeAttackStrong,
             };
         }
-        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, AttackStrongRange: 1.5 };
+        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, attackStrongRange: 1.5 };
     }
 
     _canProcessInput() {
@@ -122,7 +122,7 @@ export class InputController {
                     this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
                     this.game.enemies.forEach(enemy => {
                         let finalDamage = damage * this.player.attackBuffMultiplier;
-                        if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.strongAttackRange) {
+                        if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackStrongRange) {
                             enemy.takeDamage(finalDamage);
                         }
                     });

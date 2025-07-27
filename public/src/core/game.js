@@ -28,6 +28,7 @@ export class Game {
         this.enemies = [];
         this.items = [];
         this.projectiles = [];
+        this.itemsToRemove = [];
         this.boss = null;
         this.npcs = [];
         this.data = {};
@@ -250,14 +251,15 @@ export class Game {
                     }
                 }
 
-                this.items.forEach((item, index) => {
+                for (let i = this.items.length - 1; i >= 0; i--) {
+                    const item = this.items[i];
                     const distance = this.player?.mesh.position.distanceTo(item.mesh.position);
                     if (distance < this.data.items.generic.pickupRange) {
                         this.player?.inventory.push(item.type);
                         this.sceneManager.remove(item.mesh);
-                        this.itemsToRemove.push(item);
+                        this.items.splice(i, 1);
                     }
-                });
+                }
 
                 for (let i = this.projectiles.length - 1; i >= 0; i--) {
                     const projectile = this.projectiles[i];
@@ -271,7 +273,7 @@ export class Game {
                     if (!shouldRemove) {
                         for (const enemy of this.enemies) {
                             const distance = projectile.mesh.position.distanceTo(enemy.mesh.position);
-                            const hitRange = this.data.weapons.projectileHitRange;
+                            const hitRange = this.data.skills.projectile.hitRange;
                             if (distance < hitRange) {
                                 enemy.takeDamage(projectile.damage);
                                 shouldRemove = true;
