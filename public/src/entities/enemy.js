@@ -45,7 +45,6 @@ export class Enemy extends Character {
     }
 
     attack() {
-        const damageToPlayer = this._calculateDamage();
         const toPlayer = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
         const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
         const angle = toPlayer.angleTo(playerForward);
@@ -56,16 +55,8 @@ export class Enemy extends Character {
             this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
             this.game.playSound(AssetNames.SFX_GUARD);
         } else {
-            this.player.takeDamage(damageToPlayer);
+            this.player.takeDamage(this.game.data.enemies.grunt.damage);
             this.game.playSound(AssetNames.SFX_DAMAGE);
         }
-    }
-
-    _calculateDamage() {
-        let damage = this.game.data.enemies.grunt.damage;
-        if (this.player.isDefenseBuffed) {
-            damage *= this.game.data.player.attackBuffMultiplier;
-        }
-        return damage;
     }
 }

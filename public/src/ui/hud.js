@@ -88,7 +88,13 @@ export class Hud {
                 onClick();
                 this.player.statusPoints--;
                 this.game.playSound(AssetNames.SFX_CLICK);
+
                 if (this.player.statusPoints === 0) {
+                    // 全回復処理
+                    this.player.hp = this.player.maxHp;
+                    this.player.fp = this.player.maxFp;
+                    this.player.stamina = this.player.maxStamina;
+
                     this.game.togglePause(); // Only unpause if no more points
                     this.game.setPauseMenuVisibility(false);
                 } else {

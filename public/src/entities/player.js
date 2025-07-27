@@ -35,8 +35,6 @@ export class Player extends Character {
 
         this.attackBuffMultiplier = 1.0;
         this.defenseBuffMultiplier = 1.0;
-        this.isAttackBuffed = false;
-        this.isDefenseBuffed = false;
 
         this.spawn();
 
@@ -124,7 +122,8 @@ export class Player extends Character {
 
     takeDamage(amount) {
         if (this.isInvincible) return;
-        super.takeDamage(amount);
+        const finalDamage = amount * this.defenseBuffMultiplier;
+        super.takeDamage(finalDamage);
         this.game.playSound(AssetNames.SFX_DAMAGE);
     }
 
@@ -147,9 +146,6 @@ export class Player extends Character {
         this.experience -= this.experienceToNextLevel;
         this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier);
         this.statusPoints += this.game.data.player.statusPointsPerLevel;
-        this.hp = this.maxHp;
-        this.fp = this.maxFp;
-        this.stamina = this.maxStamina;
         this.game.playSound(AssetNames.SFX_LEVEL_UP);
     }
 
@@ -175,18 +171,18 @@ export class Player extends Character {
     }
 
     applyAttackBuff() {
-        this.isAttackBuffed = true;
+        this.attackBuffMultiplier = this.game.data.skills.buff.attackBuffMultiplier;
     }
 
     removeAttackBuff() {
-        this.isAttackBuffed = false;
+        this.attackBuffMultiplier = 1.0;
     }
 
     applyDefenseBuff() {
-        this.isDefenseBuffed = true;
+        this.defenseBuffMultiplier = this.game.data.skills.buff.defenseBuffMultiplier;
     }
 
     removeDefenseBuff() {
-        this.isDefenseBuffed = false;
+        this.defenseBuffMultiplier = 1.0;
     }
 }

@@ -91,7 +91,8 @@ export class InputController {
                 this.game.playSound(AssetNames.SFX_WEAK_ATTACK);
                 this.game.enemies.forEach(enemy => {
                     if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
-                        enemy.takeDamage(params.damage);
+                        const finalDamage = params.damage * this.player.attackBuffMultiplier;
+                        enemy.takeDamage(finalDamage);
                     }
                 });
             } else if (e.button === 2 && !this.player.isAttacking) {
@@ -116,7 +117,7 @@ export class InputController {
                     this.player.playAnimation(AnimationNames.STRONG_ATTACK);
                     this.game.playSound(AssetNames.SFX_STRONG_ATTACK);
                     this.game.enemies.forEach(enemy => {
-                        let finalDamage = this.player.isAttackBuffed ? damage * this.player.attackBuffMultiplier : damage;
+                        let finalDamage = damage * this.player.attackBuffMultiplier;
                         if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.strongAttackRange) {
                             enemy.takeDamage(finalDamage);
                         }
