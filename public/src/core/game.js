@@ -114,6 +114,7 @@ export class Game {
         this.audioBuffers[AssetNames.BGM_TITLE] = await this.assetLoader.loadAudio(AssetNames.BGM_TITLE, `assets/audio/${AssetNames.BGM_TITLE}.mp3`);
         this.audioBuffers[AssetNames.SFX_DAMAGE] = await this.assetLoader.loadAudio(AssetNames.SFX_DAMAGE, `assets/audio/${AssetNames.SFX_DAMAGE}.mp3`);
         this.audioBuffers[AssetNames.SFX_DEATH] = await this.assetLoader.loadAudio(AssetNames.SFX_DEATH, `assets/audio/${AssetNames.SFX_DEATH}.mp3`);
+        this.audioBuffers[AssetNames.SFX_KILL] = await this.assetLoader.loadAudio(AssetNames.SFX_KILL, `assets/audio/${AssetNames.SFX_KILL}.mp3`);
         this.audioBuffers[AssetNames.SFX_GUARD] = await this.assetLoader.loadAudio(AssetNames.SFX_GUARD, `assets/audio/${AssetNames.SFX_GUARD}.mp3`);
         this.audioBuffers[AssetNames.SFX_JUMP] = await this.assetLoader.loadAudio(AssetNames.SFX_JUMP, `assets/audio/${AssetNames.SFX_JUMP}.mp3`);
         this.audioBuffers[AssetNames.SFX_LOCK_ON] = await this.assetLoader.loadAudio(AssetNames.SFX_LOCK_ON, `assets/audio/${AssetNames.SFX_LOCK_ON}.mp3`);

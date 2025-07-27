@@ -64,6 +64,7 @@ export const AssetNames = {
     BGM_TITLE: 'bgm-title',
     SFX_DAMAGE: 'damage',
     SFX_DEATH: 'death',
+    SFX_KILL: 'kill',
     SFX_GUARD: 'guard',
     SFX_JUMP: 'jump',
     SFX_LOCK_ON: 'lock-on',

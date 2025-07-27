@@ -43,4 +43,8 @@ export class Boss extends Character {
             this.attackCooldown = bossData.attackCooldown;
         }
     }
+
+    onDeath() {
+        this.game.playSound(AssetNames.SFX_KILL);
+    }
 }

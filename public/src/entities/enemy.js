@@ -59,4 +59,8 @@ export class Enemy extends Character {
             this.game.playSound(AssetNames.SFX_DAMAGE);
         }
     }
+
+    onDeath() {
+        this.game.playSound(AssetNames.SFX_KILL);
+    }
 }

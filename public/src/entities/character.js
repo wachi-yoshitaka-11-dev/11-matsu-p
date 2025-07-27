@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PhysicsComponent } from '../core/components/physics-component.js';
-import { EffectColors, Fall, AnimationNames } from '../utils/constants.js';
+import { EffectColors, Fall, AnimationNames, AssetNames } from '../utils/constants.js';
 import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class Character {
@@ -175,6 +175,7 @@ export class Character {
 
         this.hp -= amount;
         this.showDamageEffect();
+        this.game.playSound(AssetNames.SFX_DAMAGE);
         if (this.hp <= 0) {
             this.hp = 0;
             this.isDead = true;
