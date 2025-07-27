@@ -29,8 +29,8 @@ export class Player extends Character {
         this.currentWeaponIndex = 0;
         this.isUsingSkill = false;
         this.isAttacking = false;
-        this.isWeakAttacking = false;
-        this.isStrongAttacking = false;
+        this.isAttackingWeak = false;
+        this.isAttackingStrong = false;
         this.isRolling = false;
 
         this.attackBuffMultiplier = 1.0;
@@ -42,10 +42,10 @@ export class Player extends Character {
         if (this.mixer) {
             this.mixer.addEventListener('finished', (e) => {
                 const clipName = e.action.getClip().name;
-                if (clipName === AnimationNames.WEAK_ATTACK || clipName === AnimationNames.STRONG_ATTACK) {
+                if (clipName === AnimationNames.ATTACK_WEAK || clipName === AnimationNames.ATTACK_STRONG) {
                     this.isAttacking = false;
-                    this.isWeakAttacking = false;
-                    this.isStrongAttacking = false;
+                    this.isAttackingWeak = false;
+                    this.isAttackingStrong = false;
                 } else if (clipName === AnimationNames.ROLLING) {
                     this.isRolling = false;
                 }
@@ -87,7 +87,7 @@ export class Player extends Character {
         }
 
         // Don't switch animations if a one-shot animation is in progress
-        if (this.isAttacking || this.isStrongAttacking || this.isRolling) {
+        if (this.isAttacking || this.isAttackingStrong || this.isRolling) {
             return;
         }
 

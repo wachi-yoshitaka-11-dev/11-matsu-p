@@ -152,7 +152,7 @@ export class Character {
         if (clip) {
             const newAction = this.mixer.clipAction(clip);
 
-            const isOneShot = name === AnimationNames.WEAK_ATTACK || name === AnimationNames.STRONG_ATTACK || name === AnimationNames.DIE || name === AnimationNames.ROLLING;
+            const isOneShot = name === AnimationNames.ATTACK_WEAK || name === AnimationNames.ATTACK_STRONG || name === AnimationNames.DIE || name === AnimationNames.ROLLING;
             if (isOneShot) {
                 newAction.setLoop(THREE.LoopOnce);
                 newAction.clampWhenFinished = true;

@@ -120,13 +120,13 @@ export class Game {
         this.audioBuffers[AssetNames.SFX_ROLLING] = await this.assetLoader.loadAudio(AssetNames.SFX_ROLLING, `assets/audio/${AssetNames.SFX_ROLLING}.mp3`);
         this.audioBuffers[AssetNames.SFX_START] = await this.assetLoader.loadAudio(AssetNames.SFX_START, `assets/audio/${AssetNames.SFX_START}.mp3`);
         this.audioBuffers[AssetNames.SFX_LEVEL_UP] = await this.assetLoader.loadAudio(AssetNames.SFX_LEVEL_UP, `assets/audio/${AssetNames.SFX_LEVEL_UP}.mp3`);
-        this.audioBuffers[AssetNames.SFX_STRONG_ATTACK] = await this.assetLoader.loadAudio(AssetNames.SFX_STRONG_ATTACK, `assets/audio/${AssetNames.SFX_STRONG_ATTACK}.mp3`);
+        this.audioBuffers[AssetNames.SFX_ATTACK_STRONG] = await this.assetLoader.loadAudio(AssetNames.SFX_ATTACK_STRONG, `assets/audio/${AssetNames.SFX_ATTACK_STRONG}.mp3`);
         this.audioBuffers[AssetNames.SFX_SWITCH_WEAPON] = await this.assetLoader.loadAudio(AssetNames.SFX_SWITCH_WEAPON, `assets/audio/${AssetNames.SFX_SWITCH_WEAPON}.mp3`);
         this.audioBuffers[AssetNames.SFX_TALK] = await this.assetLoader.loadAudio(AssetNames.SFX_TALK, `assets/audio/${AssetNames.SFX_TALK}.mp3`);
         this.audioBuffers[AssetNames.SFX_USE_ITEM] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_ITEM, `assets/audio/${AssetNames.SFX_USE_ITEM}.mp3`);
         this.audioBuffers[AssetNames.SFX_USE_SKILL_BUFF] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_SKILL_BUFF, `assets/audio/${AssetNames.SFX_USE_SKILL_BUFF}.mp3`);
         this.audioBuffers[AssetNames.SFX_USE_SKILL_PROJECTILE] = await this.assetLoader.loadAudio(AssetNames.SFX_USE_SKILL_PROJECTILE, `assets/audio/${AssetNames.SFX_USE_SKILL_PROJECTILE}.mp3`);
-        this.audioBuffers[AssetNames.SFX_WEAK_ATTACK] = await this.assetLoader.loadAudio(AssetNames.SFX_WEAK_ATTACK, `assets/audio/${AssetNames.SFX_WEAK_ATTACK}.mp3`);
+        this.audioBuffers[AssetNames.SFX_ATTACK_WEAK] = await this.assetLoader.loadAudio(AssetNames.SFX_ATTACK_WEAK, `assets/audio/${AssetNames.SFX_ATTACK_WEAK}.mp3`);
         this.audioBuffers[AssetNames.SFX_CLICK] = await this.assetLoader.loadAudio(AssetNames.SFX_CLICK, `assets/audio/${AssetNames.SFX_CLICK}.mp3`);
     }
 

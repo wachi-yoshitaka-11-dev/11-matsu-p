@@ -27,13 +27,13 @@ export class InputController {
             return {
                 attackRange: weaponData.attackRange,
                 attackSpeed: weaponData.attackSpeed,
-                staminaCost: weaponData.staminaCostWeakAttack,
-                damage: weaponData.damageWeakAttack,
-                maxStrongDamage: weaponData.damageStrongAttackMax,
-                strongAttackRange: weaponData.rangeStrongAttack,
+                staminaCost: weaponData.staminaCostAttackWeak,
+                damage: weaponData.damageAttackWeak,
+                maxStrongDamage: weaponData.damageAttackStrongMax,
+                AttackStrongRange: weaponData.rangeAttackStrong,
             };
         }
-        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, strongAttackRange: 1.5 };
+        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, AttackStrongRange: 1.5 };
     }
 
     setupEventListeners() {
@@ -84,11 +84,11 @@ export class InputController {
             const params = this._getWeaponParams();
             if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) {
                 this.player.isAttacking = true;
-                this.player.isWeakAttacking = true;
+                this.player.isAttackingWeak = true;
                 this.player.stamina -= params.staminaCost;
                 this.player.showAttackEffect();
-                this.player.playAnimation(AnimationNames.WEAK_ATTACK);
-                this.game.playSound(AssetNames.SFX_WEAK_ATTACK);
+                this.player.playAnimation(AnimationNames.ATTACK_WEAK);
+                this.game.playSound(AssetNames.SFX_ATTACK_WEAK);
                 this.game.enemies.forEach(enemy => {
                     if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRange) {
                         const finalDamage = params.damage * this.player.attackBuffMultiplier;
@@ -113,9 +113,9 @@ export class InputController {
                 const staminaCost = Math.floor(damage / 2);
                 if (this.player.stamina >= staminaCost) {
                     this.player.stamina -= staminaCost;
-                    this.player.isStrongAttacking = true;
-                    this.player.playAnimation(AnimationNames.STRONG_ATTACK);
-                    this.game.playSound(AssetNames.SFX_STRONG_ATTACK);
+                    this.player.isAttackingStrong = true;
+                    this.player.playAnimation(AnimationNames.ATTACK_STRONG);
+                    this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
                     this.game.enemies.forEach(enemy => {
                         let finalDamage = damage * this.player.attackBuffMultiplier;
                         if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.strongAttackRange) {
