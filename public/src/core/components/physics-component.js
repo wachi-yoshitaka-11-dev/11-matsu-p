@@ -13,6 +13,9 @@ export class PhysicsComponent {
         this.field = field;
         this.velocity = new THREE.Vector3();
         this.onGround = false;
+
+        const box = new THREE.Box3().setFromObject(this.object);
+        this.objectHeight = box.getSize(new THREE.Vector3()).y;
     }
 
     update(deltaTime) {
@@ -25,12 +28,10 @@ export class PhysicsComponent {
         this.object.position.z += this.velocity.z * deltaTime;
 
         const groundHeight = this.field.getHeightAt(this.object.position.x, this.object.position.z);
-        const box = new THREE.Box3().setFromObject(this.object);
-        const objectHeight = box.getSize(new THREE.Vector3()).y;
-        const objectBottomY = this.object.position.y - objectHeight / 2;
+        const objectBottomY = this.object.position.y - this.objectHeight / 2;
 
         if (this.velocity.y <= 0 && objectBottomY <= groundHeight && previousY >= groundHeight) {
-            this.object.position.y = groundHeight + objectHeight / 2;
+            this.object.position.y = groundHeight + this.objectHeight / 2;
             this.velocity.y = 0;
             this.onGround = true;
         } else {

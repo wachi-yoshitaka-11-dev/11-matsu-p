@@ -15,8 +15,5 @@
         "speed": 1.5,
         "initialPosition": { "x": 10, "y": 0.5, "z": 10 },
         "experience": 100
-    },
-    "npc": {
-        "interactionRange": 5
     }
 }

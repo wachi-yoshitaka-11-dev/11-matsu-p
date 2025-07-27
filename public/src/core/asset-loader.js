@@ -28,7 +28,9 @@ export class AssetLoader {
         try {
             const gltf = await this.gltfLoader.loadAsync(path);
 
-            // Prevent GLTFLoader from loading embedded textures
+            // Prevent GLTFLoader from loading embedded textures.
+            // This is intentional to ensure external textures (loaded via loadTexture) are always used,
+            // allowing for consistent material application and easier texture swapping.
             gltf.scene.traverse((child) => {
                 if (child.isMesh && child.material) {
                     const materials = Array.isArray(child.material) ? child.material : [child.material];
@@ -68,6 +70,9 @@ export class AssetLoader {
     }
 
     async loadJSON(name, path) {
+        if (this.assets[name]) {
+            return this.assets[name];
+        }
         try {
             const response = await fetch(path);
             if (!response.ok) {

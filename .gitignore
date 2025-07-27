@@ -93,7 +93,6 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
-.cache
 
 # Sveltekit cache directory
 .svelte-kit/
@@ -149,3 +148,8 @@ issue_body.txt
 commit_message.txt
 pr_body.txt
 tasks.md
+
+# Common editor swap/backup files
+*~
+*.swp
+*.swo

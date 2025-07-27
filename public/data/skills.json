@@ -3,7 +3,7 @@
         "fpCost": 20,
         "duration": 1000,
         "speed": 10,
-        "lifespan": 2,
+        "lifespan": 2000,
         "damage": 30,
         "hitRange": 1.0
     },

@@ -20,7 +20,7 @@ export class SceneManager {
         light.position.set(1, 1, 1).normalize();
         this.scene.add(light);
 
-        const ambientLight = new THREE.AmbientLight(0x404040, 2);
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
         this.scene.add(ambientLight);
 
         this.scene.background = new THREE.Color(0x87ceeb);

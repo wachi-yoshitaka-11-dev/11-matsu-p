@@ -116,7 +116,8 @@ export class TitleScreen {
                 border: none;
                 cursor: pointer;
                 transition: background-color 0.3s ease, color 0.3s ease;
-                width: 350px;
+                width: min(350px, 80vw);
+                max-width: 350px;
                 text-shadow: 
                     -1px -1px 0 #000,
                     1px -1px 0 #000,

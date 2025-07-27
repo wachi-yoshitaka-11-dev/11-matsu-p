@@ -49,7 +49,13 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await newGameButton.click();
 
     // Wait for the game state to change to 'playing' and HUD to be visible
-    await page.waitForFunction(() => window.game && window.game.gameState === 'playing', null, { timeout: 10000 });
+    await page.waitForFunction(() => {
+      try {
+        return window.game?.gameState === 'playing';
+      } catch (e) {
+        return false;
+      }
+    }, null, { timeout: 10000 });
     await expect(page.locator('#hud')).toBeVisible({ timeout: 10000 });
   });
 });

@@ -1,13 +1,11 @@
 import * as THREE from 'three';
-import { ItemTypes } from '../utils/constants.js';
+import { ItemColors } from '../utils/constants.js';
 
 export class Item {
     constructor(type, position, game) {
         this.type = type;
-        let itemData = game.data.items.generic;
-        if (!itemData) {
-            itemData = { pickupRange: 0.5, sphereRadius: 0.2, geometrySegments: 8 };
-        }
+        const defaultItemData = { pickupRange: 0.5, sphereRadius: 0.2, geometrySegments: 8 };
+        const itemData = game.data.items?.generic || defaultItemData;
         const geometry = new THREE.SphereGeometry(itemData.sphereRadius, itemData.geometrySegments, itemData.geometrySegments);
         const material = new THREE.MeshStandardMaterial({ color: this.getColorForType(type) });
         this.mesh = new THREE.Mesh(geometry, material);
@@ -15,12 +13,7 @@ export class Item {
     }
 
     getColorForType(type) {
-        switch (type) {
-            case ItemTypes.POTION:
-                return 0x00ff00;
-            default:
-                return 0xffffff;
-        }
+        return ItemColors[type] || 0xffffff;
     }
 
     dispose() {

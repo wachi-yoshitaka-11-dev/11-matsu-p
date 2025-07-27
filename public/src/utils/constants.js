@@ -36,7 +36,11 @@ export const Field = {
 
 export const Fall = {
     FALL_DEATH_THRESHOLD: -100,
-    MAX_FALL_DEPTH: -10000
+    MAX_FALL_DEPTH: -1000
+};
+
+export const ItemColors = {
+    POTION: 0x00ff00
 };
 
 export const EffectColors = {
@@ -62,24 +66,24 @@ export const AssetNames = {
     // Audio
     BGM_PLAYING: 'bgm-playing',
     BGM_TITLE: 'bgm-title',
+    SFX_ATTACK_STRONG: 'attack-strong',
+    SFX_ATTACK_WEAK: 'attack-weak',
+    SFX_CLICK: 'click',
     SFX_DAMAGE: 'damage',
     SFX_DEATH: 'death',
-    SFX_KILL: 'kill',
     SFX_GUARD: 'guard',
     SFX_JUMP: 'jump',
+    SFX_KILL: 'kill',
+    SFX_LEVEL_UP: 'level-up',
     SFX_LOCK_ON: 'lock-on',
     SFX_PAUSE: 'pause',
     SFX_ROLLING: 'rolling',
     SFX_START: 'start',
-    SFX_LEVEL_UP: 'level-up',
-    SFX_ATTACK_STRONG: 'attack-strong',
     SFX_SWITCH_WEAPON: 'switch-weapon',
     SFX_TALK: 'talk',
     SFX_USE_ITEM: 'use-item',
     SFX_USE_SKILL_BUFF: 'use-skill-buff',
     SFX_USE_SKILL_PROJECTILE: 'use-skill-projectile',
-    SFX_ATTACK_WEAK: 'attack-weak',
-    SFX_CLICK: 'click',
 
     // Textures
     PLAYER_TEXTURE: 'player-texture',

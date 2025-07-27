@@ -28,6 +28,20 @@ export class Field {
         this.placeObjects();
     }
 
+    _placeTerrainObjects(model, texture, count, minScale, maxScale) {
+        const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2;
+        for (let i = 0; i < count; i++) {
+            this._placeObject(model, texture, minScale, maxScale, (model) => {
+                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
+                const y = this.getHeightAt(x, z);
+                const bbox = new THREE.Box3().setFromObject(model);
+                const objectMinY = bbox.min.y;
+                return new THREE.Vector3(x, y - objectMinY, z);
+            });
+        }
+    }
+
     placeObjects() {
         const treeModel = this.game.assetLoader.getAsset(AssetNames.TREE_MODEL);
         const rockModel = this.game.assetLoader.getAsset(AssetNames.ROCK_MODEL);
@@ -37,46 +51,17 @@ export class Field {
             return;
         }
 
-        const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2; // Define terrainHalfSize here
-
         // Place trees
         const treeTexture = this.game.assetLoader.getAsset(AssetNames.TREE_TEXTURE);
-        for (let i = 0; i < FieldConst.TREE_COUNT; i++) {
-            this._placeObject(treeModel, treeTexture, FieldConst.TREE_MIN_SCALE, FieldConst.TREE_MAX_SCALE, (model) => {
-                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
-                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
-                const y = this.getHeightAt(x, z);
-                const bbox = new THREE.Box3().setFromObject(model);
-                const objectMinY = bbox.min.y;
-                return new THREE.Vector3(x, y - objectMinY, z);
-            });
-        }
+        this._placeTerrainObjects(treeModel, treeTexture, FieldConst.TREE_COUNT, FieldConst.TREE_MIN_SCALE, FieldConst.TREE_MAX_SCALE);
 
         // Place rocks
         const rockTexture = this.game.assetLoader.getAsset(AssetNames.ROCK_TEXTURE);
-        for (let i = 0; i < FieldConst.ROCK_COUNT; i++) {
-            this._placeObject(rockModel, rockTexture, FieldConst.ROCK_MIN_SCALE, FieldConst.ROCK_MAX_SCALE, (model) => {
-                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
-                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
-                const y = this.getHeightAt(x, z);
-                const bbox = new THREE.Box3().setFromObject(model);
-                const objectMinY = bbox.min.y;
-                return new THREE.Vector3(x, y - objectMinY, z);
-            });
-        }
+        this._placeTerrainObjects(rockModel, rockTexture, FieldConst.ROCK_COUNT, FieldConst.ROCK_MIN_SCALE, FieldConst.ROCK_MAX_SCALE);
 
         // Place grass
         const grassTexture = this.game.assetLoader.getAsset(AssetNames.GRASS_TEXTURE);
-        for (let i = 0; i < FieldConst.GRASS_COUNT; i++) {
-            this._placeObject(grassModel, grassTexture, FieldConst.GRASS_MIN_SCALE, FieldConst.GRASS_MAX_SCALE, (model) => {
-                const x = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
-                const z = (Math.random() * FieldConst.TERRAIN_SIZE) - terrainHalfSize;
-                const y = this.getHeightAt(x, z);
-                const bbox = new THREE.Box3().setFromObject(model);
-                const objectMinY = bbox.min.y;
-                return new THREE.Vector3(x, y - objectMinY, z);
-            });
-        }
+        this._placeTerrainObjects(grassModel, grassTexture, FieldConst.GRASS_COUNT, FieldConst.GRASS_MIN_SCALE, FieldConst.GRASS_MAX_SCALE);
 
         // Place clouds
         const cloudModel = this.game.assetLoader.getAsset(AssetNames.CLOUD_MODEL);
@@ -86,6 +71,7 @@ export class Field {
                 this._setObjectTransparency(cloudModel, FieldConst.CLOUD_OPACITY);
             }
 
+            const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2;
             for (let i = 0; i < FieldConst.CLOUD_COUNT; i++) {
                 this._placeObject(cloudModel, cloudTexture, FieldConst.CLOUD_MIN_SCALE, FieldConst.CLOUD_MAX_SCALE, () => {
                     const x = (Math.random() * FieldConst.TERRAIN_SIZE * 2) - terrainHalfSize;

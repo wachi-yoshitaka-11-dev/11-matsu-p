@@ -20,6 +20,7 @@ export class Boss extends Character {
 
         this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
         this.experience = this.game.data.enemies.boss.experience;
+        this.bossData = this.game.data.enemies.boss;
     }
 
     update(deltaTime) {
@@ -28,9 +29,8 @@ export class Boss extends Character {
         if (this.isDead) return;
 
         const distance = this.mesh.position.distanceTo(this.player.mesh.position);
-        const bossData = this.game.data.enemies.boss;
 
-        if (distance > bossData.normalAttackRange) {
+        if (distance > this.bossData.normalAttackRange) {
             const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
             this.mesh.position.add(direction.multiplyScalar(this.speed * deltaTime));
         }
@@ -38,9 +38,9 @@ export class Boss extends Character {
         this.mesh.lookAt(this.player.mesh.position);
 
         this.attackCooldown -= deltaTime;
-        if (distance <= bossData.normalAttackRange && this.attackCooldown <= 0) {
-            this.player.takeDamage(bossData.normalAttackDamage);
-            this.attackCooldown = bossData.attackCooldown;
+        if (distance <= this.bossData.normalAttackRange && this.attackCooldown <= 0) {
+            this.player.takeDamage(this.bossData.normalAttackDamage);
+            this.attackCooldown = this.bossData.attackCooldown;
         }
     }
 

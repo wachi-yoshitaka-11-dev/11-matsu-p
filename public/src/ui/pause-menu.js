@@ -22,4 +22,10 @@ export class PauseMenu {
     toggle(show) {
         this.container.style.display = show ? 'flex' : 'none';
     }
+
+    dispose() {
+        if (this.container && this.container.parentNode) {
+            this.container.parentNode.removeChild(this.container);
+        }
+    }
 }

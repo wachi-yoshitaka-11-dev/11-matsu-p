@@ -5,7 +5,9 @@
   "main": "public/src/main.js",
   "scripts": {
     "start": "http-server ./public -p 8080",
-    "test": "playwright test"
+    "test": "playwright test",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write ."
   },
   "keywords": [
     "three.js",

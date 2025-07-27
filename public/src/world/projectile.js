@@ -19,7 +19,8 @@ export class Projectile {
     }
 
     update(deltaTime) {
-        this.mesh.position.add(this.direction.clone().multiplyScalar(this.speed * deltaTime));
+        const movement = this.direction.clone().multiplyScalar(this.speed * deltaTime);
+        this.mesh.position.add(movement);
         this.lifespan -= deltaTime;
     }
 

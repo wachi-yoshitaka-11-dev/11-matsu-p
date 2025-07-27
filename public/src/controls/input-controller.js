@@ -30,10 +30,10 @@ export class InputController {
                 staminaCost: weaponData.staminaCostAttackWeak,
                 damage: weaponData.damageAttackWeak,
                 maxStrongDamage: weaponData.damageAttackStrongMax,
-                attackStrongRange: weaponData.rangeAttackStrong,
+                attackRangeStrong: weaponData.attackRangeStrong,
             };
         }
-        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, attackStrongRange: 1.5 };
+        return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, attackRangeStrong: 1.5 };
     }
 
     _canProcessInput() {
@@ -122,7 +122,7 @@ export class InputController {
                     this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
                     this.game.enemies.forEach(enemy => {
                         let finalDamage = damage * this.player.attackBuffMultiplier;
-                        if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackStrongRange) {
+                        if (this.player.mesh.position.distanceTo(enemy.mesh.position) < params.attackRangeStrong) {
                             enemy.takeDamage(finalDamage);
                         }
                     });
@@ -203,7 +203,15 @@ export class InputController {
 
         if (this.keys['Tab']) {
             if (!this.player.isLockedOn) {
-                let closestEnemy = this.game.enemies.sort((a, b) => a.mesh.position.distanceTo(this.player.mesh.position) - b.mesh.position.distanceTo(this.player.mesh.position))[0];
+                let closestEnemy = null;
+                let closestDistance = Infinity;
+                for (const enemy of this.game.enemies) {
+                    const distance = enemy.mesh.position.distanceTo(this.player.mesh.position);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestEnemy = enemy;
+                    }
+                }
                 if (closestEnemy) {
                     this.player.isLockedOn = true;
                     this.player.lockedOnTarget = closestEnemy;
@@ -282,7 +290,7 @@ export class InputController {
 
         if (this.keys['KeyE']) {
             this.game.npcs.forEach(npc => {
-                if (this.player.mesh.position.distanceTo(npc.mesh.position) < this.game.data.enemies.npc.interactionRange) {
+                if (this.player.mesh.position.distanceTo(npc.mesh.position) < this.game.data.npcs.default.interactionRange) {
                     npc.interact();
                     this.player.playAnimation(AnimationNames.TALK);
                     this.game.playSound(AssetNames.SFX_TALK);
