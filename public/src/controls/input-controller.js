@@ -36,6 +36,10 @@ export class InputController {
         return { attackRange: 1, attackSpeed: 500, staminaCost: 10, damage: 5, maxStrongDamage: 20, AttackStrongRange: 1.5 };
     }
 
+    _canProcessInput() {
+        return this.game.gameState === GameState.PLAYING && !this.player.isDead;
+    }
+
     setupEventListeners() {
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Escape') {
@@ -49,16 +53,16 @@ export class InputController {
                 this.keys[e.code] = false;
                 return;
             }
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
             this.keys[e.code] = true;
         });
         document.addEventListener('keyup', (e) => {
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
             this.keys[e.code] = false;
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
             if (document.pointerLockElement) {
                 this.cameraYaw -= e.movementX * this.cameraSensitivity;
                 this.cameraPitch -= e.movementY * this.cameraSensitivity;
@@ -68,7 +72,7 @@ export class InputController {
         });
 
         document.addEventListener('wheel', (e) => {
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
             this.mouse.wheelDelta = e.deltaY;
         }, { passive: false });
 
@@ -76,11 +80,11 @@ export class InputController {
             if (typeof window.playwright === 'undefined') {
                 this.canvas.requestPointerLock();
             }
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
         });
 
         document.addEventListener('mousedown', (e) => {
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
             const params = this._getWeaponParams();
             if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) {
                 this.player.isAttacking = true;
@@ -103,7 +107,7 @@ export class InputController {
         });
 
         document.addEventListener('mouseup', (e) => {
-            if (this.game.gameState !== GameState.PLAYING) return;
+            if (!this._canProcessInput()) return;
             if (e.button === 2 && this.isCharging) {
                 const params = this._getWeaponParams();
                 this.isCharging = false;
@@ -128,11 +132,11 @@ export class InputController {
     }
 
     update(deltaTime) {
-        if (this.game.gameState !== GameState.PLAYING) return;
-
-        if (this.player.isDead) {
-            this.player.physics.velocity.x = 0;
-            this.player.physics.velocity.z = 0;
+        if (!this._canProcessInput()) {
+            if (this.player.isDead) {
+                this.player.physics.velocity.x = 0;
+                this.player.physics.velocity.z = 0;
+            }
             return;
         }
 
