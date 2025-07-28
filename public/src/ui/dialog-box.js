@@ -1,36 +1,38 @@
 export class DialogBox {
-    constructor(game) {
-        this.game = game;
-        this.container = document.createElement('div');
-        this.container.id = 'dialog-box';
-        this.container.style.display = 'none';
+  constructor(game) {
+    this.game = game;
+    this.container = document.createElement('div');
+    this.container.id = 'dialog-box';
+    this.container.style.display = 'none';
 
-        this.messageElement = document.createElement('p');
-        this.container.appendChild(this.messageElement);
+    this.messageElement = document.createElement('p');
+    this.container.appendChild(this.messageElement);
 
-        this.closeButton = document.createElement('button');
-        this.closeButton.textContent = 'Close';
-        this.closeButton.addEventListener('click', () => this.hide());
-        this.container.appendChild(this.closeButton);
+    this.closeButton = document.createElement('button');
+    this.closeButton.textContent = 'Close';
+    this.closeButton.addEventListener('click', () => this.hide());
+    this.container.appendChild(this.closeButton);
 
-        document.body.appendChild(this.container);
-        this.addStyles();
-    }
+    document.body.appendChild(this.container);
+    this.addStyles();
+  }
 
-    show(message) {
-        this.messageElement.textContent = message;
-        this.container.style.display = 'flex';
-        this.game.togglePause(); // Pause the game when dialog is open
-    }
+  show(message) {
+    this.messageElement.textContent = message;
+    this.container.style.display = 'flex';
+    this.game.togglePause();
+    this.game.setPauseMenuVisibility(false);
+  }
 
-    hide() {
-        this.container.style.display = 'none';
-        this.game.togglePause(); // Resume the game when dialog is closed
-    }
+  hide() {
+    this.container.style.display = 'none';
+    this.game.togglePause();
+    this.game.setPauseMenuVisibility(false);
+  }
 
-    addStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  addStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
             #dialog-box {
                 position: fixed;
                 top: 50%;
@@ -55,6 +57,6 @@ export class DialogBox {
                 cursor: pointer;
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 }

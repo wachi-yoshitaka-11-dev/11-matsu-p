@@ -1,36 +1,42 @@
 import * as THREE from 'three';
+import { AssetNames } from '../utils/constants.js';
+import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class Item {
-    constructor(type, position, game) {
-        this.type = type;
-        let itemData = game.data.items.generic;
-        if (!itemData) {
-            console.warn('Item data for generic not found. Using default values.');
-            itemData = { pickupRange: 0.5, sphereRadius: 0.2, geometrySegments: 8 };
-        }
-        const geometry = new THREE.SphereGeometry(itemData.sphereRadius, itemData.geometrySegments, itemData.geometrySegments);
-        const material = new THREE.MeshStandardMaterial({ color: this.getColorForType(type) });
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.copy(position);
+  constructor(type, position, game) {
+    this.type = type;
+    const defaultItemData = {
+      pickupRange: 0.5,
+      sphereRadius: 0.2,
+      geometrySegments: 8,
+    };
+    const itemData = game.data.items?.generic || defaultItemData;
+    const model = game.assetLoader.getAsset(AssetNames.ITEM_MODEL);
+    if (model) {
+      this.mesh = model.clone();
+      const texture = game.assetLoader.getAsset(AssetNames.ITEM_TEXTURE);
+      if (texture) {
+        applyTextureToObject(this.mesh, texture);
+      }
+      this.mesh.scale.set(2, 2, 2);
+    } else {
+      const geometry = new THREE.SphereGeometry(
+        itemData.sphereRadius,
+        itemData.geometrySegments,
+        itemData.geometrySegments
+      );
+      const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      this.mesh = new THREE.Mesh(geometry, material);
     }
+    this.mesh.position.copy(position);
+  }
 
-    getColorForType(type) {
-        switch (type) {
-            case 'potion':
-                return 0x00ff00; // Green
-            case 'key':
-                return 0xffff00; // Yellow
-            default:
-                return 0xffffff; // White
-        }
+  dispose() {
+    if (this.mesh.geometry) {
+      this.mesh.geometry.dispose();
     }
-
-    dispose() {
-        if (this.mesh.geometry) {
-            this.mesh.geometry.dispose();
-        }
-        if (this.mesh.material) {
-            this.mesh.material.dispose();
-        }
+    if (this.mesh.material) {
+      this.mesh.material.dispose();
     }
+  }
 }

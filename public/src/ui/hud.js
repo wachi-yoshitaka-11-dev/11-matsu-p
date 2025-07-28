@@ -1,166 +1,199 @@
+import { GameState, AssetNames } from '../utils/constants.js';
+
 export class Hud {
-    constructor(game, player) {
-        this.game = game;
-        this.player = player;
-        this.container = document.createElement('div');
-        this.container.id = 'hud';
-        this.container.style.display = 'none'; // Initially hidden
-        document.body.appendChild(this.container);
+  constructor(game, player) {
+    this.game = game;
+    this.player = player;
+    this.container = document.createElement('div');
+    this.container.id = 'hud';
+    this.container.style.display = 'none';
+    document.body.appendChild(this.container);
 
-        this.hpBar = this.createStatusBar('hp-bar', 'HP');
-        this.fpBar = this.createStatusBar('fp-bar', 'FP');
-        this.staminaBar = this.createStatusBar('stamina-bar', 'Stamina');
+    this.initialMaxHp = this.game.data.player.maxHp;
+    this.initialMaxFp = this.game.data.player.maxFp;
+    this.initialMaxStamina = this.game.data.player.maxStamina;
+    this.baseBarWidth = 200;
 
-        this.deathMessage = document.createElement('div');
-        this.deathMessage.id = 'death-message';
-        this.deathMessage.textContent = 'YOU DIED';
+    this.hpBar = this.createStatusBar('hp-bar', 'HP');
+    this.fpBar = this.createStatusBar('fp-bar', 'FP');
+    this.staminaBar = this.createStatusBar('stamina-bar', 'Stamina');
 
-        this.deathOverlay = document.createElement('div');
-        this.deathOverlay.id = 'death-overlay';
+    this.deathMessage = document.createElement('div');
+    this.deathMessage.id = 'death-message';
+    this.deathMessage.textContent = 'YOU DIED';
 
-        this.levelUpMenu = this.createLevelUpMenu();
+    this.deathOverlay = document.createElement('div');
+    this.deathOverlay.id = 'death-overlay';
 
-        this.container.appendChild(this.hpBar.element);
-        this.container.appendChild(this.fpBar.element);
-        this.container.appendChild(this.staminaBar.element);
-        document.body.appendChild(this.deathOverlay); // Add overlay to body
-        this.deathOverlay.appendChild(this.deathMessage); // Add message to overlay
-        this.container.appendChild(this.levelUpMenu.element);
+    this.levelUpMenu = this.createLevelUpMenu();
 
-        this.inventoryDisplay = this.createInventoryDisplay();
-        this.container.appendChild(this.inventoryDisplay);
+    this.container.appendChild(this.hpBar.element);
+    this.container.appendChild(this.fpBar.element);
+    this.container.appendChild(this.staminaBar.element);
+    document.body.appendChild(this.deathOverlay);
+    this.deathOverlay.appendChild(this.deathMessage);
+    this.container.appendChild(this.levelUpMenu.element);
 
-        this.weaponDisplay = this.createWeaponDisplay();
-        this.container.appendChild(this.weaponDisplay);
+    this.inventoryDisplay = this.createInventoryDisplay();
+    this.container.appendChild(this.inventoryDisplay);
 
-        this.damageOverlay = document.createElement('div');
-        this.damageOverlay.id = 'damage-overlay';
-        document.body.appendChild(this.damageOverlay);
+    this.weaponDisplay = this.createWeaponDisplay();
+    this.container.appendChild(this.weaponDisplay);
 
-        this.addStyles();
-    }
+    this.addStyles();
+  }
 
-    createWeaponDisplay() {
-        const weaponContainer = document.createElement('div');
-        weaponContainer.id = 'weapon-display';
-        return weaponContainer;
-    }
+  createWeaponDisplay() {
+    const weaponContainer = document.createElement('div');
+    weaponContainer.id = 'weapon-display';
+    return weaponContainer;
+  }
 
-    createInventoryDisplay() {
-        const inventoryContainer = document.createElement('div');
-        inventoryContainer.id = 'inventory';
-        return inventoryContainer;
-    }
+  createInventoryDisplay() {
+    const inventoryContainer = document.createElement('div');
+    inventoryContainer.id = 'inventory';
+    return inventoryContainer;
+  }
 
-    createLevelUpMenu() {
-        const menu = document.createElement('div');
-        menu.id = 'level-up-menu';
+  createLevelUpMenu() {
+    const menu = document.createElement('div');
+    menu.id = 'level-up-menu';
 
-        const title = document.createElement('h2');
-        title.textContent = 'Level Up!';
-        menu.appendChild(title);
+    const title = document.createElement('h2');
+    title.textContent = 'Level Up!';
+    menu.appendChild(title);
 
-        const points = document.createElement('p');
-        points.id = 'status-points';
-        menu.appendChild(points);
+    const points = document.createElement('p');
+    points.id = 'status-points';
+    menu.appendChild(points);
 
-        const statusPointsPerLevel = this.game.data.player.statusPointsPerLevel;
+    const statusPointsPerLevel = this.game.data.player.statusPointsPerLevel;
 
-        const hpButton = this.createStatButton('hp', `HP +${statusPointsPerLevel}`, () => this.player.maxHp += statusPointsPerLevel);
-        const fpButton = this.createStatButton('fp', `FP +${statusPointsPerLevel}`, () => this.player.maxFp += statusPointsPerLevel);
-        const staminaButton = this.createStatButton('stamina', `Stamina +${statusPointsPerLevel}`, () => this.player.maxStamina += statusPointsPerLevel);
+    const hpButton = this.createStatButton(
+      'hp',
+      `HP +${statusPointsPerLevel}`,
+      () => (this.player.maxHp += statusPointsPerLevel)
+    );
+    const fpButton = this.createStatButton(
+      'fp',
+      `FP +${statusPointsPerLevel}`,
+      () => (this.player.maxFp += statusPointsPerLevel)
+    );
+    const staminaButton = this.createStatButton(
+      'stamina',
+      `Stamina +${statusPointsPerLevel}`,
+      () => (this.player.maxStamina += statusPointsPerLevel)
+    );
 
-        menu.appendChild(hpButton);
-        menu.appendChild(fpButton);
-        menu.appendChild(staminaButton);
+    menu.appendChild(hpButton);
+    menu.appendChild(fpButton);
+    menu.appendChild(staminaButton);
 
-        return { element: menu, points, hpButton, fpButton, staminaButton };
-    }
+    return { element: menu, points, hpButton, fpButton, staminaButton };
+  }
 
-    createStatButton(stat, text, onClick) {
-        const button = document.createElement('button');
-        button.textContent = text;
-        button.addEventListener('click', () => {
-            if (this.player.statusPoints > 0) {
-                onClick();
-                this.player.statusPoints--;
-            }
-        });
-        return button;
-    }
+  createStatButton(stat, text, onClick) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.addEventListener('click', () => {
+      if (this.player.statusPoints > 0) {
+        onClick();
+        this.player.statusPoints--;
+        this.game.playSound(AssetNames.SFX_CLICK);
 
-    createStatusBar(id, label) {
-        const barContainer = document.createElement('div');
-        barContainer.id = id;
-        barContainer.className = 'status-bar-container';
+        if (this.player.statusPoints === 0) {
+          // 全回復処理
+          this.player.hp = this.player.maxHp;
+          this.player.fp = this.player.maxFp;
+          this.player.stamina = this.player.maxStamina;
 
-        const barLabel = document.createElement('div');
-        barLabel.className = 'status-bar-label';
-        barLabel.textContent = label;
-
-        const barBackground = document.createElement('div');
-        barBackground.className = 'status-bar-background';
-
-        const barFill = document.createElement('div');
-        barFill.className = 'status-bar-fill';
-
-        barBackground.appendChild(barFill);
-        barContainer.appendChild(barLabel);
-        barContainer.appendChild(barBackground);
-
-        return { element: barContainer, fill: barFill };
-    }
-
-    update() {
-        this.hpBar.fill.style.width = `${(this.player.hp / this.player.maxHp) * 100}%`;
-        this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
-        this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
-
-        this.deathMessage.style.display = this.player.isDead ? 'block' : 'none';
-
-        if (this.player.statusPoints > 0) {
-            this.levelUpMenu.element.style.display = 'block';
-            this.levelUpMenu.points.textContent = `Status Points: ${this.player.statusPoints}`;
+          this.game.togglePause();
+          this.game.setPauseMenuVisibility(false);
         } else {
-            this.levelUpMenu.element.style.display = 'none';
+          // Update the displayed status points immediately
+          this._updateStatusPointsDisplay();
         }
+      }
+    });
+    return button;
+  }
 
-        // Update inventory display
-        this.inventoryDisplay.innerHTML = '<h3>Inventory</h3>';
-        this.player.inventory.forEach(item => {
-            const itemEl = document.createElement('div');
-            itemEl.textContent = item;
-            this.inventoryDisplay.appendChild(itemEl);
-        });
+  createStatusBar(id, label) {
+    const barContainer = document.createElement('div');
+    barContainer.id = id;
+    barContainer.className = 'status-bar-container';
 
-        // Update weapon display
-        this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
+    const barLabel = document.createElement('div');
+    barLabel.className = 'status-bar-label';
+    barLabel.textContent = label;
 
-        this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
+    const barBackground = document.createElement('div');
+    barBackground.className = 'status-bar-background';
+
+    const barFill = document.createElement('div');
+    barFill.className = 'status-bar-fill';
+
+    barBackground.appendChild(barFill);
+    barContainer.appendChild(barLabel);
+    barContainer.appendChild(barBackground);
+
+    return { element: barContainer, fill: barFill };
+  }
+
+  update() {
+    this.hpBar.fill.style.width = `${(this.player.hp / this.player.maxHp) * 100}%`;
+    this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
+    this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
+
+    // Dynamically adjust the background bar width based on max stats
+    this.hpBar.element.querySelector('.status-bar-background').style.width =
+      `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.element.querySelector('.status-bar-background').style.width =
+      `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.element.querySelector(
+      '.status-bar-background'
+    ).style.width =
+      `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+
+    this.deathMessage.style.display = this.player.isDead ? 'block' : 'none';
+
+    if (this.player.statusPoints > 0) {
+      this.levelUpMenu.element.style.display = 'block';
+      this._updateStatusPointsDisplay();
+      if (this.game.gameState === GameState.PLAYING) {
+        this.game.togglePause();
+      }
+    } else {
+      this.levelUpMenu.element.style.display = 'none';
     }
 
-    showDeathScreen() {
-        this.deathOverlay.style.opacity = 1;
-    }
+    this.inventoryDisplay.innerHTML = '<h3>Inventory</h3>';
+    this.player.inventory.forEach((item) => {
+      const itemEl = document.createElement('div');
+      itemEl.textContent = item;
+      this.inventoryDisplay.appendChild(itemEl);
+    });
 
-    hideDeathScreen() {
-        this.deathOverlay.style.opacity = 0;
-    }
+    this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
 
-    showDamageEffect() {
-        if (this.damageEffectTimeout) {
-            clearTimeout(this.damageEffectTimeout);
-        }
-        this.damageOverlay.classList.add('active');
-        this.damageEffectTimeout = setTimeout(() => {
-            this.damageOverlay.classList.remove('active');
-            this.damageEffectTimeout = null;
-        }, 200); // Effect duration
-    }
+    this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
+  }
 
-    addStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  _updateStatusPointsDisplay() {
+    this.levelUpMenu.points.textContent = `Status Points: ${this.player.statusPoints}`;
+  }
+
+  showDeathScreen() {
+    this.deathOverlay.style.opacity = 1;
+  }
+
+  hideDeathScreen() {
+    this.deathOverlay.style.opacity = 0;
+  }
+
+  addStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
             #hud {
                 position: absolute;
                 top: 10px;
@@ -175,25 +208,24 @@ export class Hud {
                 font-size: 12px;
             }
             .status-bar-background {
-                width: 200px;
                 height: 15px;
                 background-color: rgba(0, 0, 0, 0.5);
                 border: 1px solid #fff;
             }
             .status-bar-fill {
                 height: 100%;
-                background-color: #ff0000; /* Default to red for HP */
+                background-color: #ff0000;
                 transition: width 0.2s;
             }
             #fp-bar .status-bar-fill {
-                background-color: #0000ff; /* Blue for FP */
+                background-color: #0000ff;
             }
             #stamina-bar .status-bar-fill {
-                background-color: #00ff00; /* Green for Stamina */
+                background-color: #00ff00;
             }
             #death-message {
                 font-size: 5em;
-                color: #8b0000; /* DarkRed */
+                color: #8b0000;
                 text-align: center;
             }
             #death-overlay {
@@ -203,7 +235,7 @@ export class Hud {
                 width: 100%;
                 height: 100%;
                 background-color: rgba(0, 0, 0, 0.7);
-                display: none; /* Initially hidden */
+                display: none;
                 justify-content: center;
                 align-items: center;
                 opacity: 0;
@@ -219,6 +251,7 @@ export class Hud {
                 padding: 20px;
                 border: 2px solid white;
                 display: none;
+                z-index: 102;
             }
             #inventory {
                 position: absolute;
@@ -230,28 +263,13 @@ export class Hud {
             }
             #weapon-display {
                 position: absolute;
-                top: 250px; /* Adjust as needed */
+                top: 300px;
                 left: 10px;
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;
                 border: 1px solid white;
             }
-            #damage-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 0, 0, 0.5);
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.1s;
-                z-index: 99;
-            }
-            #damage-overlay.active {
-                opacity: 1;
-            }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 }

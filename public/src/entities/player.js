@@ -1,180 +1,209 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { AnimationNames, AssetNames, ItemTypes } from '../utils/constants.js';
 
 export class Player extends Character {
-    constructor(game) {
-        const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        super(game, geometry, material, { hp: game.data.player.maxHp });
+  constructor(game) {
+    const loadedModel = game.assetLoader.getAsset(AssetNames.PLAYER_MODEL);
 
-        // Player-specific stats
-        this.maxFp = game.data.player.maxFp;
-        this.fp = this.maxFp;
-        this.maxStamina = game.data.player.maxStamina;
+    if (loadedModel instanceof THREE.Group) {
+      super(game, loadedModel, null, {
+        hp: game.data.player.maxHp,
+        modelName: AssetNames.PLAYER_MODEL,
+        textureName: AssetNames.PLAYER_TEXTURE,
+      });
+    } else {
+      const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
+      const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+      super(game, geometry, material, { hp: game.data.player.maxHp });
+    }
+
+    this.maxFp = game.data.player.maxFp;
+    this.fp = this.maxFp;
+    this.maxStamina = game.data.player.maxStamina;
+    this.stamina = this.maxStamina;
+
+    this.level = game.data.player.initialLevel;
+    this.experience = game.data.player.initialExperience;
+    this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
+    this.statusPoints = game.data.player.initialStatusPoints;
+    this.inventory = [];
+
+    this.weapons = ['sword', 'claws'];
+    this.currentWeaponIndex = 0;
+    this.isUsingSkill = false;
+    this.isAttacking = false;
+    this.isAttackingWeak = false;
+    this.isAttackingStrong = false;
+    this.isRolling = false;
+
+    this.attackBuffMultiplier = 1.0;
+    this.defenseBuffMultiplier = 1.0;
+
+    this.spawn();
+
+    // Listen for animation finished event
+    if (this.mixer) {
+      this.mixer.addEventListener('finished', (e) => {
+        const clipName = e.action.getClip().name;
+        if (
+          clipName === AnimationNames.ATTACK_WEAK ||
+          clipName === AnimationNames.ATTACK_STRONG
+        ) {
+          this.isAttacking = false;
+          this.isAttackingWeak = false;
+          this.isAttackingStrong = false;
+        } else if (clipName === AnimationNames.ROLLING) {
+          this.isRolling = false;
+        }
+
+        // After a one-shot animation, determine the next logical state
+        this.updateAnimation();
+      });
+    }
+  }
+
+  spawn() {
+    const spawnPoint = this.game.data.player.initialSpawnPoint || {
+      x: 0,
+      z: 0,
+    };
+    this.placeOnGround(spawnPoint.x, spawnPoint.z);
+    if (this.physics) {
+      this.physics.velocity.set(0, 0, 0);
+    }
+  }
+
+  respawn() {
+    this.game.reloadGame();
+  }
+
+  update(deltaTime) {
+    super.update(deltaTime);
+    this.updateAnimation();
+
+    if (
+      !this.isDashing &&
+      !this.isGuarding &&
+      !this.isAttacking &&
+      !this.isRolling
+    ) {
+      this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
+      if (this.stamina > this.maxStamina) {
         this.stamina = this.maxStamina;
+      }
+    }
+  }
 
-        // Leveling and inventory
-        this.level = game.data.player.initialLevel;
-        this.experience = game.data.player.initialExperience;
-        this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
-        this.statusPoints = game.data.player.initialStatusPoints;
-        this.inventory = [];
-
-        // Weapons and skills
-        this.weapons = ['sword', 'claws'];
-        this.currentWeaponIndex = 0;
-        this.isUsingSkill = false;
-
-        // Buffs
-        this.attackBuffMultiplier = 1.0;
-        this.defenseBuffMultiplier = 1.0;
-        this.isAttackBuffed = false;
-        this.isDefenseBuffed = false;
-
-        // Effects
-        this.originalColor = this.mesh.material.color.clone();
-        this.effectTimeout = null;
-
-        this.spawn();
+  updateAnimation() {
+    if (this.isDead) {
+      this.playAnimation(AnimationNames.DIE);
+      return;
     }
 
-    spawn() {
-        const spawnPoint = this.game.data.player.initialSpawnPoint || { x: 0, z: 0 };
-        const x = spawnPoint.x;
-        const z = spawnPoint.z;
-        const y = this.game.field.getHeightAt(x, z) + this.mesh.geometry.parameters.height / 2;
-        this.mesh.position.set(x, y, z);
-        if (this.physics) {
-            this.physics.velocity.set(0, 0, 0);
-        }
+    // Don't switch animations if a one-shot animation is in progress
+    if (this.isAttacking || this.isAttackingWeak || this.isAttackingStrong || this.isRolling) {
+      return;
     }
 
-    respawn() {
-        this.spawn();
-        this.hp = this.maxHp;
-        this.stamina = this.maxStamina;
-        this.fp = this.maxFp;
-        this.isDead = false;
-        this.game.hud.hideDeathScreen();
-        this.game.reloadGame(); // Delegate to game.js
+    this.onGround = this.physics.onGround;
+
+    if (this.isLockedOn && this.lockedOnTarget) {
+      this.mesh.lookAt(this.lockedOnTarget.mesh.position);
     }
 
-    update(deltaTime) {
-        super.update(deltaTime); // Call parent update for physics
+    let newAnimation = AnimationNames.IDLE;
 
-        if (this.isDead) return;
-
-        this.onGround = this.physics.onGround;
-
-        if (this.isLockedOn && this.lockedOnTarget) {
-            this.mesh.lookAt(this.lockedOnTarget.mesh.position);
-        }
-
-        // Stamina regeneration
-        if (!this.isDashing && !this.isGuarding && !this.isAttacking && !this.isRolling) {
-            this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
-            if (this.stamina > this.maxStamina) {
-                this.stamina = this.maxStamina;
-            }
-        }
+    if (this.isGuarding) {
+      newAnimation = AnimationNames.GUARD;
+    } else if (this.physics.velocity.y > 0 && !this.onGround) {
+      newAnimation = AnimationNames.JUMP;
+    } else if (this.isDashing) {
+      newAnimation = AnimationNames.DASH;
+    } else if (
+      new THREE.Vector2(
+        this.physics.velocity.x,
+        this.physics.velocity.z
+      ).length() > 0.1
+    ) {
+      newAnimation = AnimationNames.WALK;
     }
 
-    onDeath() {
-        this.game.playSound('death');
-        this.game.hud.showDeathScreen();
-        setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
+    this.playAnimation(newAnimation);
+  }
+
+  onDeath() {
+    this.game.playSound(AssetNames.SFX_DEATH);
+    this.game.hud.showDeathScreen();
+    setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
+  }
+
+  takeDamage(amount) {
+    if (this.isInvincible) return;
+    const finalDamage = amount / this.defenseBuffMultiplier;
+    super.takeDamage(finalDamage);
+    this.game.playSound(AssetNames.SFX_DAMAGE);
+  }
+
+  takeStaminaDamage(amount) {
+    this.stamina -= amount;
+    if (this.stamina < 0) {
+      this.stamina = 0;
     }
+  }
 
-    takeDamage(amount) {
-        if (this.isInvincible) return;
-        super.takeDamage(amount); // Use parent method for HP reduction
-        this.game.hud.showDamageEffect();
-        this.game.playSound('damage');
+  addExperience(amount) {
+    this.experience += amount;
+    if (this.experience >= this.experienceToNextLevel) {
+      this.levelUp();
     }
+  }
 
-    takeStaminaDamage(amount) {
-        this.stamina -= amount;
-        if (this.stamina < 0) {
-            this.stamina = 0;
-        }
+  levelUp() {
+    this.level++;
+    this.experience -= this.experienceToNextLevel;
+    this.experienceToNextLevel = Math.floor(
+      this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier
+    );
+    this.statusPoints += this.game.data.player.statusPointsPerLevel;
+    this.game.playSound(AssetNames.SFX_LEVEL_UP);
+  }
+
+  useItem(index) {
+    if (this.inventory.length > index) {
+      const itemType = this.inventory[index];
+      const itemData = this.game.data.items[itemType];
+
+      if (!itemData) {
+        console.warn(`Unknown item type: ${itemType}`);
+        return;
+      }
+
+      if (itemType === ItemTypes.POTION) {
+        this.hp += itemData.healAmount;
+        if (this.hp > this.maxHp) this.hp = this.maxHp;
+      }
+      this.playAnimation(AnimationNames.USE_ITEM);
+      this.game.playSound(AssetNames.SFX_USE_ITEM);
+
+      this.inventory.splice(index, 1);
     }
+  }
 
-    addExperience(amount) {
-        this.experience += amount;
-        if (this.experience >= this.experienceToNextLevel) {
-            this.levelUp();
-        }
-    }
+  applyAttackBuff() {
+    this.attackBuffMultiplier = this.game.data.skills.buff.attackBuffMultiplier;
+  }
 
-    levelUp() {
-        this.level++;
-        this.experience -= this.experienceToNextLevel;
-        this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier);
-        this.statusPoints += this.game.data.player.statusPointsPerLevel;
-    }
+  removeAttackBuff() {
+    this.attackBuffMultiplier = 1.0;
+  }
 
-    useItem(index) {
-        if (this.inventory.length > index) {
-            const itemType = this.inventory[index];
-            const itemData = this.game.data.items[itemType]; // Get item data from game.data
+  applyDefenseBuff() {
+    this.defenseBuffMultiplier =
+      this.game.data.skills.buff.defenseBuffMultiplier;
+  }
 
-            if (!itemData) {
-                console.warn(`Unknown item type: ${itemType}`);
-                return; // Do not consume unknown items
-            }
-
-            if (itemType === 'potion') {
-                this.hp += itemData.healAmount;
-                if (this.hp > this.maxHp) this.hp = this.maxHp;
-            }
-            // Add more item types here as needed
-
-            this.inventory.splice(index, 1); // Consume item
-        }
-    }
-
-    // Visual effect methods
-    showAttackEffect() {
-        this.mesh.material.color.set(0xffffff); // White
-        this.clearEffectTimeout();
-        this.effectTimeout = setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
-    }
-
-    showSkillEffect() {
-        this.mesh.material.color.set(0x8a2be2); // BlueViolet
-        this.clearEffectTimeout();
-        this.effectTimeout = setTimeout(() => this.mesh.material.color.copy(this.originalColor), 100);
-    }
-
-    startChargingEffect() {
-        this.mesh.material.color.set(0xffff00); // Yellow
-        this.clearEffectTimeout();
-    }
-
-    stopChargingEffect() {
-        this.mesh.material.color.copy(this.originalColor);
-    }
-
-    clearEffectTimeout() {
-        if (this.effectTimeout) {
-            clearTimeout(this.effectTimeout);
-            this.effectTimeout = null;
-        }
-    }
-
-    applyAttackBuff() {
-        this.isAttackBuffed = true;
-    }
-
-    removeAttackBuff() {
-        this.isAttackBuffed = false;
-    }
-
-    applyDefenseBuff() {
-        this.isDefenseBuffed = true;
-    }
-
-    removeDefenseBuff() {
-        this.isDefenseBuffed = false;
-    }
+  removeDefenseBuff() {
+    this.defenseBuffMultiplier = 1.0;
+  }
 }

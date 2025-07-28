@@ -1,20 +1,21 @@
 {
-    "grunt": {
-        "attackCooldown": 2,
-        "attackRange": 1.5,
-        "damage": 10,
-        "speed": 2
-    },
-    "boss": {
-        "attackCooldown": 3,
-        "normalAttackRange": 3,
-        "normalAttackDamage": 20,
-        "specialAttackRange": 5,
-        "specialAttackDamage": 40,
-        "speed": 1.5,
-        "initialPosition": { "x": 10, "y": 0.5, "z": 10 }
-    },
-    "npc": {
-        "interactionRange": 2
-    }
+  "grunt": {
+    "attackCooldown": 2,
+    "attackRange": 1.5,
+    "damage": 10,
+    "hp": 50,
+    "speed": 2,
+    "experience": 10
+  },
+  "boss": {
+    "attackCooldown": 3,
+    "normalAttackRange": 3,
+    "normalAttackDamage": 20,
+    "specialAttackRange": 5,
+    "specialAttackDamage": 40,
+    "hp": 200,
+    "speed": 1.5,
+    "initialPosition": { "x": 10, "y": 0.5, "z": 10 },
+    "experience": 100
+  }
 }

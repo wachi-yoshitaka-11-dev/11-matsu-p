@@ -1,55 +1,53 @@
-// src/core/SceneManager.js
-
 import * as THREE from 'three';
+import { Light } from '../world/light.js';
 
 export class SceneManager {
-    constructor() {
-        this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+  constructor() {
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.light = new Light(this.scene);
 
-        this.init();
-    }
+    this.init();
+  }
 
-    init() {
-        this.camera.position.z = 5;
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.domElement.setAttribute('tabindex', '0');
-        document.body.appendChild(this.renderer.domElement);
+  init() {
+    this.camera.position.z = 5;
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.domElement.setAttribute('tabindex', '0');
+    document.body.appendChild(this.renderer.domElement);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1).normalize();
-        this.scene.add(light);
+    this.scene.background = new THREE.Color(0x87ceeb);
 
-        const ambientLight = new THREE.AmbientLight(0x404040, 2); // soft white light
-        this.scene.add(ambientLight);
+    window.addEventListener('resize', this.onWindowResize.bind(this), false);
+  }
 
-        this.scene.background = new THREE.Color(0x87ceeb); // Sky blue
+  onWindowResize() {
+    this.camera.aspect = window.innerWidth / window.innerHeight;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
 
-        window.addEventListener('resize', this.onWindowResize.bind(this), false);
-    }
+  add(object) {
+    this.scene.add(object);
+  }
 
-    onWindowResize() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+  remove(object) {
+    this.scene.remove(object);
+  }
 
-    add(object) {
-        this.scene.add(object);
-    }
+  render() {
+    this.renderer.render(this.scene, this.camera);
+  }
 
-    remove(object) {
-        this.scene.remove(object);
-    }
-
-    render() {
-        this.renderer.render(this.scene, this.camera);
-    }
-
-    dispose() {
-        window.removeEventListener('resize', this.onWindowResize.bind(this));
-        this.renderer.dispose();
-    }
+  dispose() {
+    window.removeEventListener('resize', this.onWindowResize.bind(this));
+    this.renderer.dispose();
+  }
 }

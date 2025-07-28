@@ -17,7 +17,6 @@ module.exports = defineConfig({
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     headless: !!process.env.CI,
-    contextOptions: { ignoreHTTPSErrors: true },
     storageState: undefined,
   },
 });

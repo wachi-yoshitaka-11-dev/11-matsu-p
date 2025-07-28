@@ -1,65 +1,117 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { AssetNames, AnimationNames } from '../utils/constants.js';
 
 export class Enemy extends Character {
-    constructor(game, player, position) {
-        const geometry = new THREE.BoxGeometry(0.6, 0.6, 0.6);
-        const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-        super(game, geometry, material, { hp: 30, speed: game.data.enemies.grunt.speed });
-
-        this.player = player;
-        this.mesh.position.copy(position);
-
-        this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
-        this.experience = 10;
+  constructor(game, player, position, options = {}) {
+    if (!player) {
+      throw new Error('Player parameter is required for Enemy');
+    }
+    if (!position || position.x === undefined || position.z === undefined) {
+      throw new Error('Valid position with x and z coordinates is required');
     }
 
-    update(deltaTime) {
-        super.update(deltaTime); // Handle physics and death check
-
-        if (this.isDead) return;
-
-        const distance = this.mesh.position.distanceTo(this.player.mesh.position);
-        const gruntData = this.game.data.enemies.grunt;
-
-        // Chase the player
-        if (distance > gruntData.attackRange) {
-            const direction = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-            this.mesh.position.x += direction.x * this.speed * deltaTime;
-            this.mesh.position.z += direction.z * this.speed * deltaTime;
-        }
-
-        // Look at the player
-        this.mesh.lookAt(this.player.mesh.position);
-
-        // Attack
-        this.attackCooldown -= deltaTime;
-        if (distance <= gruntData.attackRange && this.attackCooldown <= 0) {
-            this.attack();
-            this.attackCooldown = gruntData.attackCooldown; // Reset cooldown
-        }
+    const model = game.assetLoader.getAsset(AssetNames.ENEMY_MODEL);
+    if (model) {
+      super(game, model.clone(), null, {
+        hp: 30,
+        speed: game.data.enemies.grunt.speed,
+        modelName: AssetNames.ENEMY_MODEL,
+        textureName: AssetNames.ENEMY_TEXTURE,
+      });
+    } else {
+      const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
+      const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+      super(game, geometry, material, {
+        hp: 30,
+        speed: game.data.enemies.grunt.speed,
+      });
     }
 
-    attack() {
-        const damageToPlayer = this._calculateDamage();
-        const toPlayer = new THREE.Vector3().subVectors(this.player.mesh.position, this.mesh.position).normalize();
-        const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
-        const angle = toPlayer.angleTo(playerForward);
+    this.player = player;
 
-        const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
+    this.placeOnGround(position.x, position.z);
 
-        if (isGuarded) {
-            this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
-        } else {
-            this.player.takeDamage(damageToPlayer);
+    this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
+    this.experience = this.game.data.enemies.grunt.experience;
+    this.isAttacking = false;
+
+    if (this.mixer) {
+      this.mixer.addEventListener('finished', (e) => {
+        const clipName = e.action.getClip().name;
+        if (clipName === AnimationNames.ATTACK_WEAK) {
+          this.isAttacking = false;
         }
+      });
+    }
+  }
+
+  update(deltaTime) {
+    super.update(deltaTime);
+
+    if (this.isDead) return;
+
+    this.updateAnimation();
+
+    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+
+    if (distance > this.game.data.enemies.grunt.attackRange) {
+      const direction = new THREE.Vector3()
+        .subVectors(this.player.mesh.position, this.mesh.position)
+        .normalize();
+      this.mesh.position.x += direction.x * this.speed * deltaTime;
+      this.mesh.position.z += direction.z * this.speed * deltaTime;
     }
 
-    _calculateDamage() {
-        let damage = this.game.data.enemies.grunt.damage;
-        if (this.player.isDefenseBuffed) {
-            damage *= this.game.data.player.attackBuffMultiplier;
-        }
-        return damage;
+    this.mesh.lookAt(this.player.mesh.position);
+
+    this.attackCooldown -= deltaTime;
+    if (
+      distance <= this.game.data.enemies.grunt.attackRange &&
+      this.attackCooldown <= 0
+    ) {
+      this.attack();
+      this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
     }
+  }
+
+  updateAnimation() {
+    // Don't switch to other animations during attack animation
+    if (this.isAttacking) {
+      return;
+    }
+
+    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+
+    if (distance > this.game.data.enemies.grunt.attackRange) {
+      this.playAnimation(AnimationNames.WALK);
+    } else {
+      this.playAnimation(AnimationNames.IDLE);
+    }
+  }
+
+  attack() {
+    this.playAnimation(AnimationNames.ATTACK_WEAK);
+    const toPlayer = new THREE.Vector3()
+      .subVectors(this.player.mesh.position, this.mesh.position)
+      .normalize();
+    const playerForward = new THREE.Vector3(0, 0, -1).applyQuaternion(
+      this.player.mesh.quaternion
+    );
+    const angle = toPlayer.angleTo(playerForward);
+
+    const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
+
+    if (isGuarded) {
+      this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
+      this.game.playSound(AssetNames.SFX_GUARD);
+    } else {
+      this.player.takeDamage(this.game.data.enemies.grunt.damage);
+      this.game.playSound(AssetNames.SFX_DAMAGE);
+    }
+  }
+
+  onDeath() {
+    this.game.playSound(AssetNames.SFX_KILL);
+  }
 }

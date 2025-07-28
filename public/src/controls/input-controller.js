@@ -1,269 +1,374 @@
 import * as THREE from 'three';
 import { Projectile } from '../world/projectile.js';
+import { AnimationNames, AssetNames, GameState } from '../utils/constants.js';
 
 export class InputController {
-    constructor(player, camera, game, canvas) {
-        this.player = player;
-        this.camera = camera;
-        this.game = game;
-        this.canvas = canvas; // Keep a reference to the canvas
-        this.keys = {};
-        this.mouse = { x: 0, y: 0 };
+  constructor(player, camera, game, canvas) {
+    this.player = player;
+    this.camera = camera;
+    this.game = game;
+    this.canvas = canvas;
+    this.keys = {};
+    this.mouse = { x: 0, y: 0, wheelDelta: 0 };
+    this.isCharging = false;
+    this.chargeStartTime = 0;
+
+    this.cameraYaw = 0;
+    this.cameraPitch = 0;
+    this.cameraSensitivity = 0.002;
+
+    this.setupEventListeners();
+  }
+
+  _getWeaponParams() {
+    const weaponName = this.player.weapons[this.player.currentWeaponIndex];
+    const weaponData = this.game.data.weapons[weaponName];
+    if (weaponData) {
+      return {
+        attackRange: weaponData.attackRange,
+        attackSpeed: weaponData.attackSpeed,
+        staminaCost: weaponData.staminaCostAttackWeak,
+        damage: weaponData.damageAttackWeak,
+        maxStrongDamage: weaponData.damageAttackStrongMax,
+        attackRangeStrong: weaponData.attackRangeStrong,
+      };
+    }
+    return {
+      attackRange: 1,
+      attackSpeed: 500,
+      staminaCost: 10,
+      damage: 5,
+      maxStrongDamage: 20,
+      attackRangeStrong: 1.5,
+    };
+  }
+
+  _canProcessInput() {
+    return this.game.gameState === GameState.PLAYING && !this.player.isDead;
+  }
+
+  setupEventListeners() {
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') {
+        if (this.game.gameState === GameState.PLAYING) {
+          this.game.togglePause();
+          this.game.setPauseMenuVisibility(true);
+        } else if (this.game.gameState === GameState.PAUSED) {
+          this.game.togglePause();
+          this.game.setPauseMenuVisibility(false);
+        }
+        this.keys[e.code] = false;
+        return;
+      }
+      if (!this._canProcessInput()) return;
+      this.keys[e.code] = true;
+    });
+    document.addEventListener('keyup', (e) => {
+      if (!this._canProcessInput()) return;
+      this.keys[e.code] = false;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!this._canProcessInput()) return;
+      if (document.pointerLockElement) {
+        this.cameraYaw -= e.movementX * this.cameraSensitivity;
+        this.cameraPitch -= e.movementY * this.cameraSensitivity;
+
+        this.cameraPitch = Math.max(
+          -Math.PI / 4,
+          Math.min(Math.PI / 8, this.cameraPitch)
+        );
+      }
+    });
+
+    document.addEventListener(
+      'wheel',
+      (e) => {
+        if (!this._canProcessInput()) return;
+        this.mouse.wheelDelta = e.deltaY;
+      },
+      { passive: false }
+    );
+
+    this.canvas.addEventListener('click', () => {
+      if (typeof window.playwright === 'undefined') {
+        this.canvas.requestPointerLock();
+      }
+      if (!this._canProcessInput()) return;
+    });
+
+    document.addEventListener('mousedown', (e) => {
+      if (!this._canProcessInput()) return;
+      const params = this._getWeaponParams();
+      if (
+        e.button === 0 &&
+        !this.player.isAttacking &&
+        this.player.stamina >= params.staminaCost
+      ) {
+        this.player.isAttacking = true;
+        this.player.isAttackingWeak = true;
+        this.player.stamina -= params.staminaCost;
+        this.player.showAttackEffect();
+        this.player.playAnimation(AnimationNames.ATTACK_WEAK);
+        this.game.playSound(AssetNames.SFX_ATTACK_WEAK);
+        this.game.enemies.forEach((enemy) => {
+          if (
+            this.player.mesh.position.distanceTo(enemy.mesh.position) <
+            params.attackRange
+          ) {
+            const finalDamage =
+              params.damage * this.player.attackBuffMultiplier;
+            enemy.takeDamage(finalDamage);
+          }
+        });
+      } else if (e.button === 2 && !this.player.isAttacking) {
+        this.isCharging = true;
+        this.chargeStartTime = Date.now();
+        this.player.startChargingEffect();
+      }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (!this._canProcessInput()) return;
+      if (e.button === 2 && this.isCharging) {
+        const params = this._getWeaponParams();
         this.isCharging = false;
-        this.chargeStartTime = 0;
+        this.player.stopChargingEffect();
+        const chargeTime = Date.now() - this.chargeStartTime;
+        const damage = Math.min(10 + chargeTime / 100, params.maxStrongDamage);
+        const staminaCost = Math.floor(damage / 2);
+        if (this.player.stamina >= staminaCost) {
+          this.player.stamina -= staminaCost;
+          this.player.isAttackingStrong = true;
+          this.player.playAnimation(AnimationNames.ATTACK_STRONG);
+          this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
+          this.game.enemies.forEach((enemy) => {
+            let finalDamage = damage * this.player.attackBuffMultiplier;
+            if (
+              this.player.mesh.position.distanceTo(enemy.mesh.position) <
+              params.attackRangeStrong
+            ) {
+              enemy.takeDamage(finalDamage);
+            }
+          });
+        }
+      }
+    });
+  }
 
-        this.setupEventListeners();
+  update(deltaTime) {
+    if (!this._canProcessInput()) {
+      if (this.player.isDead) {
+        this.player.physics.velocity.x = 0;
+        this.player.physics.velocity.z = 0;
+      }
+      return;
     }
 
-    _getWeaponParams() {
-        const weaponName = this.player.weapons[this.player.currentWeaponIndex];
-        const weaponData = this.game.data.weapons[weaponName];
-        if (weaponData) {
-            return {
-                attackRange: weaponData.attackRange,
-                attackSpeed: weaponData.attackSpeed,
-                staminaCost: weaponData.staminaCostWeakAttack,
-                damage: weaponData.damageWeakAttack,
-                maxStrongDamage: weaponData.damageStrongAttackMax,
-                strongAttackRange: weaponData.rangeStrongAttack,
-            };
-        }
-        // Return a default object if data not found
-        return {
-            attackRange: 1,
-            attackSpeed: 500,
-            staminaCost: 10,
-            damage: 5,
-            maxStrongDamage: 20,
-            strongAttackRange: 1.5,
-        };
+    const isTryingToRoll = this.keys['ControlLeft'];
+    const canRoll =
+      !this.player.isRolling &&
+      this.player.stamina >= this.game.data.player.staminaCostRoll;
+
+    if (isTryingToRoll && canRoll) {
+      this.player.isRolling = true;
+      this.player.stamina -= this.game.data.player.staminaCostRoll;
+      this.player.playAnimation(AnimationNames.ROLLING);
+      this.game.playSound(AssetNames.SFX_ROLLING);
+
+      const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(
+        this.player.mesh.quaternion
+      );
+      const rollSpeed =
+        this.game.data.player.rollDistance /
+        (this.game.data.player.rollDuration / 1000);
+
+      this.player.physics.velocity.x = rollDirection.x * rollSpeed;
+      this.player.physics.velocity.z = rollDirection.z * rollSpeed;
+
+      setTimeout(() => {
+        this.player.isRolling = false;
+      }, this.game.data.player.rollDuration);
     }
 
-    setupEventListeners() {
-        document.addEventListener('keydown', (e) => this.keys[e.code] = true);
-        document.addEventListener('keyup', (e) => this.keys[e.code] = false);
+    if (!this.player.isRolling) {
+      this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
+      if (this.player.isDashing) {
+        this.player.stamina -=
+          this.game.data.player.staminaCostDash * deltaTime;
+      }
 
-        document.addEventListener('mousemove', (e) => {
-            // If pointer is locked, update mouse movement
-            if (document.pointerLockElement) {
-                this.mouse.x = e.movementX || 0;
-                this.mouse.y = e.movementY || 0;
-            }
-        });
+      const speed = 5.0;
+      const moveDirection = new THREE.Vector3();
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(
+        this.camera.quaternion
+      );
+      forward.y = 0;
+      forward.normalize();
 
-        this.canvas.addEventListener('click', () => {
-            if (typeof window.playwright === 'undefined') {
-                this.canvas.requestPointerLock();
-            }
-        });
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(
+        this.camera.quaternion
+      );
+      right.y = 0;
+      right.normalize();
 
-        document.addEventListener('mousedown', (e) => {
-            const params = this._getWeaponParams();
+      if (this.keys['KeyW']) moveDirection.add(forward);
+      if (this.keys['KeyS']) moveDirection.sub(forward);
+      if (this.keys['KeyA']) moveDirection.sub(right);
+      if (this.keys['KeyD']) moveDirection.add(right);
 
-            if (e.button === 0 && !this.player.isAttacking && this.player.stamina >= params.staminaCost) { // Left click
-                this.player.isAttacking = true;
-                this.player.stamina -= params.staminaCost;
-                this.player.showAttackEffect();
-                this.game.playSound('attack');
+      if (moveDirection.lengthSq() > 0.001) {
+        moveDirection.normalize();
+        const currentSpeed = this.player.isDashing
+          ? speed * this.game.data.player.dashSpeedMultiplier
+          : speed;
+        this.player.physics.velocity.x = moveDirection.x * currentSpeed;
+        this.player.physics.velocity.z = moveDirection.z * currentSpeed;
 
-                // Attack Hit Detection
-                this.game.enemies.forEach(enemy => {
-                    const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                    if (distance < params.attackRange) {
-                        enemy.takeDamage(params.damage);
-                    }
-                });
-
-                setTimeout(() => {
-                    this.player.isAttacking = false;
-                }, params.attackSpeed);
-            } else if (e.button === 2 && !this.player.isAttacking) { // Right click
-                this.isCharging = true;
-                this.chargeStartTime = Date.now();
-                this.player.startChargingEffect();
-            }
-        });
-
-        document.addEventListener('mouseup', (e) => {
-            if (e.button === 2 && this.isCharging) {
-                const params = this._getWeaponParams();
-
-                this.isCharging = false;
-                this.player.stopChargingEffect();
-                const chargeTime = Date.now() - this.chargeStartTime;
-                const damage = Math.min(10 + chargeTime / 100, params.maxStrongDamage);
-                const staminaCost = Math.floor(damage / 2);
-
-                if (this.player.stamina >= staminaCost) {
-                    this.player.stamina -= staminaCost;
-                    // Strong Attack Hit Detection
-                    this.game.enemies.forEach(enemy => {
-                        const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                        let finalDamage = damage;
-                        if (this.player.isAttackBuffed) {
-                            finalDamage *= this.player.attackBuffMultiplier;
-                        }
-                        if (distance < params.strongAttackRange) {
-                            enemy.takeDamage(finalDamage);
-                        }
-                    });
-                } else {
-                }
-            }
-        });
+        const targetAngle = Math.atan2(moveDirection.x, moveDirection.z);
+        const targetQuaternion = new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          targetAngle
+        );
+        this.player.mesh.quaternion.slerp(targetQuaternion, 0.2);
+      } else {
+        this.player.physics.velocity.x = 0;
+        this.player.physics.velocity.z = 0;
+      }
+    } else {
+      // If rolling, we let the rolling velocity take over and don't apply new input
     }
 
-    update(deltaTime) {
-        if (this.player.isDead) return;
-
-        let speed = 0.1;
-        const rotationSpeed = 0.05;
-
-        // Dash
-        this.player.isDashing = this.keys['ShiftLeft'] && this.player.stamina > 0;
-        if (this.player.isDashing) {
-            speed *= this.game.data.player.dashSpeedMultiplier;
-            this.player.stamina -= this.game.data.player.staminaCostDash * deltaTime; // Use data-driven stamina cost
-        }
-
-        // Player movement
-        if (!this.player.isRolling && !this.player.isGuarding) {
-            if (this.keys['KeyW']) {
-                this.player.mesh.translateZ(-speed);
-            }
-            if (this.keys['KeyS']) {
-                this.player.mesh.translateZ(speed);
-            }
-            if (this.keys['KeyA']) {
-                this.player.mesh.translateX(-speed);
-            }
-            if (this.keys['KeyD']) {
-                this.player.mesh.translateX(speed);
-            }
-        }
-
-        // Guard
-        this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;
-        if (this.player.isGuarding) {
-            this.player.stamina -= (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
-        }
-
-        // Lock-on
-        if (this.keys['Tab']) {
-            if (!this.player.isLockedOn) {
-                let closestEnemy = null;
-                let minDistance = Infinity;
-                this.game.enemies.forEach(enemy => {
-                    const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestEnemy = enemy;
-                    }
-                });
-                if (closestEnemy) {
-                    this.player.isLockedOn = true;
-                    this.player.lockedOnTarget = closestEnemy;
-                }
-            } else {
-                this.player.isLockedOn = false;
-                this.player.lockedOnTarget = null;
-            }
-            this.keys['Tab'] = false; // Prevent continuous toggling
-        }
-
-        // Use Item
-        if (this.keys['Digit1']) {
-            this.player.useItem(0);
-            this.keys['Digit1'] = false; // Prevent continuous use
-        }
-
-        // Switch Weapon
-        if (this.keys['Digit2']) {
-            this.player.currentWeaponIndex = (this.player.currentWeaponIndex + 1) % this.player.weapons.length;
-            console.log(`Switched to ${this.player.weapons[this.player.currentWeaponIndex]}`);
-            this.keys['Digit2'] = false; // Prevent continuous switching
-        }
-
-        // Use Skill (Projectile)
-        if (this.keys['Digit3']) {
-            const skillData = this.game.data.skills.shockwave;
-            if (!this.player.isUsingSkill && this.player.fp >= skillData.fpCost) {
-                this.player.isUsingSkill = true;
-                this.player.fp -= skillData.fpCost;
-                this.player.showSkillEffect();
-                console.log('Used Skill: Shockwave!');
-
-                const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(this.player.mesh.quaternion);
-                const projectile = new Projectile(this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)), direction, this.game);
-                this.game.projectiles.push(projectile);
-                this.game.sceneManager.add(projectile.mesh);
-
-                setTimeout(() => {
-                    this.player.isUsingSkill = false;
-                }, skillData.duration);
-            }
-            this.keys['Digit3'] = false;
-        }
-
-        // Use Skill (Buff)
-        if (this.keys['Digit4']) {
-            const buffData = this.game.data.skills.buff;
-            if (!this.player.isUsingSkill && this.player.fp >= buffData.fpCost) {
-                this.player.isUsingSkill = true;
-                this.player.fp -= buffData.fpCost;
-                console.log('Used Skill: Buff!');
-
-                this.player.applyAttackBuff();
-                this.player.applyDefenseBuff();
-
-                setTimeout(() => {
-                    this.player.removeAttackBuff();
-                    this.player.removeDefenseBuff();
-                    this.player.isUsingSkill = false;
-                }, buffData.duration);
-            }
-            this.keys['Digit4'] = false;
-        }
-
-        // Interact with NPC
-        if (this.keys['KeyE']) {
-            this.game.npcs.forEach(npc => {
-                const distance = this.player.mesh.position.distanceTo(npc.mesh.position);
-                if (distance < this.game.data.enemies.npc.interactionRange) {
-                    npc.interact();
-                }
-            });
-            this.keys['KeyE'] = false;
-        }
-
-        // Pause
-        if (this.keys['Escape']) {
-            this.game.togglePause();
-            this.keys['Escape'] = false;
-        }
-
-        // Jump
-        if (this.keys['Space'] && this.player.onGround && this.player.stamina >= this.game.data.player.staminaCostJump) {
-            this.player.physics.velocity.y = this.game.data.player.jumpPower; // ジャンプ力
-            this.player.stamina -= this.game.data.player.staminaCostJump;
-        }
-
-        // Rolling
-        if (this.keys['ControlLeft'] && !this.player.isRolling && this.player.stamina >= this.game.data.player.staminaCostRoll) {
-            this.player.isRolling = true;
-            this.player.stamina -= this.game.data.player.staminaCostRoll;
-            // TODO: Add rolling animation and movement. The player should move forward quickly for a short duration.
-            setTimeout(() => {
-                this.player.isRolling = false;
-            }, this.game.data.player.rollDuration); // 0.5 seconds for rolling
-        }
-
-        // Player rotation based on mouse
-        if (!this.player.isLockedOn) {
-            this.player.mesh.rotation.y -= this.mouse.x * rotationSpeed;
-        }
-
-        // Reset mouse delta
-        this.mouse.x = 0;
+    this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;
+    if (this.player.isGuarding) {
+      this.player.stamina -=
+        (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
     }
+
+    if (this.keys['Tab']) {
+      if (!this.player.isLockedOn) {
+        let closestEnemy = null;
+        let closestDistance = Infinity;
+        for (const enemy of this.game.enemies) {
+          const distance = enemy.mesh.position.distanceTo(
+            this.player.mesh.position
+          );
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestEnemy = enemy;
+          }
+        }
+        if (closestEnemy) {
+          this.player.isLockedOn = true;
+          this.player.lockedOnTarget = closestEnemy;
+          this.game.playSound(AssetNames.SFX_LOCK_ON);
+        }
+      } else {
+        this.player.isLockedOn = false;
+        this.player.lockedOnTarget = null;
+      }
+      this.keys['Tab'] = false;
+    }
+
+    if (this.player.isLockedOn && this.player.lockedOnTarget) {
+      const targetPosition = this.player.lockedOnTarget.mesh.position;
+      const playerPosition = this.player.mesh.position;
+
+      const midPoint = new THREE.Vector3()
+        .addVectors(playerPosition, targetPosition)
+        .multiplyScalar(0.5);
+      const cameraOffset = new THREE.Vector3(0, 2, 5);
+      cameraOffset.applyQuaternion(this.player.mesh.quaternion);
+      this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
+      this.camera.lookAt(midPoint);
+    } else {
+      const cameraQuaternion = new THREE.Quaternion();
+      cameraQuaternion.setFromEuler(
+        new THREE.Euler(this.cameraPitch, this.cameraYaw, 0, 'YXZ')
+      );
+      this.camera.quaternion.copy(cameraQuaternion);
+
+      const cameraOffset = new THREE.Vector3(0, 2, 5);
+      cameraOffset.applyQuaternion(this.camera.quaternion);
+      this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
+    }
+
+    if (this.keys['Digit1']) {
+      this.player.useItem(0);
+      this.keys['Digit1'] = false;
+    }
+    if (this.keys['Digit2']) {
+      this.player.currentWeaponIndex =
+        (this.player.currentWeaponIndex + 1) % this.player.weapons.length;
+      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON);
+      this.keys['Digit2'] = false;
+    }
+
+    if (this.keys['Digit3']) {
+      const skillData = this.game.data.skills.projectile;
+      if (!this.player.isUsingSkill && this.player.fp >= skillData.fpCost) {
+        this.player.isUsingSkill = true;
+        this.player.fp -= skillData.fpCost;
+        this.player.showSkillProjectileEffect();
+        this.player.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
+        this.game.playSound(AssetNames.SFX_USE_SKILL_PROJECTILE);
+        const direction = new THREE.Vector3();
+        this.player.mesh.getWorldDirection(direction);
+        const projectile = new Projectile(
+          this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
+          direction,
+          this.game
+        );
+        this.game.projectiles.push(projectile);
+        this.game.sceneManager.add(projectile.mesh);
+        setTimeout(() => {
+          this.player.isUsingSkill = false;
+        }, skillData.duration);
+      }
+      this.keys['Digit3'] = false;
+    }
+
+    if (this.keys['Digit4']) {
+      const buffData = this.game.data.skills.buff;
+      if (!this.player.isUsingSkill && this.player.fp >= buffData.fpCost) {
+        this.player.isUsingSkill = true;
+        this.player.fp -= buffData.fpCost;
+        this.game.playSound(AssetNames.SFX_USE_SKILL_BUFF);
+        this.player.showSkillBuffEffect();
+        this.player.playAnimation(AnimationNames.USE_SKILL_BUFF);
+        this.player.applyAttackBuff();
+        this.player.applyDefenseBuff();
+        setTimeout(() => {
+          this.player.removeAttackBuff();
+          this.player.removeDefenseBuff();
+          this.player.isUsingSkill = false;
+        }, buffData.duration);
+      }
+      this.keys['Digit4'] = false;
+    }
+
+    if (this.keys['KeyE']) {
+      this.game.npcs.forEach((npc) => {
+        if (
+          this.player.mesh.position.distanceTo(npc.mesh.position) <
+          this.game.data.npcs.default.interactionRange
+        ) {
+          npc.interact();
+          this.player.playAnimation(AnimationNames.TALK);
+          this.game.playSound(AssetNames.SFX_TALK);
+        }
+      });
+      this.keys['KeyE'] = false;
+    }
+
+    if (
+      this.keys['Space'] &&
+      this.player.onGround &&
+      this.player.stamina >= this.game.data.player.staminaCostJump
+    ) {
+      this.player.physics.velocity.y = this.game.data.player.jumpPower;
+      this.player.stamina -= this.game.data.player.staminaCostJump;
+      this.game.playSound(AssetNames.SFX_JUMP);
+    }
+  }
 }
