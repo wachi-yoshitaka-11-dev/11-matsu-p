@@ -69,7 +69,7 @@ export class Enemy extends Character {
   }
 
   updateAnimation() {
-    // 攻撃アニメーション中は他のアニメーションに切り替えない
+    // Don't switch to other animations during attack animation
     if (this.isAttacking) {
       return;
     }

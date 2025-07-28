@@ -33,15 +33,19 @@ export class Game {
     this.npcs = [];
     this.data = {};
 
-    this.listener = new THREE.AudioListener();
-    this.sceneManager.camera.add(this.listener);
-    this.playingBGM = new THREE.Audio(this.listener);
-    this.audioBuffers = {};
+    this.initAudio();
 
     this.gameState = GameState.TITLE;
     this.titleScreen = new TitleScreen(() => this.startGame());
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
+  }
+
+  initAudio() {
+    this.listener = new THREE.AudioListener();
+    this.sceneManager.camera.add(this.listener);
+    this.audioBuffers = {};
+    this.bgmAudios = {};
   }
 
   async init() {
@@ -60,11 +64,7 @@ export class Game {
 
     setTimeout(() => {
       this.titleScreen.showMenu();
-      this.titleBGM = new THREE.Audio(this.listener);
-      this.titleBGM.setBuffer(this.audioBuffers[AssetNames.BGM_TITLE]);
-      this.titleBGM.setLoop(true);
-      this.titleBGM.setVolume(0.2);
-      this.titleBGM.play();
+      this.bgmAudios[AssetNames.BGM_TITLE].play();
     }, remainingTime);
 
     this.field = new Field(this);
@@ -108,99 +108,43 @@ export class Game {
   }
 
   async loadAudio() {
-    const playingBGMBuffer = await this.assetLoader.loadAudio(
+    const audioAssets = [
       AssetNames.BGM_PLAYING,
-      `assets/audio/${AssetNames.BGM_PLAYING}.mp3`
-    );
-    this.playingBGM.setBuffer(playingBGMBuffer);
-    this.playingBGM.setLoop(true);
-    this.playingBGM.setVolume(0.2);
-
-    this.audioBuffers[AssetNames.BGM_TITLE] = await this.assetLoader.loadAudio(
       AssetNames.BGM_TITLE,
-      `assets/audio/${AssetNames.BGM_TITLE}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_ATTACK_STRONG] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_ATTACK_STRONG,
-        `assets/audio/${AssetNames.SFX_ATTACK_STRONG}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_ATTACK_WEAK] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_ATTACK_WEAK,
-        `assets/audio/${AssetNames.SFX_ATTACK_WEAK}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_CLICK] = await this.assetLoader.loadAudio(
+      AssetNames.SFX_ATTACK_STRONG,
+      AssetNames.SFX_ATTACK_WEAK,
       AssetNames.SFX_CLICK,
-      `assets/audio/${AssetNames.SFX_CLICK}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_DAMAGE] = await this.assetLoader.loadAudio(
       AssetNames.SFX_DAMAGE,
-      `assets/audio/${AssetNames.SFX_DAMAGE}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_DEATH] = await this.assetLoader.loadAudio(
       AssetNames.SFX_DEATH,
-      `assets/audio/${AssetNames.SFX_DEATH}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_GUARD] = await this.assetLoader.loadAudio(
       AssetNames.SFX_GUARD,
-      `assets/audio/${AssetNames.SFX_GUARD}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_JUMP] = await this.assetLoader.loadAudio(
       AssetNames.SFX_JUMP,
-      `assets/audio/${AssetNames.SFX_JUMP}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_KILL] = await this.assetLoader.loadAudio(
       AssetNames.SFX_KILL,
-      `assets/audio/${AssetNames.SFX_KILL}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_LEVEL_UP] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_LEVEL_UP,
-        `assets/audio/${AssetNames.SFX_LEVEL_UP}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_LOCK_ON] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_LOCK_ON,
-        `assets/audio/${AssetNames.SFX_LOCK_ON}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_PAUSE] = await this.assetLoader.loadAudio(
+      AssetNames.SFX_LEVEL_UP,
+      AssetNames.SFX_LOCK_ON,
       AssetNames.SFX_PAUSE,
-      `assets/audio/${AssetNames.SFX_PAUSE}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_ROLLING] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_ROLLING,
-        `assets/audio/${AssetNames.SFX_ROLLING}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_START] = await this.assetLoader.loadAudio(
+      AssetNames.SFX_ROLLING,
       AssetNames.SFX_START,
-      `assets/audio/${AssetNames.SFX_START}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_SWITCH_WEAPON] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_SWITCH_WEAPON,
-        `assets/audio/${AssetNames.SFX_SWITCH_WEAPON}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_TALK] = await this.assetLoader.loadAudio(
+      AssetNames.SFX_SWITCH_WEAPON,
       AssetNames.SFX_TALK,
-      `assets/audio/${AssetNames.SFX_TALK}.mp3`
-    );
-    this.audioBuffers[AssetNames.SFX_USE_ITEM] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_USE_ITEM,
-        `assets/audio/${AssetNames.SFX_USE_ITEM}.mp3`
+      AssetNames.SFX_USE_ITEM,
+      AssetNames.SFX_USE_SKILL_BUFF,
+      AssetNames.SFX_USE_SKILL_PROJECTILE,
+    ];
+
+    for (const assetName of audioAssets) {
+      const buffer = await this.assetLoader.loadAudio(
+        assetName,
+        `assets/audio/${assetName}.mp3`
       );
-    this.audioBuffers[AssetNames.SFX_USE_SKILL_BUFF] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_USE_SKILL_BUFF,
-        `assets/audio/${AssetNames.SFX_USE_SKILL_BUFF}.mp3`
-      );
-    this.audioBuffers[AssetNames.SFX_USE_SKILL_PROJECTILE] =
-      await this.assetLoader.loadAudio(
-        AssetNames.SFX_USE_SKILL_PROJECTILE,
-        `assets/audio/${AssetNames.SFX_USE_SKILL_PROJECTILE}.mp3`
-      );
+      this.audioBuffers[assetName] = buffer; // Store all buffers in audioBuffers
+
+      if (assetName === AssetNames.BGM_PLAYING || assetName === AssetNames.BGM_TITLE) {
+        this.bgmAudios[assetName] = new THREE.Audio(this.listener);
+        this.bgmAudios[assetName].setBuffer(buffer);
+        this.bgmAudios[assetName].setLoop(true);
+        this.bgmAudios[assetName].setVolume(0.2);
+      }
+    }
   }
 
   loadEntities() {
@@ -249,6 +193,7 @@ export class Game {
       { model: AssetNames.ENEMY_MODEL, texture: AssetNames.ENEMY_TEXTURE },
       { model: AssetNames.BOSS_MODEL, texture: AssetNames.BOSS_TEXTURE },
       { model: AssetNames.NPC_MODEL, texture: AssetNames.NPC_TEXTURE },
+      { model: AssetNames.ITEM_MODEL, texture: AssetNames.ITEM_TEXTURE },
       { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
       { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
       { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },
@@ -287,11 +232,11 @@ export class Game {
       this.titleScreen.dispose();
       this.titleScreen = null;
     }
-    if (this.titleBGM && this.titleBGM.isPlaying) {
-      this.titleBGM.stop();
+    if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
+      this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    if (!this.playingBGM.isPlaying) {
-      this.playingBGM.play();
+    if (this.bgmAudios[AssetNames.BGM_PLAYING] && !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying) {
+      this.bgmAudios[AssetNames.BGM_PLAYING].play();
     }
     this.playSound(AssetNames.SFX_START);
     this.sceneManager.renderer.domElement.requestPointerLock();
@@ -313,11 +258,11 @@ export class Game {
   togglePause() {
     if (this.gameState === GameState.PLAYING) {
       this.gameState = GameState.PAUSED;
-      this.playingBGM.pause(); // Pause BGM
+      this.bgmAudios[AssetNames.BGM_PLAYING]?.pause();
       document.exitPointerLock();
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
-      this.playingBGM.play(); // BGMを再開
+      this.bgmAudios[AssetNames.BGM_PLAYING]?.play();
       this.sceneManager.renderer.domElement.requestPointerLock();
     }
   }
@@ -383,7 +328,7 @@ export class Game {
           const distance = this.player?.mesh.position.distanceTo(
             item.mesh.position
           );
-          if (distance < this.data.items.generic.pickupRange) {
+          if (distance < (this.data.items?.generic?.pickupRange || 0.5)) {
             this.player?.inventory.push(item.type);
             this.sceneManager.remove(item.mesh);
             this.items.splice(i, 1);

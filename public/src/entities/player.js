@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { AnimationNames, AssetNames } from '../utils/constants.js';
+import { AnimationNames, AssetNames, ItemTypes } from '../utils/constants.js';
 
 export class Player extends Character {
   constructor(game) {
@@ -102,7 +102,7 @@ export class Player extends Character {
     }
 
     // Don't switch animations if a one-shot animation is in progress
-    if (this.isAttacking || this.isRolling) {
+    if (this.isAttacking || this.isAttackingWeak || this.isAttackingStrong || this.isRolling) {
       return;
     }
 
@@ -116,8 +116,6 @@ export class Player extends Character {
 
     if (this.isGuarding) {
       newAnimation = AnimationNames.GUARD;
-    } else if (this.isRolling) {
-      newAnimation = AnimationNames.ROLLING;
     } else if (this.physics.velocity.y > 0 && !this.onGround) {
       newAnimation = AnimationNames.JUMP;
     } else if (this.isDashing) {

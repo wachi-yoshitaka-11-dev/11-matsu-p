@@ -39,10 +39,6 @@ export const Fall = {
   MAX_FALL_DEPTH: -1000,
 };
 
-export const ItemColors = {
-  POTION: 0x00ff00,
-};
-
 export const EffectColors = {
   DAMAGE: 0xff0000,
   ATTACK: 0xffff00,
@@ -57,6 +53,7 @@ export const AssetNames = {
   ENEMY_MODEL: 'enemy',
   BOSS_MODEL: 'boss',
   NPC_MODEL: 'npc',
+  ITEM_MODEL: 'item',
   TREE_MODEL: 'tree',
   ROCK_MODEL: 'rock',
   GRASS_MODEL: 'grass',
@@ -90,6 +87,7 @@ export const AssetNames = {
   ENEMY_TEXTURE: 'enemy-texture',
   BOSS_TEXTURE: 'boss-texture',
   NPC_TEXTURE: 'npc-texture',
+  ITEM_TEXTURE: 'item-texture',
   TREE_TEXTURE: 'tree-texture',
   ROCK_TEXTURE: 'rock-texture',
   GRASS_TEXTURE: 'grass-texture',

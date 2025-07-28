@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { ItemColors } from '../utils/constants.js';
+import { AssetNames } from '../utils/constants.js';
 
 export class Item {
   constructor(type, position, game) {
@@ -10,20 +10,23 @@ export class Item {
       geometrySegments: 8,
     };
     const itemData = game.data.items?.generic || defaultItemData;
-    const geometry = new THREE.SphereGeometry(
-      itemData.sphereRadius,
-      itemData.geometrySegments,
-      itemData.geometrySegments
-    );
-    const material = new THREE.MeshStandardMaterial({
-      color: this.getColorForType(type),
-    });
-    this.mesh = new THREE.Mesh(geometry, material);
+    const model = game.assetLoader.getAsset(AssetNames.ITEM_MODEL);
+    if (model) {
+      this.mesh = model.clone();
+      const texture = game.assetLoader.getAsset(AssetNames.ITEM_TEXTURE);
+      if (texture) {
+        applyTextureToObject(this.mesh, texture);
+      }
+    } else {
+      const geometry = new THREE.SphereGeometry(
+        itemData.sphereRadius,
+        itemData.geometrySegments,
+        itemData.geometrySegments
+      );
+      const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+      this.mesh = new THREE.Mesh(geometry, material);
+    }
     this.mesh.position.copy(position);
-  }
-
-  getColorForType(type) {
-    return ItemColors[type] || 0xffffff;
   }
 
   dispose() {
