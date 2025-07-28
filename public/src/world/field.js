@@ -19,8 +19,16 @@ export class Field {
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
 
+    const groundTexture = this.game.assetLoader.getAsset(AssetNames.GROUND_TEXTURE);
+    if (groundTexture) {
+      groundTexture.wrapS = THREE.RepeatWrapping;
+      groundTexture.wrapT = THREE.RepeatWrapping;
+      groundTexture.repeat.set(10, 10);
+    }
+
     const material = new THREE.MeshStandardMaterial({
-      color: 0x4a7d2c,
+      map: groundTexture || null,
+      color: groundTexture ? 0xffffff : 0x4a7d2c, // Fallback color
       side: THREE.DoubleSide,
     });
     this.mesh = new THREE.Mesh(geometry, material);

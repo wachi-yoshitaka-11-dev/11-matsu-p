@@ -203,16 +203,18 @@ export class Game {
 
     for (const asset of assetsToLoad) {
       try {
-        await this.assetLoader.loadGLTF(
-          asset.model,
-          `assets/models/${asset.model}.glb`
-        );
-        const texturePath = `assets/textures/${asset.model}.png`;
+        if (asset.model) {
+          await this.assetLoader.loadGLTF(
+            asset.model,
+            `assets/models/${asset.model}.glb`
+          );
+        }
+        const texturePath = `assets/textures/${asset.model || asset.texture}.png`;
         try {
           await this.assetLoader.loadTexture(asset.texture, texturePath);
         } catch (textureError) {
           console.warn(
-            `Texture for ${asset.model} not found at ${texturePath}. Using default material.`
+            `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`
           );
         }
       } catch (error) {
@@ -220,6 +222,13 @@ export class Game {
           `Could not load model ${asset.model}. A placeholder will be used.`
         );
       }
+    }
+
+    // Explicitly load ground texture
+    try {
+      await this.assetLoader.loadTexture(AssetNames.GROUND_TEXTURE, `assets/textures/${AssetNames.GROUND_TEXTURE}.png`);
+    } catch (error) {
+      console.error(`Error loading ground texture:`, error);
     }
   }
 

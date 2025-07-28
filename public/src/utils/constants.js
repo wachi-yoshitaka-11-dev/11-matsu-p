@@ -94,6 +94,7 @@ export const AssetNames = {
   GRASS_TEXTURE: 'grass-texture',
   CLOUD_TEXTURE: 'cloud-texture',
   SUN_TEXTURE: 'sun-texture',
+  GROUND_TEXTURE: 'ground-texture',
 };
 
 export const AnimationNames = {
