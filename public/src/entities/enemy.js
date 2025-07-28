@@ -4,6 +4,13 @@ import { AssetNames, AnimationNames } from '../utils/constants.js';
 
 export class Enemy extends Character {
   constructor(game, player, position, options = {}) {
+    if (!player) {
+      throw new Error('Player parameter is required for Enemy');
+    }
+    if (!position || position.x === undefined || position.z === undefined) {
+      throw new Error('Valid position with x and z coordinates is required');
+    }
+
     const model = game.assetLoader.getAsset(AssetNames.ENEMY_MODEL);
     if (model) {
       super(game, model.clone(), null, {

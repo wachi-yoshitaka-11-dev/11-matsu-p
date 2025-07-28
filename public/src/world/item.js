@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { AssetNames } from '../utils/constants.js';
+import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class Item {
   constructor(type, position, game) {

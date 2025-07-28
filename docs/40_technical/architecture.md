@@ -24,8 +24,8 @@ src/
 ├── main.js           # ゲームのメインループ、全体管理
 ├── core/
 │   ├── game.js         # ゲームのメインクラス
-│   ├── sceneManager.js # シーン（舞台）の管理
-│   ├── assetLoader.js  # アセットの読み込み
+│   ├── scene-manager.js # シーン（舞台）の管理
+│   ├── asset-loader.js  # アセットの読み込み
 │   └── components/     # 再利用可能なコンポーネント
 │       └── physics-component.js # 物理演算コンポーネント
 ├── entities/
@@ -35,7 +35,7 @@ src/
 │   └── npc.js          # NPC
 ├── world/
 │   ├── field.js        # 地形や背景の生成
-│   └── light.js        # ライトの設定
+│   ├── light.js        # ライトの設定
 │   ├── item.js         # アイテム
 │   └── projectile.js   # プロジェクタイル
 ├── controls/

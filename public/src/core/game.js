@@ -158,7 +158,6 @@ export class Game {
     this.sceneManager.add(item.mesh);
 
     // Place a grunt enemy
-    const gruntData = this.data.enemies.grunt;
     const enemy = new Enemy(this, this.player, new THREE.Vector3(5, 0, 0), {
       modelName: AssetNames.ENEMY_MODEL,
       textureName: AssetNames.ENEMY_TEXTURE,
