@@ -35,8 +35,8 @@ src/
 │   └── npc.js          # NPC
 ├── world/
 │   ├── field.js        # 地形や背景の生成
-│   ├── light.js        # ライトの設定
 │   ├── item.js         # アイテム
+│   ├── light.js        # ライトの設定
 │   └── projectile.js   # プロジェクタイル
 ├── controls/
 │   └── input-controller.js # キーボード・マウス入力、およびカメラの管理

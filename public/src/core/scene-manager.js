@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Light } from '../world/light.js';
 
 export class SceneManager {
   constructor() {
@@ -10,6 +11,7 @@ export class SceneManager {
       1000
     );
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.light = new Light(this.scene);
 
     this.init();
   }
@@ -20,13 +22,6 @@ export class SceneManager {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.domElement.setAttribute('tabindex', '0');
     document.body.appendChild(this.renderer.domElement);
-
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(1, 1, 1).normalize();
-    this.scene.add(light);
-
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    this.scene.add(ambientLight);
 
     this.scene.background = new THREE.Color(0x87ceeb);
 
