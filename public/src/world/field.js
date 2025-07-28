@@ -108,7 +108,7 @@ export class Field {
               Math.random() * FieldConst.TERRAIN_SIZE * 2 - terrainHalfSize;
             const z =
               Math.random() * FieldConst.TERRAIN_SIZE * 2 - terrainHalfSize;
-            const y = 20 + (Math.random() * 10 - 5); // Cloud height
+            const y = 20 + (Math.random() * 10 - 5);
             return new THREE.Vector3(x, y, z);
           }
         );

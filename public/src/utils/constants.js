@@ -79,6 +79,7 @@ export const AssetNames = {
   SFX_SWITCH_WEAPON: 'switch-weapon',
   SFX_TALK: 'talk',
   SFX_USE_ITEM: 'use-item',
+  SFX_PICKUP_ITEM: 'pickup-item',
   SFX_USE_SKILL_BUFF: 'use-skill-buff',
   SFX_USE_SKILL_PROJECTILE: 'use-skill-projectile',
 

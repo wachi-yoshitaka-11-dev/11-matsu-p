@@ -183,7 +183,7 @@ export class Player extends Character {
         this.hp += itemData.healAmount;
         if (this.hp > this.maxHp) this.hp = this.maxHp;
       }
-      this.playAnimation(AnimationNames.USE_ITEM); // Use interact-right for item use
+      this.playAnimation(AnimationNames.USE_ITEM);
       this.game.playSound(AssetNames.SFX_USE_ITEM);
 
       this.inventory.splice(index, 1);

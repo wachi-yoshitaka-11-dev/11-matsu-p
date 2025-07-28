@@ -3,7 +3,7 @@
     "healAmount": 20
   },
   "generic": {
-    "pickupRange": 0.5,
+    "pickupRange": 2.0,
     "sphereRadius": 0.2,
     "geometrySegments": 8
   }

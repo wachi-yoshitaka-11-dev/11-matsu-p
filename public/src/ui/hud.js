@@ -12,7 +12,7 @@ export class Hud {
     this.initialMaxHp = this.game.data.player.maxHp;
     this.initialMaxFp = this.game.data.player.maxFp;
     this.initialMaxStamina = this.game.data.player.maxStamina;
-    this.baseBarWidth = 200; // Corresponds to the initial 200px width in CSS
+    this.baseBarWidth = 200;
 
     this.hpBar = this.createStatusBar('hp-bar', 'HP');
     this.fpBar = this.createStatusBar('fp-bar', 'FP');
@@ -107,7 +107,7 @@ export class Hud {
           this.player.fp = this.player.maxFp;
           this.player.stamina = this.player.maxStamina;
 
-          this.game.togglePause(); // Only unpause if no more points
+          this.game.togglePause();
           this.game.setPauseMenuVisibility(false);
         } else {
           // Update the displayed status points immediately
@@ -263,7 +263,7 @@ export class Hud {
             }
             #weapon-display {
                 position: absolute;
-                top: 250px;
+                top: 300px;
                 left: 10px;
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;

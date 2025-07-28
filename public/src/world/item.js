@@ -18,6 +18,7 @@ export class Item {
       if (texture) {
         applyTextureToObject(this.mesh, texture);
       }
+      this.mesh.scale.set(2, 2, 2);
     } else {
       const geometry = new THREE.SphereGeometry(
         itemData.sphereRadius,

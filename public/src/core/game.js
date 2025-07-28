@@ -127,6 +127,7 @@ export class Game {
       AssetNames.SFX_SWITCH_WEAPON,
       AssetNames.SFX_TALK,
       AssetNames.SFX_USE_ITEM,
+      AssetNames.SFX_PICKUP_ITEM,
       AssetNames.SFX_USE_SKILL_BUFF,
       AssetNames.SFX_USE_SKILL_PROJECTILE,
     ];
@@ -136,7 +137,7 @@ export class Game {
         assetName,
         `assets/audio/${assetName}.mp3`
       );
-      this.audioBuffers[assetName] = buffer; // Store all buffers in audioBuffers
+      this.audioBuffers[assetName] = buffer;
 
       if (assetName === AssetNames.BGM_PLAYING || assetName === AssetNames.BGM_TITLE) {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
@@ -153,7 +154,7 @@ export class Game {
     // In a real game, you'd have a level data file defining entity placements
 
     // Place a potion item
-    const item = new Item(ItemTypes.POTION, new THREE.Vector3(3, 0.2, 3), this);
+    const item = new Item(ItemTypes.POTION, new THREE.Vector3(0, 2, -5), this);
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
@@ -172,7 +173,7 @@ export class Game {
       textureName: AssetNames.BOSS_TEXTURE,
     });
     this.boss = boss;
-    this.enemies.push(boss); // Add boss to enemies array
+    this.enemies.push(boss);
     this.sceneManager.add(boss.mesh);
 
     // Place an NPC
@@ -329,6 +330,7 @@ export class Game {
           );
           if (distance < (this.data.items?.generic?.pickupRange || 0.5)) {
             this.player?.inventory.push(item.type);
+            this.playSound(AssetNames.SFX_PICKUP_ITEM);
             this.sceneManager.remove(item.mesh);
             this.items.splice(i, 1);
           }
@@ -352,7 +354,7 @@ export class Game {
               if (distance < hitRange) {
                 enemy.takeDamage(projectile.damage);
                 shouldRemove = true;
-                break; // 1度ヒットしたら敵ループを抜ける
+                break;
               }
             }
           }
