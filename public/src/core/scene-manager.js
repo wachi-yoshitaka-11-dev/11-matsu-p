@@ -10,8 +10,10 @@ export class SceneManager {
       0.1,
       1000
     );
+    this._defaultCamera = this.camera; // デフォルトカメラを保存
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.light = new Light(this.scene);
+    this._gameElements = []; // ゲーム要素を保存する配列
 
     this.init();
   }
@@ -36,6 +38,7 @@ export class SceneManager {
 
   add(object) {
     this.scene.add(object);
+    this._gameElements.push(object);
   }
 
   remove(object) {
@@ -49,5 +52,25 @@ export class SceneManager {
   dispose() {
     window.removeEventListener('resize', this.onWindowResize.bind(this));
     this.renderer.dispose();
+  }
+
+  setCamera(newCamera) {
+    this.camera = newCamera;
+  }
+
+  resetCamera() {
+    this.camera = this._defaultCamera;
+  }
+
+  hideGameElements() {
+    this._gameElements.forEach(element => {
+      element.visible = false;
+    });
+  }
+
+  restoreGameElements() {
+    this._gameElements.forEach(element => {
+      element.visible = true;
+    });
   }
 }

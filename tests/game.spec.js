@@ -13,7 +13,7 @@ async function setupNetworkRoutes(page) {
     }
   );
   await page.route(
-    'https://unpkg.com/three@0.160.0/examples/jsm/**',
+    'https://unpkg.com/three@0.160.0/examples/jsm/**', 
     (route) => {
       const url = route.request().url();
       const jsmPath = url.substring(url.indexOf('/jsm/') + 5);
@@ -28,42 +28,45 @@ async function setupNetworkRoutes(page) {
 }
 
 test.describe('Mofu Mofu Adventure - Startup Test', () => {
-  test('should display the title screen on startup', async ({ page }) => {
+  test('should display the title screen after opening sequence', async ({ page }) => {
     await setupNetworkRoutes(page);
-
-    // Go to the game page
     await page.goto('/');
 
-    // Wait for splash screen to complete and title screen to be ready
+    // Wait for the sequence overlay to appear (indicating opening sequence started)
+    await expect(page.locator('#sequence-overlay')).toBeVisible({ timeout: 10000 });
+
+    // Wait for the opening sequence to complete (currentStep becomes 'idle')
     await page.waitForFunction(
-      () =>
-        document.querySelector('#title-screen #title-menu button')
-          ?.offsetParent !== null,
+      () => window.game?.sequenceManager?.currentStep === 'idle',
       null,
-      { timeout: 10000 }
+      {
+        timeout: 120000
+      }
     );
 
-    // Check if the "New Game" button is visible on the title screen
+    await page.waitForSelector('#title-screen #title-menu button:has-text(\'New Game\')', { state: 'visible' });
+
     const newGameButton = page.locator(
       '#title-screen #title-menu button:has-text(\'New Game\')'
     );
     await expect(newGameButton).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#sequence-overlay')).not.toBeVisible();
   });
 
-  test('should start the game when "New Game" is clicked', async ({ page }) => {
+  test('should start the game when "New Game" is clicked after opening sequence', async ({ page }) => {
     await setupNetworkRoutes(page);
-
-    // Go to the game page
     await page.goto('/');
 
-    // Wait for the title screen to be fully visible
+    // Wait for the opening sequence to complete
     await page.waitForFunction(
-      () =>
-        document.querySelector('#title-screen #title-menu button')
-          ?.offsetParent !== null,
+      () => window.game?.sequenceManager?.currentStep === 'idle',
       null,
-      { timeout: 10000 }
+      {
+        timeout: 120000
+      }
     );
+
+    await page.waitForSelector('#title-screen #title-menu button:has-text(\'New Game\')', { state: 'visible' });
 
     const newGameButton = page.locator(
       '#title-screen #title-menu button:has-text(\'New Game\')'
@@ -81,8 +84,82 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         }
       },
       null,
-      { timeout: 10000 }
+      {
+        timeout: 10000
+      }
     );
     await expect(page.locator('#hud')).toBeVisible({ timeout: 10000 });
+  });
+});
+
+test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
+  test('should play opening sequence and transition to title screen', async ({ page }) => {
+    await setupNetworkRoutes(page);
+    await page.goto('/');
+
+    // Wait for the sequence overlay to appear
+    await expect(page.locator('#sequence-overlay')).toBeVisible({ timeout: 10000 });
+
+    // Wait for the opening sequence to complete
+    await page.waitForFunction(
+      () => window.game?.sequenceManager?.currentStep === 'idle',
+      null,
+      {
+        timeout: 120000
+      }
+    );
+
+    await page.waitForSelector('#title-screen #title-menu button:has-text(\'New Game\')', { state: 'visible' });
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await expect(newGameButton).toBeVisible();
+    await expect(page.locator('#sequence-overlay')).not.toBeVisible();
+  });
+
+  test('should play ending sequence after boss defeat and transition to title screen', async ({ page }) => {
+    await setupNetworkRoutes(page);
+    await page.goto('/');
+
+    // Wait for the opening sequence to complete
+    await page.waitForFunction(
+      () => window.game?.sequenceManager?.currentStep === 'idle',
+      null,
+      {
+        timeout: 120000
+      }
+    );
+
+    // Start the game
+    await page.locator('#title-screen #title-menu button:has-text(\'New Game\')').click();
+    await page.waitForFunction(() => window.game?.gameState === 'playing', null, { timeout: 10000 });
+
+    // Simulate boss defeat
+    await page.evaluate(() => {
+      if (window.game && window.game.boss) {
+        window.game.boss.takeDamage(window.game.boss.hp);
+      }
+    });
+
+    // Wait for the sequence overlay to appear
+    await expect(page.locator('#sequence-overlay')).toBeVisible({ timeout: 10000 });
+
+    // Wait for the ending sequence to complete
+    await page.waitForFunction(
+      () => window.game?.sequenceManager?.currentStep === 'idle',
+      null,
+      {
+        timeout: 120000
+      }
+    );
+
+    await page.waitForSelector('#title-screen #title-menu button:has-text(\'New Game\')', { state: 'visible' });
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await expect(newGameButton).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#sequence-overlay')).not.toBeVisible();
   });
 });

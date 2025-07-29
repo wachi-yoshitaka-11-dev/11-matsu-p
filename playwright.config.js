@@ -2,7 +2,7 @@ const { defineConfig } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  timeout: 30000, // 30 seconds
+  timeout: 120000, // 120 seconds
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
@@ -16,7 +16,7 @@ module.exports = defineConfig({
     baseURL: 'http://localhost:8080/',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
-    headless: !!process.env.CI,
+    headless: true,
     storageState: undefined,
   },
 });

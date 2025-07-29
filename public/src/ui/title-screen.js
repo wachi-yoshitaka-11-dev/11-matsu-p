@@ -44,10 +44,22 @@ export class TitleScreen {
     this.menuContainer.style.display = 'none';
   }
 
+  hideSplash() {
+    this.splashOverlay.style.display = 'none';
+  }
+
   showMenu() {
     this.splashOverlay.style.display = 'none';
     this.logoImage.style.display = 'none';
     this.menuContainer.style.display = 'flex';
+  }
+
+  hideMenu() {
+    this.menuContainer.style.display = 'none';
+  }
+
+  hideAll() {
+    this.container.style.display = 'none';
   }
 
   dispose() {

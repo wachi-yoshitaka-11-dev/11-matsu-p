@@ -13,6 +13,7 @@ import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
+import { SequenceManager } from './sequence-manager.js';
 
 export class Game {
   constructor() {
@@ -39,6 +40,7 @@ export class Game {
     this.titleScreen = new TitleScreen(() => this.startGame());
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
+    this.sequenceManager = new SequenceManager(this);
   }
 
   initAudio() {
@@ -63,8 +65,7 @@ export class Game {
     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
     setTimeout(() => {
-      this.titleScreen.showMenu();
-      this.bgmAudios[AssetNames.BGM_TITLE].play();
+      this.playOpeningSequence();
     }, remainingTime);
 
     this.field = new Field(this);
@@ -238,8 +239,8 @@ export class Game {
     this.gameState = GameState.PLAYING;
     this.hud.container.style.display = 'block';
     if (this.titleScreen) {
-      this.titleScreen.dispose();
-      this.titleScreen = null;
+      this.titleScreen.hideSplash();
+      this.titleScreen.hideMenu();
     }
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
@@ -308,7 +309,9 @@ export class Game {
   }
 
   _updateLoop(deltaTime) {
-    if (this.gameState !== GameState.PAUSED) {
+    if (this.gameState === GameState.SEQUENCE) {
+      this.sequenceManager.update(deltaTime);
+    } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
       this.inputController?.update(deltaTime);
 
@@ -330,6 +333,8 @@ export class Game {
           this.player?.addExperience(this.boss.experience);
           this.sceneManager.remove(this.boss.mesh);
           this.boss = null;
+          // ボス撃破時にエンディングシーケンスを再生
+          this.playEndingSequence();
         }
 
         for (let i = this.items.length - 1; i >= 0; i--) {
@@ -395,4 +400,27 @@ export class Game {
     const deltaTime = this.clock.getDelta();
     this._updateLoop(deltaTime);
   };
+
+  // 追加
+  playOpeningSequence() {
+    this.gameState = GameState.SEQUENCE;
+    this.titleScreen.hideSplash();
+    this.titleScreen.hideMenu();
+    this.sequenceManager.startOpeningSequence(() => {
+      this.gameState = GameState.TITLE;
+      this.titleScreen.showMenu();
+    });
+  }
+
+  // 追加
+  playEndingSequence() {
+    this.gameState = GameState.SEQUENCE;
+    this.hud.container.style.display = 'none';
+    this.titleScreen.hideSplash();
+    this.titleScreen.hideMenu();
+    this.sequenceManager.startEndingSequence(() => {
+      this.gameState = GameState.TITLE;
+      this.titleScreen.showMenu();
+    });
+  }
 }

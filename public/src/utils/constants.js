@@ -117,6 +117,7 @@ export const GameState = {
   TITLE: 'title',
   PLAYING: 'playing',
   PAUSED: 'paused',
+  SEQUENCE: 'sequence',
 };
 
 export const ItemTypes = {
