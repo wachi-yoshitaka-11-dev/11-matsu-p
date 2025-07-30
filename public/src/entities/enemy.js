@@ -35,6 +35,11 @@ export class Enemy extends Character {
     this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
     this.experience = this.game.data.enemies.grunt.experience;
     this.isAttacking = false;
+    
+    // Initialize death animation properties
+    this.deathAnimationStartTime = null;
+    this.deathAnimationDuration = 2000; // 2 seconds
+    this.readyForRemoval = false;
 
     if (this.mixer) {
       this.mixer.addEventListener('finished', (e) => {
@@ -49,7 +54,10 @@ export class Enemy extends Character {
   update(deltaTime) {
     super.update(deltaTime);
 
-    if (this.isDead) return;
+    if (this.isDead) {
+      this.updateDeathAnimation();
+      return;
+    }
 
     this.updateAnimation();
 
@@ -110,7 +118,39 @@ export class Enemy extends Character {
     }
   }
 
+  updateDeathAnimation() {
+    if (!this.deathAnimationStartTime) return;
+    
+    const elapsedTime = Date.now() - this.deathAnimationStartTime;
+    const progress = Math.min(elapsedTime / this.deathAnimationDuration, 1);
+    
+    // Fade out effect during death animation
+    const opacity = 1 - progress;
+    this.mesh.traverse((object) => {
+      if (object.isMesh && object.material) {
+        if (Array.isArray(object.material)) {
+          object.material.forEach((mat) => {
+            mat.transparent = true;
+            mat.opacity = opacity;
+          });
+        } else {
+          object.material.transparent = true;
+          object.material.opacity = opacity;
+        }
+      }
+    });
+    
+    // Mark as ready for removal when animation is complete
+    if (progress >= 1) {
+      this.readyForRemoval = true;
+    }
+  }
+
   onDeath() {
+    this.playAnimation(AnimationNames.DIE);
     this.game.playSound(AssetNames.SFX_KILL);
+    
+    // Start death animation timing
+    this.deathAnimationStartTime = Date.now();
   }
 }

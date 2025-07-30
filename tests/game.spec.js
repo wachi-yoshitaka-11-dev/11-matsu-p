@@ -125,6 +125,68 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
     await expect(page.locator('#hud')).toBeVisible({ timeout: 10000 });
   });
+
+  test('should play death animation when enemy dies', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Wait for enemies to be loaded
+    await page.waitForFunction(
+      () => window.game?.enemies?.length > 0,
+      null,
+      { timeout: 5000 }
+    );
+
+    // Kill the first enemy by setting its HP to 0
+    await page.evaluate(() => {
+      const enemy = window.game.enemies[0];
+      if (enemy) {
+        enemy.takeDamage(enemy.hp);
+      }
+    });
+
+    // Verify that the enemy plays death animation and becomes marked as dead
+    await page.waitForFunction(
+      () => {
+        const enemy = window.game?.enemies?.[0];
+        return enemy?.isDead === true && enemy?.currentAnimationName === 'die';
+      },
+      null,
+      { timeout: 3000 }
+    );
+
+    // Wait for death animation to complete and enemy to be removed
+    await page.waitForFunction(
+      () => {
+        return window.game?.enemies?.length === 0;
+      },
+      null,
+      { timeout: 5000 }
+    );
+  });
 });
 
 test.describe('Mofu Mofu Adventure - Sequence Tests', () => {

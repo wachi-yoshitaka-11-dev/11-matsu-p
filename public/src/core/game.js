@@ -317,12 +317,12 @@ export class Game {
       if (this.gameState === GameState.PLAYING) {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
           const enemy = this.enemies[i];
-          if (enemy.isDead) {
+          enemy.update(deltaTime);
+          
+          if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
             this.enemies.splice(i, 1);
-          } else {
-            enemy.update(deltaTime);
           }
         }
 
