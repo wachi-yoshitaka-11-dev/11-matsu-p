@@ -40,6 +40,12 @@ export class Hud {
     this.weaponDisplay = this.createWeaponDisplay();
     this.container.appendChild(this.weaponDisplay);
 
+    this.shieldDisplay = this.createShieldDisplay();
+    this.container.appendChild(this.shieldDisplay);
+
+    this.skillDisplay = this.createSkillDisplay();
+    this.container.appendChild(this.skillDisplay);
+
     this.addStyles();
   }
 
@@ -47,6 +53,18 @@ export class Hud {
     const weaponContainer = document.createElement('div');
     weaponContainer.id = 'weapon-display';
     return weaponContainer;
+  }
+
+  createShieldDisplay() {
+    const shieldContainer = document.createElement('div');
+    shieldContainer.id = 'shield-display';
+    return shieldContainer;
+  }
+
+  createSkillDisplay() {
+    const skillContainer = document.createElement('div');
+    skillContainer.id = 'skill-display';
+    return skillContainer;
   }
 
   createInventoryDisplay() {
@@ -175,6 +193,12 @@ export class Hud {
     });
 
     this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
+    
+    const currentShield = this.player.getCurrentShield();
+    this.shieldDisplay.innerHTML = `<h3>Shield</h3><div>${currentShield ? currentShield.name : 'なし'}</div>`;
+    
+    const currentSkill = this.player.getCurrentSkill();
+    this.skillDisplay.innerHTML = `<h3>Skill</h3><div>${currentSkill ? currentSkill.name : 'なし'}</div>`;
 
     this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
   }
@@ -264,6 +288,22 @@ export class Hud {
             #weapon-display {
                 position: absolute;
                 top: 300px;
+                left: 10px;
+                background-color: rgba(0,0,0,0.5);
+                padding: 10px;
+                border: 1px solid white;
+            }
+            #shield-display {
+                position: absolute;
+                top: 390px;
+                left: 10px;
+                background-color: rgba(0,0,0,0.5);
+                padding: 10px;
+                border: 1px solid white;
+            }
+            #skill-display {
+                position: absolute;
+                top: 480px;
                 left: 10px;
                 background-color: rgba(0,0,0,0.5);
                 padding: 10px;
