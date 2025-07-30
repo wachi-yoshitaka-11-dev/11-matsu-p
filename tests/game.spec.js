@@ -142,7 +142,12 @@ test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
       }
     });
 
-    // Wait for the sequence overlay to appear
+    // Wait for the ending timer to finish and sequence to start
+    await page.waitForFunction(
+      () => window.game?.endingTimer <= 0 && window.game?.isEndingSequenceReady,
+      null,
+      { timeout: 15000 } // タイマーの時間 + 余裕を持たせる
+    );
     await expect(page.locator('#sequence-overlay')).toBeVisible({ timeout: 10000 });
 
     // Wait for the ending sequence to complete

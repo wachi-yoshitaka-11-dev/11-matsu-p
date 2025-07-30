@@ -112,6 +112,8 @@ export class Game {
     const audioAssets = [
       AssetNames.BGM_PLAYING,
       AssetNames.BGM_TITLE,
+      AssetNames.BGM_OPENING,
+      AssetNames.BGM_ENDING,
       AssetNames.SFX_ATTACK_STRONG,
       AssetNames.SFX_ATTACK_WEAK,
       AssetNames.SFX_CLICK,
@@ -140,7 +142,12 @@ export class Game {
       );
       this.audioBuffers[assetName] = buffer;
 
-      if (assetName === AssetNames.BGM_PLAYING || assetName === AssetNames.BGM_TITLE) {
+      if (
+        assetName === AssetNames.BGM_PLAYING ||
+        assetName === AssetNames.BGM_TITLE ||
+        assetName === AssetNames.BGM_OPENING ||
+        assetName === AssetNames.BGM_ENDING
+      ) {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
@@ -198,8 +205,8 @@ export class Game {
       { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
       { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
       { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },
-      { model: AssetNames.CLOUD_MODEL, texture: AssetNames.CLOUD_TEXTURE },
-      { model: AssetNames.SUN_MODEL, texture: AssetNames.SUN_TEXTURE },
+      { texture: AssetNames.CLOUD_TEXTURE }, // 雲のテクスチャを明示的に追加
+      { texture: AssetNames.GROUND_TEXTURE }, // 地面テクスチャを明示的に追加
     ];
 
     for (const asset of assetsToLoad) {
@@ -224,13 +231,6 @@ export class Game {
         );
       }
     }
-
-    // Explicitly load ground texture
-    try {
-      await this.assetLoader.loadTexture(AssetNames.GROUND_TEXTURE, `assets/textures/${AssetNames.GROUND_TEXTURE}.png`);
-    } catch (error) {
-      console.error(`Error loading ground texture:`, error);
-    }
   }
 
   startGame() {
@@ -239,13 +239,15 @@ export class Game {
     this.gameState = GameState.PLAYING;
     this.hud.container.style.display = 'block';
     if (this.titleScreen) {
-      this.titleScreen.hideSplash();
-      this.titleScreen.hideMenu();
+      this.titleScreen.hideAll();
     }
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    if (this.bgmAudios[AssetNames.BGM_PLAYING] && !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying) {
+    if (
+      this.bgmAudios[AssetNames.BGM_PLAYING] &&
+      !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
+    ) {
       this.bgmAudios[AssetNames.BGM_PLAYING].play();
     }
     this.playSound(AssetNames.SFX_START);
@@ -333,8 +335,20 @@ export class Game {
           this.player?.addExperience(this.boss.experience);
           this.sceneManager.remove(this.boss.mesh);
           this.boss = null;
-          // ボス撃破時にエンディングシーケンスを再生
-          this.playEndingSequence();
+          this.endingTimer = 1; // 1秒のタイマー
+          this.isEndingSequenceReady = false;
+        }
+
+        // エンディングタイマーの更新とレベルアップのチェック
+        if (this.endingTimer > 0) {
+          // レベルアップメニューが表示されていない場合のみタイマーを減らす
+          if (this.player?.statusPoints === 0) {
+            this.endingTimer -= deltaTime;
+          }
+          if (this.endingTimer <= 0 && !this.isEndingSequenceReady) {
+            this.playEndingSequence();
+            this.isEndingSequenceReady = true;
+          }
         }
 
         for (let i = this.items.length - 1; i >= 0; i--) {
@@ -409,6 +423,9 @@ export class Game {
     this.sequenceManager.startOpeningSequence(() => {
       this.gameState = GameState.TITLE;
       this.titleScreen.showMenu();
+      if (this.bgmAudios[AssetNames.BGM_TITLE] && !this.bgmAudios[AssetNames.BGM_TITLE].isPlaying) {
+        this.bgmAudios[AssetNames.BGM_TITLE].play();
+      }
     });
   }
 
@@ -418,9 +435,11 @@ export class Game {
     this.hud.container.style.display = 'none';
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
+    if (this.bgmAudios[AssetNames.BGM_PLAYING]?.isPlaying) {
+      this.bgmAudios[AssetNames.BGM_PLAYING].stop();
+    }
     this.sequenceManager.startEndingSequence(() => {
-      this.gameState = GameState.TITLE;
-      this.titleScreen.showMenu();
+      this.reloadGame();
     });
   }
 }

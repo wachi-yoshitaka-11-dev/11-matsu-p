@@ -95,19 +95,14 @@ export class Field {
     );
 
     // Place clouds
-    const cloudModel = this.game.assetLoader.getAsset(AssetNames.CLOUD_MODEL);
-    if (cloudModel) {
-      const cloudTexture = this.game.assetLoader.getAsset(
-        AssetNames.CLOUD_TEXTURE
-      );
-      if (cloudTexture) {
-        this._setObjectTransparency(cloudModel, FieldConst.CLOUD_OPACITY);
-      }
-
+    const cloudTexture = this.game.assetLoader.getAsset(
+      AssetNames.CLOUD_TEXTURE
+    );
+    if (cloudTexture) {
       const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2;
       for (let i = 0; i < FieldConst.CLOUD_COUNT; i++) {
         this._placeObject(
-          cloudModel,
+          null, // モデルは不要
           cloudTexture,
           FieldConst.CLOUD_MIN_SCALE,
           FieldConst.CLOUD_MAX_SCALE,
@@ -116,44 +111,25 @@ export class Field {
               Math.random() * FieldConst.TERRAIN_SIZE * 2 - terrainHalfSize;
             const z =
               Math.random() * FieldConst.TERRAIN_SIZE * 2 - terrainHalfSize;
-            const y = 20 + (Math.random() * 10 - 5);
+            const y = 50 + (Math.random() * 20 - 10);
             return new THREE.Vector3(x, y, z);
-          }
-        );
-      }
-    }
-
-    // Place sun
-    const sunModel = this.game.assetLoader.getAsset(AssetNames.SUN_MODEL);
-    if (sunModel) {
-      const sunTexture = this.game.assetLoader.getAsset(AssetNames.SUN_TEXTURE);
-      if (sunTexture) {
-        this._setObjectTransparency(sunModel, FieldConst.SUN_OPACITY);
-      }
-
-      for (let i = 0; i < FieldConst.SUN_COUNT; i++) {
-        this._placeObject(
-          sunModel,
-          sunTexture,
-          FieldConst.SUN_MIN_SCALE,
-          FieldConst.SUN_MAX_SCALE,
-          () => {
-            return new THREE.Vector3(
-              FieldConst.TERRAIN_SIZE / 2,
-              FieldConst.TERRAIN_SIZE / 2 + 10,
-              -FieldConst.TERRAIN_SIZE / 2
-            );
-          }
+          },
+          true // isBillboardをtrueに設定
         );
       }
     }
   }
 
-  _placeObject(model, texture, minScale, maxScale, getPosition) {
-    const instance = model.clone();
-
-    if (texture) {
-      applyTextureToObject(instance, texture);
+  _placeObject(model, texture, minScale, maxScale, getPosition, isBillboard = false) {
+    let instance;
+    if (isBillboard && texture) {
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: FieldConst.CLOUD_OPACITY });
+      instance = new THREE.Sprite(material);
+    } else {
+      instance = model.clone();
+      if (texture) {
+        applyTextureToObject(instance, texture);
+      }
     }
 
     const scale = Math.random() * (maxScale - minScale) + minScale;
@@ -162,20 +138,6 @@ export class Field {
     instance.position.copy(getPosition(instance));
 
     this.game.sceneManager.add(instance);
-  }
-
-  _setObjectTransparency(object, opacity) {
-    object.traverse((child) => {
-      if (child.isMesh && child.material) {
-        const materials = Array.isArray(child.material)
-          ? child.material
-          : [child.material];
-        materials.forEach((material) => {
-          material.transparent = true;
-          material.opacity = opacity;
-        });
-      }
-    });
   }
 
   getHeightAt(x, z) {

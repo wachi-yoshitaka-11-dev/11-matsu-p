@@ -57,12 +57,12 @@ export const AssetNames = {
   TREE_MODEL: 'tree',
   ROCK_MODEL: 'rock',
   GRASS_MODEL: 'grass',
-  CLOUD_MODEL: 'cloud',
-  SUN_MODEL: 'sun',
 
   // Audio
   BGM_PLAYING: 'bgm-playing',
   BGM_TITLE: 'bgm-title',
+  BGM_OPENING: 'bgm-opening',
+  BGM_ENDING: 'bgm-ending',
   SFX_ATTACK_STRONG: 'attack-strong',
   SFX_ATTACK_WEAK: 'attack-weak',
   SFX_CLICK: 'click',
@@ -93,7 +93,6 @@ export const AssetNames = {
   ROCK_TEXTURE: 'rock-texture',
   GRASS_TEXTURE: 'grass-texture',
   CLOUD_TEXTURE: 'cloud-texture',
-  SUN_TEXTURE: 'sun-texture',
   GROUND_TEXTURE: 'ground-texture',
 };
 
