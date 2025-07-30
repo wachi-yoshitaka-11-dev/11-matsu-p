@@ -62,16 +62,6 @@ export class TitleScreen {
     this.container.style.display = 'none';
   }
 
-  dispose() {
-    if (this.container) {
-      this.newGameButton.removeEventListener('click', this.onStart);
-      if (this.container.parentNode) {
-        this.container.parentNode.removeChild(this.container);
-      }
-      this.container = null;
-    }
-  }
-
   addStyles() {
     const style = document.createElement('style');
     style.textContent = `

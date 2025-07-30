@@ -49,7 +49,8 @@ export class SequenceManager {
 
     this.currentTextIndex = 0;
     this.textSequence = [];
-    this.textDisplayDuration = 3000; // 3 seconds
+    this.textDisplayDuration = 4000; // 4 seconds
+    this.textFadeDuration = 500; // 0.5 seconds for fade in/out
     this.textTimer = 0;
     this.onSequenceCompleteCallback = null; // 追加
     this.currentStep = 'idle'; // 追加
@@ -63,7 +64,17 @@ export class SequenceManager {
     // テキスト表示の進行をdeltaTimeで管理
     if (this.currentStep === 'showingText') {
       this.textTimer += deltaTime * 1000; // deltaTimeは秒なのでミリ秒に変換
-      if (this.textTimer >= this.textDisplayDuration) {
+
+      // フェードイン
+      if (this.textTimer < this.textFadeDuration) {
+        this.textElement.style.opacity = (this.textTimer / this.textFadeDuration).toString();
+      } else if (this.textTimer < this.textDisplayDuration - this.textFadeDuration) {
+        // 表示維持
+        this.textElement.style.opacity = '1';
+      } else if (this.textTimer < this.textDisplayDuration) {
+        // フェードアウト
+        this.textElement.style.opacity = (1 - (this.textTimer - (this.textDisplayDuration - this.textFadeDuration)) / this.textFadeDuration).toString();
+      } else {
         this.textTimer = 0;
         this.currentTextIndex++;
         if (this.currentTextIndex < this.textSequence.length) {
@@ -84,15 +95,16 @@ export class SequenceManager {
     this.currentStep = 'showingText'; // ステップを設定
 
     this.overlayDiv.style.display = 'flex';
+    this.overlayDiv.style.opacity = '1';
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
     this.textSequence = [
       '忘れ去られた王国',
-      'かつて、この王国は光に満ちていた。'
-      ,'しかし、謎の呪いにより、その輝きは失われた。'
-      ,'今、一匹の猫が目覚める。失われた記憶と、王国を救う使命を胸に。'
-      ,'希望の光は、再びこの地に灯るのか。'
+      'かつて、この王国は光に満ちていた。',
+      'しかし、謎の呪いにより、その輝きは失われた。',
+      '今、一匹の猫が目覚める。失われた記憶と、王国を救う使命を胸に。',
+      '希望の光は、再びこの地に灯るのか。',
     ];
     this.currentTextIndex = 0;
     this.textTimer = 0;
@@ -101,30 +113,44 @@ export class SequenceManager {
     this.logoImage.style.display = 'none';
     this.staffRollElement.style.display = 'none';
 
-    this.game.bgmAudios[AssetNames.BGM_TITLE]?.play();
+    this.game.bgmAudios[AssetNames.BGM_OPENING]?.play();
 
-    // テキスト表示完了後の処理をupdateメソッドに移行するため、setTimeoutを削除
-    // _showNextText() の代わりに update メソッドで進行を管理
-    // ここではテキスト表示完了後の処理を onSequenceCompleteCallback に設定
+    // テキスト表示完了後の処理
     this.onSequenceCompleteCallback = () => {
-      this.textElement.style.display = 'none';
-      this.logoImage.style.display = 'block';
-      this.currentStep = 'showingLogo'; // ステップを設定
+      this.currentStep = 'fadingOut';
+      // テキストとBGMをフェードアウト
+      this.textElement.style.transition = 'opacity 1.5s ease-out';
+      this.textElement.style.opacity = '0';
+      this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_OPENING], 3000);
+
+      // 4秒待ってからタイトルへ
       setTimeout(() => {
         this.overlayDiv.style.display = 'none';
+        this.textElement.style.display = 'none'; // 完全に非表示に
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
-        this.game.bgmAudios[AssetNames.BGM_TITLE]?.stop();
         onComplete();
         this.currentStep = 'idle'; // ステップをリセット
-      }, 2000); // ロゴ表示2秒
+      }, 4000);
     };
   }
 
   startEndingSequence(onComplete) {
+    this.onSequenceCompleteCallback = onComplete;
+    this.currentStep = 'showingText';
+
     this.overlayDiv.style.display = 'flex';
+    this.overlayDiv.style.opacity = '0'; // 初期透明度を0に設定
+    this.overlayDiv.style.transition = 'opacity 1.5s ease-in-out'; // フェードイン・アウトを設定
+    // フェードインを開始
+    setTimeout(() => {
+      this.overlayDiv.style.opacity = '1';
+    }, 100);
+
+    this.textElement.style.opacity = '0'; // 初期透明度を0に設定
+    this.textElement.style.transition = 'opacity 0.5s ease-in-out'; // フェードイン・アウトを設定
     this.game.sceneManager.setCamera(this.sequenceCamera);
-    this.game.sceneManager.hideGameElements(); // ゲーム要素を非表示にするメソッドを仮定
+    this.game.sceneManager.hideGameElements();
 
     this.textSequence = [
       '呪いは解かれ、王国に平和が戻った。',
@@ -132,17 +158,15 @@ export class SequenceManager {
     ];
     this.currentTextIndex = 0;
     this.textTimer = 0;
-    this.textElement.textContent = this.textSequence[this.currentTextIndex]; // 最初のテキストを表示
+    this.textElement.textContent = this.textSequence[this.currentTextIndex];
     this.textElement.style.display = 'block';
     this.logoImage.style.display = 'none';
     this.staffRollElement.style.display = 'none';
 
-    this.game.bgmAudios[AssetNames.BGM_PLAYING]?.play();
+    this.game.bgmAudios[AssetNames.BGM_ENDING]?.play();
 
-    // テキスト表示完了後の処理をupdateメソッドに移行するため、setTimeoutを削除
-    // _showNextText() の代わりに update メソッドで進行を管理
-    // ここではテキスト表示完了後の処理を onSequenceCompleteCallback に設定
     this.onSequenceCompleteCallback = () => {
+      this.currentStep = 'showingStaffRoll';
       this.textElement.style.display = 'none';
       this.staffRollElement.style.display = 'block';
       this.staffRollElement.innerHTML = `
@@ -153,23 +177,53 @@ export class SequenceManager {
         <p>Special Thanks: User</p>
       `;
       this.staffRollElement.style.animation = 'scroll-up 30s linear forwards';
-      this.currentStep = 'showingStaffRoll'; // ステップを設定
 
       setTimeout(() => {
         this.staffRollElement.style.display = 'none';
         this.textElement.style.display = 'block';
         this.textElement.textContent = 'Fin';
-        this.currentStep = 'showingFin'; // ステップを設定
+        this.textElement.style.opacity = '0';
+        this.textElement.style.transition = 'opacity 1.5s ease-in-out';
+        this.currentStep = 'showingFin';
+
         setTimeout(() => {
-          this.overlayDiv.style.display = 'none';
-          this.game.sceneManager.restoreGameElements();
-          this.game.sceneManager.resetCamera();
-          this.game.bgmAudios[AssetNames.BGM_PLAYING]?.stop();
-          onComplete();
-          this.currentStep = 'idle'; // ステップをリセット
-        }, 5000); // Fin表示5秒
+          this.textElement.style.opacity = '1';
+        }, 100);
+
+        setTimeout(() => {
+          this.textElement.style.opacity = '0';
+          this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_ENDING], 1500);
+          setTimeout(() => {
+            this.overlayDiv.style.display = 'none';
+            this.game.sceneManager.restoreGameElements();
+            this.game.sceneManager.resetCamera();
+            onComplete();
+            this.currentStep = 'idle';
+          }, 1500); // フェードアウト完了を待つ
+        }, 3500); // Fin表示開始から3.5秒後にフェードアウト開始
       }, 30000); // スタッフロール30秒
     };
+  }
+
+  fadeOutAudio(audio, duration) {
+    if (!audio || !audio.isPlaying) return;
+
+    const startVolume = audio.getVolume();
+    const startTime = this.game.clock.getElapsedTime();
+
+    const fade = () => {
+      const elapsedTime = this.game.clock.getElapsedTime() - startTime;
+      if (elapsedTime < duration / 1000) {
+        const newVolume = startVolume * (1 - elapsedTime / (duration / 1000));
+        audio.setVolume(newVolume);
+        requestAnimationFrame(fade);
+      } else {
+        audio.stop();
+        audio.setVolume(startVolume); // Restore original volume for next play
+      }
+    };
+
+    fade();
   }
 
   _showNextText(onSequenceComplete) {
