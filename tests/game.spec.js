@@ -187,6 +187,91 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       { timeout: 5000 }
     );
   });
+
+  test('should display enemy health bar when player is close', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Wait for enemies to be loaded
+    await page.waitForFunction(
+      () => window.game?.enemies?.length > 0,
+      null,
+      { timeout: 5000 }
+    );
+
+    // Move player close to the first enemy
+    await page.evaluate(() => {
+      const enemy = window.game.enemies[0];
+      const player = window.game.player;
+      if (enemy && player) {
+        // Position player close to enemy (within 5 units)
+        const enemyPos = enemy.mesh.position;
+        player.mesh.position.set(enemyPos.x + 3, enemyPos.y, enemyPos.z + 3);
+      }
+    });
+
+    // Wait a moment for the health bar to appear
+    await page.waitForTimeout(100);
+
+    // Check if enemy health bar is visible
+    await page.waitForFunction(
+      () => {
+        const healthBars = document.querySelectorAll('.enemy-health-bar');
+        return healthBars.length > 0 && healthBars[0].style.display !== 'none';
+      },
+      null,
+      { timeout: 3000 }
+    );
+
+    // Verify health bar content
+    const healthBar = page.locator('.enemy-health-bar').first();
+    await expect(healthBar).toBeVisible();
+
+    // Move player away from the enemy
+    await page.evaluate(() => {
+      const player = window.game.player;
+      if (player) {
+        // Position player far from enemy (more than 10 units)
+        player.mesh.position.set(50, 0, 50);
+      }
+    });
+
+    // Wait a moment for the health bar to disappear
+    await page.waitForTimeout(100);
+
+    // Check if enemy health bar is hidden
+    await page.waitForFunction(
+      () => {
+        const healthBars = document.querySelectorAll('.enemy-health-bar');
+        return healthBars.length === 0 || healthBars[0].style.display === 'none';
+      },
+      null,
+      { timeout: 3000 }
+    );
+  });
 });
 
 test.describe('Mofu Mofu Adventure - Sequence Tests', () => {

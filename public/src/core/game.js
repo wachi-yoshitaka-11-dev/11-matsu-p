@@ -12,6 +12,7 @@ import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
+import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 
@@ -25,6 +26,7 @@ export class Game {
     this.player = null;
     this.inputController = null;
     this.hud = null;
+    this.enemyHealthBar = null;
 
     this.enemies = [];
     this.items = [];
@@ -78,6 +80,7 @@ export class Game {
     this.sceneManager.add(this.player.mesh);
 
     this.hud = new Hud(this, this.player);
+    this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
 
     this.inputController = new InputController(
       this.player,
@@ -315,6 +318,7 @@ export class Game {
       this.inputController?.update(deltaTime);
 
       if (this.gameState === GameState.PLAYING) {
+        this.enemyHealthBar?.update();
         for (let i = this.enemies.length - 1; i >= 0; i--) {
           const enemy = this.enemies[i];
           enemy.update(deltaTime);
