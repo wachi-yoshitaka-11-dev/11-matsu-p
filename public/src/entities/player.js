@@ -31,6 +31,12 @@ export class Player extends Character {
 
     this.weapons = ['sword', 'claws'];
     this.currentWeaponIndex = 0;
+    
+    this.shields = ['woodenShield', 'ironShield'];
+    this.currentShieldIndex = 0;
+    
+    this.skills = ['projectile', 'buff'];
+    this.currentSkillIndex = 0;
     this.isUsingSkill = false;
     this.isAttacking = false;
     this.isAttackingWeak = false;
@@ -207,5 +213,36 @@ export class Player extends Character {
 
   removeDefenseBuff() {
     this.defenseBuffMultiplier = 1.0;
+  }
+
+  getCurrentShield() {
+    if (this.shields.length === 0) return null;
+    const shieldName = this.shields[this.currentShieldIndex];
+    return this.game.data.shields[shieldName];
+  }
+
+  switchShield() {
+    if (this.shields.length > 1) {
+      this.currentShieldIndex = (this.currentShieldIndex + 1) % this.shields.length;
+      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
+    }
+  }
+
+  getShieldDefense() {
+    const shield = this.getCurrentShield();
+    return shield ? shield.defense : 0;
+  }
+
+  getCurrentSkill() {
+    if (this.skills.length === 0) return null;
+    const skillName = this.skills[this.currentSkillIndex];
+    return this.game.data.skills[skillName];
+  }
+
+  switchSkill() {
+    if (this.skills.length > 1) {
+      this.currentSkillIndex = (this.currentSkillIndex + 1) % this.skills.length;
+      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
+    }
   }
 }

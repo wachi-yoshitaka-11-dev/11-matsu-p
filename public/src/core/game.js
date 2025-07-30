@@ -96,6 +96,7 @@ export class Game {
     const dataFiles = [
       'player',
       'weapons',
+      'shields',
       'enemies',
       'npcs',
       'items',

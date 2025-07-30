@@ -39,12 +39,30 @@ export class Hud {
 
     this.weaponDisplay = this.createWeaponDisplay();
     this.container.appendChild(this.weaponDisplay);
+
+    this.shieldDisplay = this.createShieldDisplay();
+    this.container.appendChild(this.shieldDisplay);
+
+    this.skillDisplay = this.createSkillDisplay();
+    this.container.appendChild(this.skillDisplay);
   }
 
   createWeaponDisplay() {
     const weaponContainer = document.createElement('div');
     weaponContainer.id = 'weapon-display';
     return weaponContainer;
+  }
+
+  createShieldDisplay() {
+    const shieldContainer = document.createElement('div');
+    shieldContainer.id = 'shield-display';
+    return shieldContainer;
+  }
+
+  createSkillDisplay() {
+    const skillContainer = document.createElement('div');
+    skillContainer.id = 'skill-display';
+    return skillContainer;
   }
 
   createInventoryDisplay() {
@@ -170,6 +188,12 @@ export class Hud {
     });
 
     this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
+    
+    const currentShield = this.player.getCurrentShield();
+    this.shieldDisplay.innerHTML = `<h3>Shield</h3><div>${currentShield ? currentShield.name : 'なし'}</div>`;
+    
+    const currentSkill = this.player.getCurrentSkill();
+    this.skillDisplay.innerHTML = `<h3>Skill</h3><div>${currentSkill ? currentSkill.name : 'なし'}</div>`;
 
     this.deathOverlay.style.display = this.player.isDead ? 'flex' : 'none';
   }
@@ -185,5 +209,4 @@ export class Hud {
   hideDeathScreen() {
     this.deathOverlay.style.opacity = 0;
   }
-
 }

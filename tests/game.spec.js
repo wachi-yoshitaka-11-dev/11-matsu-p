@@ -272,6 +272,89 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       { timeout: 3000 }
     );
   });
+
+  test('should implement shield system similar to weapons', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check that shields data is loaded
+    await page.waitForFunction(
+      () => window.game?.data?.shields !== undefined,
+      null,
+      { timeout: 5000 }
+    );
+
+    // Check that player has shields array
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.shields && Array.isArray(player.shields) && player.shields.length > 0;
+      },
+      null,
+      { timeout: 3000 }
+    );
+
+    // Check that player has currentShieldIndex
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return typeof player?.currentShieldIndex === 'number';
+      },
+      null,
+      { timeout: 1000 }
+    );
+
+    // Test shield switching functionality
+    const initialShieldIndex = await page.evaluate(() => {
+      return window.game.player.currentShieldIndex;
+    });
+
+    // Switch shield
+    await page.evaluate(() => {
+      if (window.game.player.switchShield) {
+        window.game.player.switchShield();
+      }
+    });
+
+    // Verify shield index changed (if multiple shields available)
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        const hasMultipleShields = player?.shields?.length > 1;
+        if (hasMultipleShields) {
+          return player.currentShieldIndex !== initialShieldIndex;
+        } else {
+          // If only one shield, index should remain the same
+          return player.currentShieldIndex === initialShieldIndex;
+        }
+      },
+      null,
+      { timeout: 1000 }
+    );
+  });
 });
 
 test.describe('Mofu Mofu Adventure - Sequence Tests', () => {

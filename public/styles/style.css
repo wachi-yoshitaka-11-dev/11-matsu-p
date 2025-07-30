@@ -152,6 +152,24 @@ canvas {
   border: 1px solid white;
 }
 
+#shield-display {
+  position: absolute;
+  top: 390px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border: 1px solid white;
+}
+
+#skill-display {
+  position: absolute;
+  top: 480px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border: 1px solid white;
+}
+
 /* =============================================================
    シーケンス関連スタイル
 ============================================================= */
