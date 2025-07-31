@@ -1,5 +1,8 @@
 {
   "default": {
+    "name": "村人",
+    "model": "npc.glb",
+    "description": "村の住民",
     "interactionRange": 5
   }
 }

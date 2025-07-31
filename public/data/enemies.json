@@ -1,5 +1,8 @@
 {
   "grunt": {
+    "name": "雑魚敵",
+    "model": "grunt.glb",
+    "description": "基本的な敵",
     "attackCooldown": 2,
     "attackRange": 1.5,
     "damage": 10,
@@ -8,6 +11,9 @@
     "experience": 10
   },
   "boss": {
+    "name": "ボス",
+    "model": "boss.glb",
+    "description": "強力な敵のボス",
     "attackCooldown": 3,
     "normalAttackRange": 3,
     "normalAttackDamage": 20,

@@ -19,7 +19,9 @@ export class Field {
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
 
-    const groundTexture = this.game.assetLoader.getAsset(AssetNames.GROUND_TEXTURE);
+    const groundTexture = this.game.assetLoader.getAsset(
+      AssetNames.GROUND_TEXTURE
+    );
     if (groundTexture) {
       groundTexture.wrapS = THREE.RepeatWrapping;
       groundTexture.wrapT = THREE.RepeatWrapping;

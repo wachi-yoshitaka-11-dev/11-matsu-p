@@ -16,7 +16,7 @@ module.exports = defineConfig({
     baseURL: 'http://localhost:8080/',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
-    headless: !!process.env.CI,
+    headless: true,
     storageState: undefined,
   },
 });

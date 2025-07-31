@@ -12,6 +12,9 @@ import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
+import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
+import { LockOnUI } from '../ui/lock-on-ui.js';
+import { EquipmentUI } from '../ui/equipment-ui.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 
 export class Game {
@@ -24,6 +27,7 @@ export class Game {
     this.player = null;
     this.inputController = null;
     this.hud = null;
+    this.enemyHealthBar = null;
 
     this.enemies = [];
     this.items = [];
@@ -77,6 +81,9 @@ export class Game {
     this.sceneManager.add(this.player.mesh);
 
     this.hud = new Hud(this, this.player);
+    this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
+    this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
+    this.equipmentUI = null; // Will be created when game starts
 
     this.inputController = new InputController(
       this.player,
@@ -93,6 +100,7 @@ export class Game {
     const dataFiles = [
       'player',
       'weapons',
+      'shields',
       'enemies',
       'npcs',
       'items',
@@ -139,7 +147,10 @@ export class Game {
       );
       this.audioBuffers[assetName] = buffer;
 
-      if (assetName === AssetNames.BGM_PLAYING || assetName === AssetNames.BGM_TITLE) {
+      if (
+        assetName === AssetNames.BGM_PLAYING ||
+        assetName === AssetNames.BGM_TITLE
+      ) {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
@@ -226,9 +237,12 @@ export class Game {
 
     // Explicitly load ground texture
     try {
-      await this.assetLoader.loadTexture(AssetNames.GROUND_TEXTURE, `assets/textures/${AssetNames.GROUND_TEXTURE}.png`);
+      await this.assetLoader.loadTexture(
+        AssetNames.GROUND_TEXTURE,
+        `assets/textures/${AssetNames.GROUND_TEXTURE}.png`
+      );
     } catch (error) {
-      console.error(`Error loading ground texture:`, error);
+      console.warn('Error loading ground texture:', error);
     }
   }
 
@@ -237,6 +251,13 @@ export class Game {
 
     this.gameState = GameState.PLAYING;
     this.hud.container.style.display = 'block';
+
+    // Create equipment UI when game starts
+    if (!this.equipmentUI) {
+      this.equipmentUI = new EquipmentUI(this, this.player);
+    }
+    this.equipmentUI?.setVisibility(true);
+
     if (this.titleScreen) {
       this.titleScreen.dispose();
       this.titleScreen = null;
@@ -244,7 +265,10 @@ export class Game {
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    if (this.bgmAudios[AssetNames.BGM_PLAYING] && !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying) {
+    if (
+      this.bgmAudios[AssetNames.BGM_PLAYING] &&
+      !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
+    ) {
       this.bgmAudios[AssetNames.BGM_PLAYING].play();
     }
     this.playSound(AssetNames.SFX_START);
@@ -313,14 +337,15 @@ export class Game {
       this.inputController?.update(deltaTime);
 
       if (this.gameState === GameState.PLAYING) {
+        this.enemyHealthBar?.update();
         for (let i = this.enemies.length - 1; i >= 0; i--) {
           const enemy = this.enemies[i];
-          if (enemy.isDead) {
+          enemy.update(deltaTime);
+
+          if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
             this.enemies.splice(i, 1);
-          } else {
-            enemy.update(deltaTime);
           }
         }
 
@@ -382,6 +407,14 @@ export class Game {
 
     if (this.gameState !== GameState.PAUSED) {
       this.hud?.update();
+      this.lockOnUI?.update();
+      this.equipmentUI?.update();
+
+      // Check if locked target is dead and clear lock-on if so
+      if (this.player?.lockedTarget?.isDead) {
+        this.player.lockedTarget = null;
+        this.lockOnUI?.hideLockOnTarget();
+      }
     }
 
     this.sceneManager.render();
