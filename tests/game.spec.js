@@ -439,6 +439,91 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       { timeout: 1000 }
     );
   });
+
+  test('should implement lock-on system with wheel click and Q key', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Wait for enemies to be loaded
+    await page.waitForFunction(
+      () => window.game?.enemies?.length > 0,
+      null,
+      { timeout: 5000 }
+    );
+
+    // Test wheel click lock-on
+    await page.mouse.click(400, 300, { button: 'middle' });
+    
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.lockedTarget !== null && player?.lockedTarget !== undefined;
+      },
+      null,
+      { timeout: 3000 }
+    );
+
+    // Verify lock-on target is set
+    const lockOnState = await page.evaluate(() => {
+      const player = window.game?.player;
+      return {
+        hasLockedTarget: player?.lockedTarget !== null && player?.lockedTarget !== undefined,
+        targetIsEnemy: player?.lockedTarget?.constructor.name === 'Enemy',
+        lockOnUIVisible: !!document.querySelector('.lock-on-target')
+      };
+    });
+
+    expect(lockOnState.hasLockedTarget).toBe(true);
+    expect(lockOnState.targetIsEnemy).toBe(true);
+
+    // Test Q key target switching (if multiple enemies)
+    const enemyCount = await page.evaluate(() => window.game?.enemies?.length || 0);
+    
+    if (enemyCount > 1) {
+      const initialTarget = await page.evaluate(() => window.game?.player?.lockedTarget);
+      
+      await page.keyboard.press('KeyQ');
+      await page.waitForTimeout(100);
+      
+      const newTarget = await page.evaluate(() => window.game?.player?.lockedTarget);
+      expect(newTarget !== initialTarget).toBe(true);
+    }
+
+    // Test lock-on release (wheel click again)
+    await page.mouse.click(400, 300, { button: 'middle' });
+    
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.lockedTarget === null;
+      },
+      null,
+      { timeout: 2000 }
+    );
+  });
 });
 
 test.describe('Mofu Mofu Adventure - Sequence Tests', () => {

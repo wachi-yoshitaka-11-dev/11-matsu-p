@@ -122,9 +122,20 @@ export class InputController {
       if (!this._canProcessInput()) return;
     });
 
+    // Prevent context menu on right click and middle click
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+
+    this.canvas.addEventListener('auxclick', (e) => {
+      e.preventDefault();
+    });
+
     document.addEventListener('mousedown', (e) => {
       if (!this._canProcessInput()) return;
       const params = this._getWeaponParams();
+      
+      // Left click - weak attack
       if (
         e.button === 0 &&
         !this.player.isAttacking &&
@@ -146,7 +157,14 @@ export class InputController {
             enemy.takeDamage(finalDamage);
           }
         });
-      } else if (e.button === 2 && !this.player.isAttacking) {
+      } 
+      // Middle click (wheel click) - lock-on toggle
+      else if (e.button === 1) {
+        e.preventDefault();
+        this.handleLockOnToggle();
+      }
+      // Right click - start charging strong attack
+      else if (e.button === 2 && !this.player.isAttacking) {
         this.isCharging = true;
         this.chargeStartTime = Date.now();
         this.player.startChargingEffect();
@@ -274,33 +292,15 @@ export class InputController {
         (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
     }
 
-    if (this.keys['Tab']) {
-      if (!this.player.isLockedOn) {
-        let closestEnemy = null;
-        let closestDistance = Infinity;
-        for (const enemy of this.game.enemies) {
-          const distance = enemy.mesh.position.distanceTo(
-            this.player.mesh.position
-          );
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestEnemy = enemy;
-          }
-        }
-        if (closestEnemy) {
-          this.player.isLockedOn = true;
-          this.player.lockedOnTarget = closestEnemy;
-          this.game.playSound(AssetNames.SFX_LOCK_ON);
-        }
-      } else {
-        this.player.isLockedOn = false;
-        this.player.lockedOnTarget = null;
-      }
-      this.keys['Tab'] = false;
+    // Q key - switch lock-on target
+    if (this.keys['KeyQ'] && this.player.lockedTarget) {
+      this.switchLockOnTarget();
+      this.keys['KeyQ'] = false;
     }
 
-    if (this.player.isLockedOn && this.player.lockedOnTarget) {
-      const targetPosition = this.player.lockedOnTarget.mesh.position;
+    // Camera handling for lock-on system
+    if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
+      const targetPosition = this.player.lockedTarget.mesh.position;
       const playerPosition = this.player.mesh.position;
 
       const midPoint = new THREE.Vector3()
@@ -494,5 +494,62 @@ export class InputController {
     }
     
     return direction;
+  }
+
+  handleLockOnToggle() {
+    if (this.player.lockedTarget) {
+      // Release lock-on
+      this.player.lockedTarget = null;
+      if (this.game.lockOnUI) {
+        this.game.lockOnUI.hideLockOnTarget();
+      }
+    } else {
+      // Find nearest enemy to lock onto
+      const nearestEnemy = this.findNearestEnemy();
+      if (nearestEnemy) {
+        this.player.lockedTarget = nearestEnemy;
+        if (this.game.lockOnUI) {
+          this.game.lockOnUI.showLockOnTarget(nearestEnemy);
+        }
+        this.game.playSound(AssetNames.SFX_LOCK_ON);
+      }
+    }
+  }
+
+  switchLockOnTarget() {
+    if (!this.player.lockedTarget) return;
+
+    const enemies = this.game.enemies.filter(enemy => !enemy.isDead);
+    if (enemies.length <= 1) return;
+
+    const currentIndex = enemies.indexOf(this.player.lockedTarget);
+    if (currentIndex === -1) return;
+
+    const nextIndex = (currentIndex + 1) % enemies.length;
+    const nextTarget = enemies[nextIndex];
+
+    this.player.lockedTarget = nextTarget;
+    if (this.game.lockOnUI) {
+      this.game.lockOnUI.showLockOnTarget(nextTarget);
+    }
+    this.game.playSound(AssetNames.SFX_LOCK_ON);
+  }
+
+  findNearestEnemy() {
+    let nearestEnemy = null;
+    let nearestDistance = Infinity;
+    const maxLockOnDistance = 15; // Maximum distance for lock-on
+
+    for (const enemy of this.game.enemies) {
+      if (enemy.isDead) continue;
+
+      const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
+      if (distance < nearestDistance && distance <= maxLockOnDistance) {
+        nearestDistance = distance;
+        nearestEnemy = enemy;
+      }
+    }
+
+    return nearestEnemy;
   }
 }

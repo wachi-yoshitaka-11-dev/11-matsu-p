@@ -13,6 +13,7 @@ import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
+import { LockOnUI } from '../ui/lock-on-ui.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 
@@ -81,6 +82,7 @@ export class Game {
 
     this.hud = new Hud(this, this.player);
     this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
+    this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
 
     this.inputController = new InputController(
       this.player,
@@ -401,6 +403,13 @@ export class Game {
 
     if (this.gameState !== GameState.PAUSED) {
       this.hud?.update();
+      this.lockOnUI?.update();
+      
+      // Check if locked target is dead and clear lock-on if so
+      if (this.player?.lockedTarget?.isDead) {
+        this.player.lockedTarget = null;
+        this.lockOnUI?.hideLockOnTarget();
+      }
     }
 
     this.sceneManager.render();

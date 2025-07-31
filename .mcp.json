@@ -1,0 +1,131 @@
+{
+  "name": "mofumofu-adventure",
+  "version": "0.1.0",
+  "description": "AI-generated 3D open-world action RPG using Three.js - MCP Configuration",
+  "author": "AI Agent",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "public", "docs", "tests"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "git": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-git", "--repository", "."],
+      "env": {
+        "GIT_AUTHOR_NAME": "AI Agent",
+        "GIT_AUTHOR_EMAIL": "ai@example.com"
+      }
+    },
+    "web-search": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-web-search"],
+      "env": {}
+    }
+  },
+  "tools": [
+    {
+      "name": "start-dev-server",
+      "command": "npm start",
+      "description": "Start local development server on port 8080"
+    },
+    {
+      "name": "run-tests",
+      "command": "npm test",
+      "description": "Run Playwright end-to-end tests"
+    },
+    {
+      "name": "lint-code",
+      "command": "npm run lint",
+      "description": "Run ESLint on all JavaScript files"
+    },
+    {
+      "name": "format-code",
+      "command": "npm run format",
+      "description": "Format code with Prettier"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "analyze-game-state",
+      "description": "Analyze current game state and entities",
+      "arguments": [
+        {
+          "name": "focus",
+          "description": "Specific area to analyze (player, enemies, ui, etc.)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "debug-sequence",
+      "description": "Debug opening/ending sequence issues",
+      "arguments": [
+        {
+          "name": "sequence_type",
+          "description": "Type of sequence (opening, ending)",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "review-architecture",
+      "description": "Review current code architecture and suggest improvements",
+      "arguments": [
+        {
+          "name": "component",
+          "description": "Specific component to review (core, entities, ui, world)",
+          "required": false
+        }
+      ]
+    }
+  ],
+  "resources": [
+    {
+      "uri": "file://docs/",
+      "name": "Project Documentation",
+      "description": "Complete project documentation including architecture, design, and plans"
+    },
+    {
+      "uri": "file://public/src/",
+      "name": "Game Source Code",
+      "description": "Main game source code directory"
+    },
+    {
+      "uri": "file://public/data/",
+      "name": "Game Data",
+      "description": "JSON data files for game configuration"
+    },
+    {
+      "uri": "file://public/assets/",
+      "name": "Game Assets",
+      "description": "3D models, textures, audio, and image assets"
+    },
+    {
+      "uri": "file://tests/",
+      "name": "Test Suite",
+      "description": "Playwright end-to-end tests"
+    }
+  ],
+  "capabilities": {
+    "experimental": {
+      "multimodal": true
+    },
+    "textEditor": true,
+    "fileSystem": true,
+    "git": true,
+    "webSearch": true
+  },
+  "settings": {
+    "gameDevMode": true,
+    "autoLint": false,
+    "debugMode": false,
+    "language": "ja"
+  }
+}
