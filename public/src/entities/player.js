@@ -48,6 +48,9 @@ export class Player extends Character {
     this.isBackstepping = false;
     this.isDashing = false;
 
+    // Lock-on system
+    this.lockedTarget = null;
+
     this.attackBuffMultiplier = 1.0;
     this.defenseBuffMultiplier = 1.0;
 
@@ -124,10 +127,6 @@ export class Player extends Character {
     }
 
     this.onGround = this.physics.onGround;
-
-    if (this.isLockedOn && this.lockedOnTarget) {
-      this.mesh.lookAt(this.lockedOnTarget.mesh.position);
-    }
 
     let newAnimation = AnimationNames.IDLE;
 

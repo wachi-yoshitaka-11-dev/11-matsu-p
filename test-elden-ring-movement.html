@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Elden Ring Movement Test</title>
+    <script type="module">
+        import { Game } from './public/src/core/game.js';
+        
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('Starting Elden Ring movement test...');
+            
+            const game = new Game();
+            window.game = game;
+            
+            await game.init();
+            
+            // Wait a bit for everything to load
+            setTimeout(() => {
+                // Start the game automatically
+                game.startGame();
+                
+                setTimeout(() => {
+                    const player = game.player;
+                    
+                    console.log('=== Elden Ring Movement Test ===');
+                    console.log('Player initial state:');
+                    console.log('- isJumping:', player.isJumping);
+                    console.log('- isRolling:', player.isRolling);
+                    console.log('- isBackstepping:', player.isBackstepping);
+                    console.log('- isDashing:', player.isDashing);
+                    console.log('- stamina:', player.stamina);
+                    
+                    // Test instructions
+                    console.log('\n=== Test Instructions ===');
+                    console.log('1. Press Space to Jump');
+                    console.log('2. Hold Shift + WASD to Dash');
+                    console.log('3. Short press Shift + WASD to Roll');
+                    console.log('4. Short press Shift (no movement) to Backstep');
+                    
+                    // Listen for keyboard events to test
+                    document.addEventListener('keydown', (e) => {
+                        if (e.code === 'Space') {
+                            console.log('Space pressed - Jump initiated');
+                        } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                            console.log('Shift pressed');
+                        }
+                    });
+                    
+                    document.addEventListener('keyup', (e) => {
+                        if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                            console.log('Shift released');
+                            setTimeout(() => {
+                                console.log('Player state after Shift release:');
+                                console.log('- isRolling:', player.isRolling);
+                                console.log('- isBackstepping:', player.isBackstepping);
+                                console.log('- isDashing:', player.isDashing);
+                                console.log('- current animation:', player.currentAnimationName);
+                            }, 100);
+                        }
+                    });
+                    
+                }, 2000);
+            }, 5000);
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .instructions {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Elden Ring Movement System Test</h1>
+    <div class="instructions">
+        <h3>Test Controls:</h3>
+        <ul>
+            <li><strong>Space</strong>: Jump</li>
+            <li><strong>Shift + WASD (hold)</strong>: Dash</li>
+            <li><strong>Shift + WASD (short press)</strong>: Roll in direction</li>
+            <li><strong>Shift (short press, no movement)</strong>: Backstep</li>
+        </ul>
+        <p>Open browser console to see detailed test results and state changes.</p>
+    </div>
+    <p>Game will load automatically. Use the controls above to test the movement system.</p>
+</body>
+</html>
