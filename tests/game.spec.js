@@ -552,6 +552,52 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     expect(equipmentUIVisible).toBe(true);
   });
 
+  test('should implement improved combat system with weak/strong attacks and guard', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test combat system properties
+    const combatState = await page.evaluate(() => {
+      const player = window.game?.player;
+      return {
+        hasAttackStates: typeof player?.isAttackingWeak === 'boolean' && typeof player?.isAttackingStrong === 'boolean',
+        hasGuardState: 'isGuarding' in (player || {}),
+        guardValue: player?.isGuarding,
+        hasShieldDefense: typeof player?.getShieldDefense === 'function',
+        hasPerformAttack: typeof window.game?.inputController?.performAttack === 'function',
+        playerProperties: Object.keys(player || {}).filter(k => k.startsWith('is'))
+      };
+    });
+
+    expect(combatState.hasAttackStates).toBe(true);
+    expect(combatState.hasGuardState).toBe(true);
+    expect(combatState.hasShieldDefense).toBe(true);
+    expect(combatState.hasPerformAttack).toBe(true);
+  });
+
   test('should implement lock-on system with wheel click and Q key', async ({ page }) => {
     await setupNetworkRoutes(page);
 

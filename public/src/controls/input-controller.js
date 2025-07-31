@@ -10,8 +10,6 @@ export class InputController {
     this.canvas = canvas;
     this.keys = {};
     this.mouse = { x: 0, y: 0, wheelDelta: 0 };
-    this.isCharging = false;
-    this.chargeStartTime = 0;
 
     this.cameraYaw = 0;
     this.cameraPitch = 0;
@@ -34,17 +32,19 @@ export class InputController {
         attackRange: weaponData.attackRange,
         attackSpeed: weaponData.attackSpeed,
         staminaCost: weaponData.staminaCostAttackWeak,
+        staminaCostStrong: weaponData.staminaCostAttackStrong || weaponData.staminaCostAttackWeak * 2,
         damage: weaponData.damageAttackWeak,
-        maxStrongDamage: weaponData.damageAttackStrongMax,
-        attackRangeStrong: weaponData.attackRangeStrong,
+        damageStrong: weaponData.damageAttackStrongMax || weaponData.damageAttackWeak * 2,
+        attackRangeStrong: weaponData.attackRangeStrong || weaponData.attackRange * 1.2,
       };
     }
     return {
       attackRange: 1,
       attackSpeed: 500,
       staminaCost: 10,
+      staminaCostStrong: 20,
       damage: 5,
-      maxStrongDamage: 20,
+      damageStrong: 15,
       attackRangeStrong: 1.5,
     };
   }
@@ -135,66 +135,54 @@ export class InputController {
       if (!this._canProcessInput()) return;
       const params = this._getWeaponParams();
       
-      // Left click - weak attack
-      if (
-        e.button === 0 &&
-        !this.player.isAttacking &&
-        this.player.stamina >= params.staminaCost
-      ) {
-        this.player.isAttacking = true;
-        this.player.isAttackingWeak = true;
-        this.player.stamina -= params.staminaCost;
-        this.player.showAttackEffect();
-        this.player.playAnimation(AnimationNames.ATTACK_WEAK);
-        this.game.playSound(AssetNames.SFX_ATTACK_WEAK);
-        this.game.enemies.forEach((enemy) => {
-          if (
-            this.player.mesh.position.distanceTo(enemy.mesh.position) <
-            params.attackRange
-          ) {
-            const finalDamage =
-              params.damage * this.player.attackBuffMultiplier;
-            enemy.takeDamage(finalDamage);
+      // Left click - attack (weak or strong based on Ctrl key)
+      if (e.button === 0 && !this.player.isAttacking) {
+        const isStrongAttack = this.keys['ControlLeft'] || this.keys['ControlRight'];
+        const staminaCost = isStrongAttack ? params.staminaCostStrong : params.staminaCost;
+        
+        if (this.player.stamina >= staminaCost) {
+          this.player.isAttacking = true;
+          this.player.stamina -= staminaCost;
+          
+          if (isStrongAttack) {
+            // Strong attack
+            this.player.isAttackingStrong = true;
+            this.player.isAttackingWeak = false;
+            this.player.showAttackEffect();
+            this.player.playAnimation(AnimationNames.ATTACK_STRONG);
+            this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
+            this.performAttack(params.damageStrong, params.attackRangeStrong);
+          } else {
+            // Weak attack
+            this.player.isAttackingWeak = true;
+            this.player.isAttackingStrong = false;
+            this.player.showAttackEffect();
+            this.player.playAnimation(AnimationNames.ATTACK_WEAK);
+            this.game.playSound(AssetNames.SFX_ATTACK_WEAK);
+            this.performAttack(params.damage, params.attackRange);
           }
-        });
+        }
       } 
       // Middle click (wheel click) - lock-on toggle
       else if (e.button === 1) {
         e.preventDefault();
         this.handleLockOnToggle();
       }
-      // Right click - start charging strong attack
-      else if (e.button === 2 && !this.player.isAttacking) {
-        this.isCharging = true;
-        this.chargeStartTime = Date.now();
-        this.player.startChargingEffect();
+      // Right click - guard (alternative to G key)
+      else if (e.button === 2) {
+        e.preventDefault();
+        if (!this.player.isGuarding && this.player.stamina > 0) {
+          this.player.isGuarding = true;
+        }
       }
     });
 
     document.addEventListener('mouseup', (e) => {
       if (!this._canProcessInput()) return;
-      if (e.button === 2 && this.isCharging) {
-        const params = this._getWeaponParams();
-        this.isCharging = false;
-        this.player.stopChargingEffect();
-        const chargeTime = Date.now() - this.chargeStartTime;
-        const damage = Math.min(10 + chargeTime / 100, params.maxStrongDamage);
-        const staminaCost = Math.floor(damage / 2);
-        if (this.player.stamina >= staminaCost) {
-          this.player.stamina -= staminaCost;
-          this.player.isAttackingStrong = true;
-          this.player.playAnimation(AnimationNames.ATTACK_STRONG);
-          this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
-          this.game.enemies.forEach((enemy) => {
-            let finalDamage = damage * this.player.attackBuffMultiplier;
-            if (
-              this.player.mesh.position.distanceTo(enemy.mesh.position) <
-              params.attackRangeStrong
-            ) {
-              enemy.takeDamage(finalDamage);
-            }
-          });
-        }
+      
+      // Right click release - stop guard
+      if (e.button === 2) {
+        this.player.isGuarding = false;
       }
     });
   }
@@ -566,5 +554,24 @@ export class InputController {
     }
 
     return nearestEnemy;
+  }
+
+  performAttack(damage, range) {
+    this.game.enemies.forEach((enemy) => {
+      if (
+        this.player.mesh.position.distanceTo(enemy.mesh.position) < range
+      ) {
+        const finalDamage = damage * this.player.attackBuffMultiplier;
+        
+        // Check if enemy is guarding and reduce damage
+        if (enemy.isGuarding && enemy.getShieldDefense) {
+          const shieldDefense = enemy.getShieldDefense();
+          const reducedDamage = Math.max(1, finalDamage - shieldDefense);
+          enemy.takeDamage(reducedDamage);
+        } else {
+          enemy.takeDamage(finalDamage);
+        }
+      }
+    });
   }
 }

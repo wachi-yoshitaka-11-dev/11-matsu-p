@@ -43,6 +43,7 @@ export class Player extends Character {
     this.isAttackingWeak = false;
     this.isAttackingStrong = false;
     this.isRolling = false;
+    this.isGuarding = false;
     
     // Elden Ring style movement states
     this.isJumping = false;
@@ -59,6 +60,15 @@ export class Player extends Character {
 
     // Ensure all movement state properties are properly initialized
     this.ensureMovementStates();
+    
+    // Ensure combat state properties are properly initialized
+    this.ensureCombatStates();
+    
+    // Force set initial values after parent constructor
+    this.isGuarding = false;
+    this.isAttacking = false;
+    this.isAttackingWeak = false;
+    this.isAttackingStrong = false;
 
     // Listen for animation finished event
     if (this.mixer) {
@@ -160,9 +170,25 @@ export class Player extends Character {
 
   takeDamage(amount) {
     if (this.isInvincible) return;
-    const finalDamage = amount / this.defenseBuffMultiplier;
+    
+    let finalDamage = amount / this.defenseBuffMultiplier;
+    
+    // Apply guard damage reduction if guarding
+    if (this.isGuarding) {
+      const shieldDefense = this.getShieldDefense();
+      const blockPercentage = Math.min(0.8, shieldDefense / 100); // Max 80% block
+      finalDamage = finalDamage * (1 - blockPercentage);
+      
+      // Take stamina damage when guarding
+      const staminaDamage = amount * 0.3; // 30% of original damage as stamina cost
+      this.takeStaminaDamage(staminaDamage);
+      
+      this.game.playSound(AssetNames.SFX_GUARD_SUCCESS || AssetNames.SFX_DAMAGE);
+    } else {
+      this.game.playSound(AssetNames.SFX_DAMAGE);
+    }
+    
     super.takeDamage(finalDamage);
-    this.game.playSound(AssetNames.SFX_DAMAGE);
   }
 
   takeStaminaDamage(amount) {
@@ -289,5 +315,13 @@ export class Player extends Character {
     if (typeof this.isRolling !== 'boolean') this.isRolling = false;
     if (typeof this.isBackstepping !== 'boolean') this.isBackstepping = false;
     if (typeof this.isDashing !== 'boolean') this.isDashing = false;
+  }
+
+  ensureCombatStates() {
+    // Ensure all combat state properties are properly set to false
+    if (typeof this.isGuarding !== 'boolean') this.isGuarding = false;
+    if (typeof this.isAttacking !== 'boolean') this.isAttacking = false;
+    if (typeof this.isAttackingWeak !== 'boolean') this.isAttackingWeak = false;
+    if (typeof this.isAttackingStrong !== 'boolean') this.isAttackingStrong = false;
   }
 }
