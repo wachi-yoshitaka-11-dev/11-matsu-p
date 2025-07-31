@@ -202,31 +202,6 @@ export class InputController {
       return;
     }
 
-    const isTryingToRoll = this.keys['ControlLeft'];
-    const canRoll =
-      !this.player.isRolling &&
-      this.player.stamina >= this.game.data.player.staminaCostRoll;
-
-    if (isTryingToRoll && canRoll) {
-      this.player.isRolling = true;
-      this.player.stamina -= this.game.data.player.staminaCostRoll;
-      this.player.playAnimation(AnimationNames.ROLLING);
-      this.game.playSound(AssetNames.SFX_ROLLING);
-
-      const rollDirection = new THREE.Vector3(0, 0, 1).applyQuaternion(
-        this.player.mesh.quaternion
-      );
-      const rollSpeed =
-        this.game.data.player.rollDistance /
-        (this.game.data.player.rollDuration / 1000);
-
-      this.player.physics.velocity.x = rollDirection.x * rollSpeed;
-      this.player.physics.velocity.z = rollDirection.z * rollSpeed;
-
-      setTimeout(() => {
-        this.player.isRolling = false;
-      }, this.game.data.player.rollDuration);
-    }
 
     if (!this.player.isRolling) {
       // Handle Elden Ring style dashing (Shift held + movement)

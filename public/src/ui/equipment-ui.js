@@ -101,35 +101,50 @@ export class EquipmentUI {
       this.weaponDisplay.nameElement.textContent = 'エラー';
     }
 
-    // Update shield display
-    const currentShield = this.player.getCurrentShield();
-    if (currentShield && currentShield.name) {
-      this.shieldDisplay.nameElement.textContent = currentShield.name;
-    } else {
-      const shieldName = this.player.shields[this.player.currentShieldIndex];
-      this.shieldDisplay.nameElement.textContent = shieldName || 'なし';
-    }
-
-    // Update item display
-    const currentItem = this.player.getCurrentItem();
-    if (currentItem) {
-      const itemData = this.game.data.items[currentItem];
-      if (itemData && itemData.name) {
-        this.itemDisplay.nameElement.textContent = itemData.name;
+    try {
+      // Update shield display
+      const currentShield = this.player.getCurrentShield();
+      if (currentShield && currentShield.name) {
+        this.shieldDisplay.nameElement.textContent = currentShield.name;
       } else {
-        this.itemDisplay.nameElement.textContent = currentItem;
+        const shieldName = this.player.shields[this.player.currentShieldIndex];
+        this.shieldDisplay.nameElement.textContent = shieldName || 'なし';
       }
-    } else {
-      this.itemDisplay.nameElement.textContent = 'なし';
+    } catch (error) {
+      console.warn('Error updating shield display:', error);
+      this.shieldDisplay.nameElement.textContent = 'エラー';
     }
 
-    // Update skill display
-    const currentSkill = this.player.getCurrentSkill();
-    if (currentSkill && currentSkill.name) {
-      this.skillDisplay.nameElement.textContent = currentSkill.name;
-    } else {
-      const skillName = this.player.skills[this.player.currentSkillIndex];
-      this.skillDisplay.nameElement.textContent = skillName || 'なし';
+    try {
+      // Update item display
+      const currentItem = this.player.getCurrentItem();
+      if (currentItem) {
+        const itemData = this.game.data.items[currentItem];
+        if (itemData && itemData.name) {
+          this.itemDisplay.nameElement.textContent = itemData.name;
+        } else {
+          this.itemDisplay.nameElement.textContent = currentItem;
+        }
+      } else {
+        this.itemDisplay.nameElement.textContent = 'なし';
+      }
+    } catch (error) {
+      console.warn('Error updating item display:', error);
+      this.itemDisplay.nameElement.textContent = 'エラー';
+    }
+
+    try {
+      // Update skill display
+      const currentSkill = this.player.getCurrentSkill();
+      if (currentSkill && currentSkill.name) {
+        this.skillDisplay.nameElement.textContent = currentSkill.name;
+      } else {
+        const skillName = this.player.skills[this.player.currentSkillIndex];
+        this.skillDisplay.nameElement.textContent = skillName || 'なし';
+      }
+    } catch (error) {
+      console.warn('Error updating skill display:', error);
+      this.skillDisplay.nameElement.textContent = 'エラー';
     }
   }
 

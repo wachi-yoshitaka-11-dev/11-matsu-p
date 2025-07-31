@@ -59,13 +59,11 @@ export class Player extends Character {
 
     this.spawn();
 
-    // Ensure all movement state properties are properly initialized
-    this.ensureMovementStates();
-
-    // Ensure combat state properties are properly initialized
-    this.ensureCombatStates();
-
-    // Force set initial values after parent constructor
+    // Initialize all movement and combat states
+    this.isJumping = false;
+    this.isDashing = false;
+    this.isRolling = false;
+    this.isBackstepping = false;
     this.isGuarding = false;
     this.isAttacking = false;
     this.isAttackingWeak = false;
@@ -425,20 +423,4 @@ export class Player extends Character {
     return true;
   }
 
-  ensureMovementStates() {
-    // Ensure all movement state properties are properly set to false
-    if (typeof this.isJumping !== 'boolean') this.isJumping = false;
-    if (typeof this.isRolling !== 'boolean') this.isRolling = false;
-    if (typeof this.isBackstepping !== 'boolean') this.isBackstepping = false;
-    if (typeof this.isDashing !== 'boolean') this.isDashing = false;
-  }
-
-  ensureCombatStates() {
-    // Ensure all combat state properties are properly set to false
-    if (typeof this.isGuarding !== 'boolean') this.isGuarding = false;
-    if (typeof this.isAttacking !== 'boolean') this.isAttacking = false;
-    if (typeof this.isAttackingWeak !== 'boolean') this.isAttackingWeak = false;
-    if (typeof this.isAttackingStrong !== 'boolean')
-      this.isAttackingStrong = false;
-  }
 }
