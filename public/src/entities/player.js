@@ -42,11 +42,19 @@ export class Player extends Character {
     this.isAttackingWeak = false;
     this.isAttackingStrong = false;
     this.isRolling = false;
+    
+    // Elden Ring style movement states
+    this.isJumping = false;
+    this.isBackstepping = false;
+    this.isDashing = false;
 
     this.attackBuffMultiplier = 1.0;
     this.defenseBuffMultiplier = 1.0;
 
     this.spawn();
+
+    // Ensure all movement state properties are properly initialized
+    this.ensureMovementStates();
 
     // Listen for animation finished event
     if (this.mixer) {
@@ -61,6 +69,9 @@ export class Player extends Character {
           this.isAttackingStrong = false;
         } else if (clipName === AnimationNames.ROLLING) {
           this.isRolling = false;
+          this.isBackstepping = false;
+        } else if (clipName === AnimationNames.JUMP) {
+          this.isJumping = false;
         }
 
         // After a one-shot animation, determine the next logical state
@@ -242,5 +253,13 @@ export class Player extends Character {
       this.currentSkillIndex = (this.currentSkillIndex + 1) % this.skills.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
     }
+  }
+
+  ensureMovementStates() {
+    // Ensure all movement state properties are properly set to false
+    if (typeof this.isJumping !== 'boolean') this.isJumping = false;
+    if (typeof this.isRolling !== 'boolean') this.isRolling = false;
+    if (typeof this.isBackstepping !== 'boolean') this.isBackstepping = false;
+    if (typeof this.isDashing !== 'boolean') this.isDashing = false;
   }
 }
