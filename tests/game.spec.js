@@ -598,6 +598,86 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     expect(combatState.hasPerformAttack).toBe(true);
   });
 
+  test('should implement item and skill usage system with R and F keys', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test R key - Item usage
+    const initialInventoryLength = await page.evaluate(() => {
+      return window.game?.player?.inventory?.length || 0;
+    });
+
+    if (initialInventoryLength > 0) {
+      const initialHP = await page.evaluate(() => {
+        return window.game?.player?.hp;
+      });
+
+      await page.keyboard.press('KeyR');
+      await page.waitForTimeout(200);
+
+      const afterItemUseState = await page.evaluate(() => {
+        const player = window.game?.player;
+        return {
+          hp: player?.hp,
+          inventoryLength: player?.inventory?.length || 0,
+          hasUseCurrentItem: typeof player?.useCurrentItem === 'function'
+        };
+      });
+
+      expect(afterItemUseState.hasUseCurrentItem).toBe(true);
+      // Item should be used if it was a potion and HP was not full
+      if (initialHP < 90) {
+        expect(afterItemUseState.hp).toBeGreaterThan(initialHP);
+      }
+    }
+
+    // Test F key - Skill usage
+    const initialFP = await page.evaluate(() => {
+      return window.game?.player?.fp;
+    });
+
+    await page.keyboard.press('KeyF');
+    await page.waitForTimeout(200);
+
+    const afterSkillUseState = await page.evaluate(() => {
+      const player = window.game?.player;
+      return {
+        fp: player?.fp,
+        isUsingSkill: player?.isUsingSkill,
+        hasUseCurrentSkill: typeof player?.useCurrentSkill === 'function'
+      };
+    });
+
+    expect(afterSkillUseState.hasUseCurrentSkill).toBe(true);
+    // Skill should consume FP if used
+    if (initialFP >= 10) {
+      expect(afterSkillUseState.fp).toBeLessThan(initialFP);
+    }
+  });
+
   test('should implement lock-on system with wheel click and Q key', async ({ page }) => {
     await setupNetworkRoutes(page);
 

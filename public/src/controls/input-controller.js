@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { Projectile } from '../world/projectile.js';
 import { AnimationNames, AssetNames, GameState } from '../utils/constants.js';
 
 export class InputController {
@@ -315,48 +314,6 @@ export class InputController {
       this.keys['Digit1'] = false;
     }
 
-    if (this.keys['Digit3']) {
-      const skillData = this.game.data.skills.projectile;
-      if (!this.player.isUsingSkill && this.player.fp >= skillData.fpCost) {
-        this.player.isUsingSkill = true;
-        this.player.fp -= skillData.fpCost;
-        this.player.showSkillProjectileEffect();
-        this.player.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
-        this.game.playSound(AssetNames.SFX_USE_SKILL_PROJECTILE);
-        const direction = new THREE.Vector3();
-        this.player.mesh.getWorldDirection(direction);
-        const projectile = new Projectile(
-          this.player.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
-          direction,
-          this.game
-        );
-        this.game.projectiles.push(projectile);
-        this.game.sceneManager.add(projectile.mesh);
-        setTimeout(() => {
-          this.player.isUsingSkill = false;
-        }, skillData.duration);
-      }
-      this.keys['Digit3'] = false;
-    }
-
-    if (this.keys['Digit4']) {
-      const buffData = this.game.data.skills.buff;
-      if (!this.player.isUsingSkill && this.player.fp >= buffData.fpCost) {
-        this.player.isUsingSkill = true;
-        this.player.fp -= buffData.fpCost;
-        this.game.playSound(AssetNames.SFX_USE_SKILL_BUFF);
-        this.player.showSkillBuffEffect();
-        this.player.playAnimation(AnimationNames.USE_SKILL_BUFF);
-        this.player.applyAttackBuff();
-        this.player.applyDefenseBuff();
-        setTimeout(() => {
-          this.player.removeAttackBuff();
-          this.player.removeDefenseBuff();
-          this.player.isUsingSkill = false;
-        }, buffData.duration);
-      }
-      this.keys['Digit4'] = false;
-    }
 
     if (this.keys['KeyE']) {
       this.game.npcs.forEach((npc) => {
@@ -397,6 +354,18 @@ export class InputController {
     if (this.keys['ArrowUp']) {
       this.player.switchSkill();
       this.keys['ArrowUp'] = false;
+    }
+
+    // R key - Use current item
+    if (this.keys['KeyR']) {
+      this.player.useCurrentItem();
+      this.keys['KeyR'] = false;
+    }
+
+    // F key - Use current skill
+    if (this.keys['KeyF']) {
+      this.player.useCurrentSkill();
+      this.keys['KeyF'] = false;
     }
   }
 

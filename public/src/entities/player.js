@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { Projectile } from '../world/projectile.js';
 import { AnimationNames, AssetNames, ItemTypes } from '../utils/constants.js';
 
 export class Player extends Character {
@@ -307,6 +308,111 @@ export class Player extends Character {
       this.currentItemIndex = (this.currentItemIndex + 1) % this.inventory.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound for consistency
     }
+  }
+
+  useCurrentItem() {
+    if (this.inventory.length === 0) return false;
+    
+    const currentItem = this.getCurrentItem();
+    if (!currentItem) return false;
+    
+    const itemData = this.game.data.items[currentItem];
+    if (!itemData) {
+      console.warn(`Unknown item type: ${currentItem}`);
+      return false;
+    }
+
+    // Use the item based on its type
+    if (currentItem === ItemTypes.POTION || itemData.healAmount) {
+      this.hp += itemData.healAmount || 50;
+      if (this.hp > this.maxHp) this.hp = this.maxHp;
+      
+      this.playAnimation(AnimationNames.USE_ITEM);
+      this.game.playSound(AssetNames.SFX_USE_ITEM);
+      
+      // Remove item from inventory
+      this.inventory.splice(this.currentItemIndex, 1);
+      
+      // Adjust current index if needed
+      if (this.currentItemIndex >= this.inventory.length && this.inventory.length > 0) {
+        this.currentItemIndex = this.inventory.length - 1;
+      } else if (this.inventory.length === 0) {
+        this.currentItemIndex = 0;
+      }
+      
+      return true;
+    }
+    
+    return false;
+  }
+
+  useCurrentSkill() {
+    const currentSkill = this.getCurrentSkill();
+    if (!currentSkill) return false;
+    
+    if (this.isUsingSkill) {
+      console.log('Already using a skill');
+      return false;
+    }
+
+    // Check if we have enough FP
+    if (this.fp < currentSkill.fpCost) {
+      console.log('Not enough FP to use skill');
+      return false;
+    }
+
+    // Use the skill based on its type
+    const skillName = this.skills[this.currentSkillIndex];
+    
+    if (skillName === 'projectile') {
+      return this.useProjectileSkill(currentSkill);
+    } else if (skillName === 'buff') {
+      return this.useBuffSkill(currentSkill);
+    }
+    
+    return false;
+  }
+
+  useProjectileSkill(skillData) {
+    this.isUsingSkill = true;
+    this.fp -= skillData.fpCost;
+    this.showSkillProjectileEffect();
+    this.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
+    this.game.playSound(AssetNames.SFX_USE_SKILL_PROJECTILE);
+    
+    const direction = new THREE.Vector3();
+    this.mesh.getWorldDirection(direction);
+    const projectile = new Projectile(
+      this.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
+      direction,
+      this.game
+    );
+    this.game.projectiles.push(projectile);
+    this.game.sceneManager.add(projectile.mesh);
+    
+    setTimeout(() => {
+      this.isUsingSkill = false;
+    }, skillData.duration);
+    
+    return true;
+  }
+
+  useBuffSkill(skillData) {
+    this.isUsingSkill = true;
+    this.fp -= skillData.fpCost;
+    this.game.playSound(AssetNames.SFX_USE_SKILL_BUFF);
+    this.showSkillBuffEffect();
+    this.playAnimation(AnimationNames.USE_SKILL_BUFF);
+    this.applyAttackBuff();
+    this.applyDefenseBuff();
+    
+    setTimeout(() => {
+      this.removeAttackBuff();
+      this.removeDefenseBuff();
+      this.isUsingSkill = false;
+    }, skillData.duration);
+    
+    return true;
   }
 
   ensureMovementStates() {
