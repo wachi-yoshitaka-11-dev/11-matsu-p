@@ -14,6 +14,7 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
+import { GameOverScreen } from '../ui/game-over-screen.js';
 
 export class Game {
   constructor() {
@@ -37,10 +38,22 @@ export class Game {
     this.initAudio();
 
     this.gameState = GameState.TITLE;
+    console.log('Initializing UI components... [UPDATED VERSION]');
     this.titleScreen = new TitleScreen(() => this.startGame());
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
-    this.sequenceManager = new SequenceManager(this);
+    
+    try {
+      console.log('Initializing SequenceManager...');
+      this.sequenceManager = new SequenceManager(this);
+      console.log('SequenceManager initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize SequenceManager:', error);
+      this.sequenceManager = null;
+    }
+    
+    this.gameOverScreen = new GameOverScreen(this);
+    console.log('All UI components initialized');
   }
 
   initAudio() {
@@ -48,6 +61,47 @@ export class Game {
     this.sceneManager.camera.add(this.listener);
     this.audioBuffers = {};
     this.bgmAudios = {};
+    this.audioContext = this.listener.context;
+    this.audioInitialized = false;
+    
+    // Add user interaction handler to resume AudioContext
+    this.handleUserInteraction = this.handleUserInteraction.bind(this);
+    document.addEventListener('click', this.handleUserInteraction, { once: true });
+    document.addEventListener('keydown', this.handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', this.handleUserInteraction, { once: true });
+  }
+
+  async handleUserInteraction() {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      try {
+        await this.audioContext.resume();
+        console.log('AudioContext resumed successfully');
+      } catch (error) {
+        console.warn('Failed to resume AudioContext:', error);
+      }
+    }
+    this.audioInitialized = true;
+  }
+
+  async playAudio(audio) {
+    if (!audio) return;
+    
+    // Ensure AudioContext is running
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      try {
+        await this.audioContext.resume();
+        console.log('AudioContext resumed for audio playback');
+      } catch (error) {
+        console.warn('Failed to resume AudioContext for audio playback:', error);
+        return;
+      }
+    }
+    
+    try {
+      audio.play();
+    } catch (error) {
+      console.warn('Failed to play audio:', error);
+    }
   }
 
   async init() {
@@ -57,17 +111,24 @@ export class Game {
     const loadStartTime = Date.now();
 
     await this.loadGameData();
-    await this.loadAudio();
-    await this.loadModels();
+    await this.loadAudio(); // Load all audio, including opening BGM
 
     const elapsedTime = Date.now() - loadStartTime;
     const minDisplayTime = 2000;
     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
     setTimeout(() => {
-      this.playOpeningSequence();
+      try {
+        this.playOpeningSequence();
+      } catch (error) {
+        console.error('Error during opening sequence initialization:', error);
+      }
     }, remainingTime);
 
+    // The rest of the models and entities will be loaded during the opening sequence
+  }
+
+  async initializeGameWorld() {
     this.field = new Field(this);
     this.sceneManager.add(this.field.mesh);
 
@@ -248,8 +309,13 @@ export class Game {
       this.bgmAudios[AssetNames.BGM_PLAYING] &&
       !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
     ) {
-      this.bgmAudios[AssetNames.BGM_PLAYING].play();
+      this.playAudio(this.bgmAudios[AssetNames.BGM_PLAYING]);
     }
+    // Resume audio context on user gesture
+    if (this.listener.context.state === 'suspended') {
+      this.listener.context.resume();
+    }
+
     this.playSound(AssetNames.SFX_START);
     this.sceneManager.renderer.domElement.requestPointerLock();
   }
@@ -274,7 +340,7 @@ export class Game {
       document.exitPointerLock();
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
-      this.bgmAudios[AssetNames.BGM_PLAYING]?.play();
+      this.playAudio(this.bgmAudios[AssetNames.BGM_PLAYING]);
       this.sceneManager.renderer.domElement.requestPointerLock();
     }
   }
@@ -313,6 +379,8 @@ export class Game {
   _updateLoop(deltaTime) {
     if (this.gameState === GameState.SEQUENCE) {
       this.sequenceManager.update(deltaTime);
+    } else if (this.gameState === GameState.GAME_OVER) {
+      // Do nothing, game is over
     } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
       this.inputController?.update(deltaTime);
@@ -416,15 +484,28 @@ export class Game {
   };
 
   // 追加
-  playOpeningSequence() {
+  async playOpeningSequence() {
     this.gameState = GameState.SEQUENCE;
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
-    this.sequenceManager.startOpeningSequence(() => {
+
+    // Load remaining models and entities during the opening sequence
+    console.log('playOpeningSequence: Starting asset and entity loading');
+    const loadingPromise = Promise.all([
+      this.loadModels(),
+      this.loadEntities()
+    ]);
+
+    this.sequenceManager.startOpeningSequence(async () => {
+      await loadingPromise; // Wait for models and entities to load
+      console.log('playOpeningSequence: Assets and entities loaded');
+      console.log('playOpeningSequence: Initializing game world');
+      await this.initializeGameWorld(); // Initialize game world after assets are loaded
+      console.log('playOpeningSequence: Game world initialized');
       this.gameState = GameState.TITLE;
       this.titleScreen.showMenu();
       if (this.bgmAudios[AssetNames.BGM_TITLE] && !this.bgmAudios[AssetNames.BGM_TITLE].isPlaying) {
-        this.bgmAudios[AssetNames.BGM_TITLE].play();
+        this.playAudio(this.bgmAudios[AssetNames.BGM_TITLE]);
       }
     });
   }

@@ -1,14 +1,19 @@
 import { Game } from './core/game.js';
 
-const game = new Game();
-window.game = game;
+console.log('main.js module loaded successfully!');
 
-(async () => {
-  try {
-    await game.init();
-    game.start();
-  } catch (error) {
+// Initialize and start the game
+try {
+  console.log('Creating Game instance... [UPDATED VERSION]');
+  const game = new Game();
+  console.log('Game instance created successfully');
+  window.game = game; // Make game accessible globally for testing
+
+  // Start the game initialization
+  console.log('Starting game initialization...');
+  game.init().catch((error) => {
     console.error('Failed to initialize game:', error);
-    // Optionally show user-friendly error message
-  }
-})();
+  });
+} catch (error) {
+  console.error('Failed to create or initialize game:', error);
+}

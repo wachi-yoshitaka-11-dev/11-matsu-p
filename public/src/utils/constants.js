@@ -117,6 +117,7 @@ export const GameState = {
   PLAYING: 'playing',
   PAUSED: 'paused',
   SEQUENCE: 'sequence',
+  GAME_OVER: 'game_over',
 };
 
 export const ItemTypes = {

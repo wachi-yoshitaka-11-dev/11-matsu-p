@@ -24,10 +24,12 @@ export class SequenceManager {
     this.overlayDiv.style.alignItems = 'center';
     this.overlayDiv.style.fontSize = '2em';
     this.overlayDiv.style.textAlign = 'center';
+    this.overlayDiv.style.overflow = 'hidden';
     this.overlayDiv.style.zIndex = '9999';
     document.body.appendChild(this.overlayDiv);
 
     this.textElement = document.createElement('div');
+    this.textElement.style.transition = 'opacity 0.5s ease-in-out, font-size 0.5s ease-in-out, transform 0.5s ease-in-out'; // Set transition once
     this.overlayDiv.appendChild(this.textElement);
 
     this.logoImage = document.createElement('img');
@@ -52,8 +54,68 @@ export class SequenceManager {
     this.textDisplayDuration = 4000; // 4 seconds
     this.textFadeDuration = 500; // 0.5 seconds for fade in/out
     this.textTimer = 0;
-    this.onSequenceCompleteCallback = null; // 追加
-    this.currentStep = 'idle'; // 追加
+    this.onSequenceCompleteCallback = null;
+    this.currentStep = 'idle';
+
+    this.initialFontSize = 2;
+    this.minFontSize = 1.5;
+    this.maxFontSize = 2.5;
+    this.currentFontSize = this.initialFontSize;
+    this.currentRotation = 0;
+    this.rotationDirection = 1; // 1 for clockwise, -1 for counter-clockwise
+
+    this.backgroundImages = [
+      './assets/images/opening-bg-1.png',
+      './assets/images/opening-bg-2.png',
+      './assets/images/opening-bg-3.png',
+      './assets/images/opening-bg-4.png',
+      './assets/images/opening-bg-5.png',
+      './assets/images/opening-bg-6.png',
+      './assets/images/opening-bg-7.png',
+      './assets/images/opening-bg-8.png',
+    ];
+    this.currentImageIndex = 0;
+    this.imageElements = [];
+    this.createBackgroundImages();
+    this.skipSequenceBound = this.skipSequence.bind(this);
+  }
+
+  createBackgroundImages() {
+    this.backgroundImages.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.position = 'absolute';
+      img.style.top = '0';
+      img.style.left = '0';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.style.opacity = '0';
+      img.style.transition = 'opacity 1.5s ease-in-out, transform 10s linear';
+      this.overlayDiv.insertBefore(img, this.textElement);
+      this.imageElements.push(img);
+    });
+  }
+
+  skipSequence() {
+    if (this.currentStep === 'showingText' || this.currentStep === 'showingStaffRoll') {
+      // Immediately complete the current sequence
+      if (this.onSequenceCompleteCallback) {
+        this.onSequenceCompleteCallback();
+      }
+      this.currentStep = 'idle'; // Reset step
+      this.removeEventListeners();
+    }
+  }
+
+  addEventListeners() {
+    this.overlayDiv.addEventListener('keydown', this.skipSequenceBound);
+    this.overlayDiv.addEventListener('mousedown', this.skipSequenceBound);
+  }
+
+  removeEventListeners() {
+    this.overlayDiv.removeEventListener('keydown', this.skipSequenceBound);
+    this.overlayDiv.removeEventListener('mousedown', this.skipSequenceBound);
   }
 
   update(deltaTime) {
@@ -79,8 +141,24 @@ export class SequenceManager {
         this.currentTextIndex++;
         if (this.currentTextIndex < this.textSequence.length) {
           this.textElement.textContent = this.textSequence[this.currentTextIndex];
+          // Reset opacity for the new text to fade in
+          this.textElement.style.opacity = '0';
+
+          // Text size animation
+          const progress = this.currentTextIndex / (this.textSequence.length - 1);
+          const targetFontSize = (this.currentTextIndex % 2 === 0) ? this.minFontSize : this.maxFontSize;
+          this.textElement.style.fontSize = `${targetFontSize}em`;
+
+          // Image crossfade and rotation
+          this.imageElements[this.currentImageIndex].style.opacity = '0';
+          this.currentImageIndex = (this.currentImageIndex + 1) % this.backgroundImages.length;
+          this.imageElements[this.currentImageIndex].style.opacity = '1';
+
+          this.rotationDirection *= -1; // Alternate rotation direction
+          this.imageElements[this.currentImageIndex].style.transform = `rotate(${this.rotationDirection * 90}deg)`;
+
         } else {
-          // テキスト表示完了
+          // All texts have been displayed and faded out
           this.currentStep = 'textComplete';
           if (this.onSequenceCompleteCallback) {
             this.onSequenceCompleteCallback();
@@ -91,8 +169,9 @@ export class SequenceManager {
   }
 
   startOpeningSequence(onComplete) {
-    this.onSequenceCompleteCallback = onComplete; // コールバックを保存
-    this.currentStep = 'showingText'; // ステップを設定
+    this.onSequenceCompleteCallback = onComplete;
+    this.isEndingSequence = false; // Set flag for opening sequence
+    this.currentStep = 'showingText';
 
     this.overlayDiv.style.display = 'flex';
     this.overlayDiv.style.opacity = '1';
@@ -108,47 +187,57 @@ export class SequenceManager {
     ];
     this.currentTextIndex = 0;
     this.textTimer = 0;
-    this.textElement.textContent = this.textSequence[this.currentTextIndex]; // 最初のテキストを表示
+    this.textElement.textContent = this.textSequence[this.currentTextIndex];
     this.textElement.style.display = 'block';
+    this.textElement.style.fontSize = `${this.initialFontSize}em`; // Set initial font size
     this.logoImage.style.display = 'none';
     this.staffRollElement.style.display = 'none';
 
-    this.game.bgmAudios[AssetNames.BGM_OPENING]?.play();
+    // Initialize background images
+    this.imageElements.forEach((img, index) => {
+      img.style.opacity = index === 0 ? '1' : '0';
+      img.style.transform = 'rotate(0deg)'; // Reset rotation
+    });
+    this.currentImageIndex = 0;
+    this.rotationDirection = 1; // Reset rotation direction
 
-    // テキスト表示完了後の処理
+    this.game.playAudio(this.game.bgmAudios[AssetNames.BGM_OPENING]);
+
+    this.addEventListeners(); // Add event listeners for skipping
+
+    // Callback for when all opening texts are displayed and faded out
     this.onSequenceCompleteCallback = () => {
       this.currentStep = 'fadingOut';
-      // テキストとBGMをフェードアウト
-      this.textElement.style.transition = 'opacity 1.5s ease-out';
+      // Fade out text and BGM
       this.textElement.style.opacity = '0';
       this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_OPENING], 3000);
 
-      // 4秒待ってからタイトルへ
+      // Wait 4 seconds then transition to title
       setTimeout(() => {
         this.overlayDiv.style.display = 'none';
-        this.textElement.style.display = 'none'; // 完全に非表示に
+        this.textElement.style.display = 'none'; // Fully hide
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
         onComplete();
-        this.currentStep = 'idle'; // ステップをリセット
+        this.currentStep = 'idle'; // Reset step
+        this.removeEventListeners(); // Remove event listeners after sequence completes
       }, 4000);
     };
   }
 
   startEndingSequence(onComplete) {
-    this.onSequenceCompleteCallback = onComplete;
     this.currentStep = 'showingText';
 
     this.overlayDiv.style.display = 'flex';
-    this.overlayDiv.style.opacity = '0'; // 初期透明度を0に設定
-    this.overlayDiv.style.transition = 'opacity 1.5s ease-in-out'; // フェードイン・アウトを設定
-    // フェードインを開始
+    this.overlayDiv.style.opacity = '0'; // Initial opacity to 0
+    this.overlayDiv.style.transition = 'opacity 1.5s ease-in-out'; // Fade in/out transition
+    // Start fade in
     setTimeout(() => {
       this.overlayDiv.style.opacity = '1';
     }, 100);
 
-    this.textElement.style.opacity = '0'; // 初期透明度を0に設定
-    this.textElement.style.transition = 'opacity 0.5s ease-in-out'; // フェードイン・アウトを設定
+    this.textElement.style.opacity = '0'; // Initial opacity to 0
+    this.textElement.style.transition = 'opacity 0.5s ease-in-out'; // Fade in/out transition
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
@@ -163,8 +252,11 @@ export class SequenceManager {
     this.logoImage.style.display = 'none';
     this.staffRollElement.style.display = 'none';
 
-    this.game.bgmAudios[AssetNames.BGM_ENDING]?.play();
+    this.game.playAudio(this.game.bgmAudios[AssetNames.BGM_ENDING]);
 
+    this.addEventListeners(); // Add event listeners for skipping
+
+    // This callback will be triggered by the update method when all texts are displayed
     this.onSequenceCompleteCallback = () => {
       this.currentStep = 'showingStaffRoll';
       this.textElement.style.display = 'none';
@@ -199,9 +291,10 @@ export class SequenceManager {
             this.game.sceneManager.resetCamera();
             onComplete();
             this.currentStep = 'idle';
-          }, 1500); // フェードアウト完了を待つ
-        }, 3500); // Fin表示開始から3.5秒後にフェードアウト開始
-      }, 30000); // スタッフロール30秒
+            this.removeEventListeners(); // Remove event listeners after sequence completes
+          }, 1500); // Wait for fade out to complete
+        }, 3500); // 3.5 seconds after Fin display starts, start fade out
+      }, 30000); // Staff roll duration 30 seconds
     };
   }
 

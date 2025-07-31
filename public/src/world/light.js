@@ -8,7 +8,7 @@ export class Light {
   }
 
   initLights() {
-    const light = new THREE.DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 2);
     light.position.set(
       FieldConst.TERRAIN_SIZE / 2,
       FieldConst.TERRAIN_SIZE / 2 + 10,

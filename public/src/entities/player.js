@@ -135,7 +135,8 @@ export class Player extends Character {
   onDeath() {
     this.game.playSound(AssetNames.SFX_DEATH);
     this.game.hud.showDeathScreen();
-    setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
+    this.game.gameState = GameState.GAME_OVER; // Set game state to GAME_OVER
+    this.game.gameOverScreen.show();
   }
 
   takeDamage(amount) {
