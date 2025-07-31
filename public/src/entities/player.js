@@ -32,10 +32,10 @@ export class Player extends Character {
 
     this.weapons = ['sword', 'claws'];
     this.currentWeaponIndex = 0;
-    
+
     this.shields = ['woodenShield', 'ironShield'];
     this.currentShieldIndex = 0;
-    
+
     this.skills = ['projectile', 'buff'];
     this.currentSkillIndex = 0;
     this.currentItemIndex = 0;
@@ -45,7 +45,7 @@ export class Player extends Character {
     this.isAttackingStrong = false;
     this.isRolling = false;
     this.isGuarding = false;
-    
+
     // Elden Ring style movement states
     this.isJumping = false;
     this.isBackstepping = false;
@@ -61,10 +61,10 @@ export class Player extends Character {
 
     // Ensure all movement state properties are properly initialized
     this.ensureMovementStates();
-    
+
     // Ensure combat state properties are properly initialized
     this.ensureCombatStates();
-    
+
     // Force set initial values after parent constructor
     this.isGuarding = false;
     this.isAttacking = false;
@@ -132,6 +132,7 @@ export class Player extends Character {
       return;
     }
 
+    // Don't switch animations if a one-shot animation is in progress
     if (
       this.isAttacking ||
       this.isAttackingWeak ||
@@ -171,24 +172,26 @@ export class Player extends Character {
 
   takeDamage(amount) {
     if (this.isInvincible) return;
-    
+
     let finalDamage = amount / this.defenseBuffMultiplier;
-    
+
     // Apply guard damage reduction if guarding
     if (this.isGuarding) {
       const shieldDefense = this.getShieldDefense();
       const blockPercentage = Math.min(0.8, shieldDefense / 100); // Max 80% block
       finalDamage = finalDamage * (1 - blockPercentage);
-      
+
       // Take stamina damage when guarding
       const staminaDamage = amount * 0.3; // 30% of original damage as stamina cost
       this.takeStaminaDamage(staminaDamage);
-      
-      this.game.playSound(AssetNames.SFX_GUARD_SUCCESS || AssetNames.SFX_DAMAGE);
+
+      this.game.playSound(
+        AssetNames.SFX_GUARD_SUCCESS || AssetNames.SFX_DAMAGE
+      );
     } else {
       this.game.playSound(AssetNames.SFX_DAMAGE);
     }
-    
+
     super.takeDamage(finalDamage);
   }
 
@@ -262,7 +265,8 @@ export class Player extends Character {
 
   switchShield() {
     if (this.shields.length > 1) {
-      this.currentShieldIndex = (this.currentShieldIndex + 1) % this.shields.length;
+      this.currentShieldIndex =
+        (this.currentShieldIndex + 1) % this.shields.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
     }
   }
@@ -280,7 +284,8 @@ export class Player extends Character {
 
   switchSkill() {
     if (this.skills.length > 1) {
-      this.currentSkillIndex = (this.currentSkillIndex + 1) % this.skills.length;
+      this.currentSkillIndex =
+        (this.currentSkillIndex + 1) % this.skills.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
     }
   }
@@ -293,7 +298,8 @@ export class Player extends Character {
 
   switchWeapon() {
     if (this.weapons.length > 1) {
-      this.currentWeaponIndex = (this.currentWeaponIndex + 1) % this.weapons.length;
+      this.currentWeaponIndex =
+        (this.currentWeaponIndex + 1) % this.weapons.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON);
     }
   }
@@ -305,17 +311,18 @@ export class Player extends Character {
 
   switchItem() {
     if (this.inventory.length > 1) {
-      this.currentItemIndex = (this.currentItemIndex + 1) % this.inventory.length;
+      this.currentItemIndex =
+        (this.currentItemIndex + 1) % this.inventory.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound for consistency
     }
   }
 
   useCurrentItem() {
     if (this.inventory.length === 0) return false;
-    
+
     const currentItem = this.getCurrentItem();
     if (!currentItem) return false;
-    
+
     const itemData = this.game.data.items[currentItem];
     if (!itemData) {
       console.warn(`Unknown item type: ${currentItem}`);
@@ -326,30 +333,33 @@ export class Player extends Character {
     if (currentItem === ItemTypes.POTION || itemData.healAmount) {
       this.hp += itemData.healAmount || 50;
       if (this.hp > this.maxHp) this.hp = this.maxHp;
-      
+
       this.playAnimation(AnimationNames.USE_ITEM);
       this.game.playSound(AssetNames.SFX_USE_ITEM);
-      
+
       // Remove item from inventory
       this.inventory.splice(this.currentItemIndex, 1);
-      
+
       // Adjust current index if needed
-      if (this.currentItemIndex >= this.inventory.length && this.inventory.length > 0) {
+      if (
+        this.currentItemIndex >= this.inventory.length &&
+        this.inventory.length > 0
+      ) {
         this.currentItemIndex = this.inventory.length - 1;
       } else if (this.inventory.length === 0) {
         this.currentItemIndex = 0;
       }
-      
+
       return true;
     }
-    
+
     return false;
   }
 
   useCurrentSkill() {
     const currentSkill = this.getCurrentSkill();
     if (!currentSkill) return false;
-    
+
     if (this.isUsingSkill) {
       console.log('Already using a skill');
       return false;
@@ -363,13 +373,13 @@ export class Player extends Character {
 
     // Use the skill based on its type
     const skillName = this.skills[this.currentSkillIndex];
-    
+
     if (skillName === 'projectile') {
       return this.useProjectileSkill(currentSkill);
     } else if (skillName === 'buff') {
       return this.useBuffSkill(currentSkill);
     }
-    
+
     return false;
   }
 
@@ -379,7 +389,7 @@ export class Player extends Character {
     this.showSkillProjectileEffect();
     this.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
     this.game.playSound(AssetNames.SFX_USE_SKILL_PROJECTILE);
-    
+
     const direction = new THREE.Vector3();
     this.mesh.getWorldDirection(direction);
     const projectile = new Projectile(
@@ -389,11 +399,11 @@ export class Player extends Character {
     );
     this.game.projectiles.push(projectile);
     this.game.sceneManager.add(projectile.mesh);
-    
+
     setTimeout(() => {
       this.isUsingSkill = false;
     }, skillData.duration);
-    
+
     return true;
   }
 
@@ -405,13 +415,13 @@ export class Player extends Character {
     this.playAnimation(AnimationNames.USE_SKILL_BUFF);
     this.applyAttackBuff();
     this.applyDefenseBuff();
-    
+
     setTimeout(() => {
       this.removeAttackBuff();
       this.removeDefenseBuff();
       this.isUsingSkill = false;
     }, skillData.duration);
-    
+
     return true;
   }
 
@@ -428,6 +438,7 @@ export class Player extends Character {
     if (typeof this.isGuarding !== 'boolean') this.isGuarding = false;
     if (typeof this.isAttacking !== 'boolean') this.isAttacking = false;
     if (typeof this.isAttackingWeak !== 'boolean') this.isAttackingWeak = false;
-    if (typeof this.isAttackingStrong !== 'boolean') this.isAttackingStrong = false;
+    if (typeof this.isAttackingStrong !== 'boolean')
+      this.isAttackingStrong = false;
   }
 }

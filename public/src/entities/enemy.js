@@ -35,7 +35,7 @@ export class Enemy extends Character {
     this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
     this.experience = this.game.data.enemies.grunt.experience;
     this.isAttacking = false;
-    
+
     // Initialize death animation properties
     this.deathAnimationStartTime = null;
     this.deathAnimationDuration = 2000; // 2 seconds
@@ -120,10 +120,10 @@ export class Enemy extends Character {
 
   updateDeathAnimation() {
     if (!this.deathAnimationStartTime) return;
-    
+
     const elapsedTime = Date.now() - this.deathAnimationStartTime;
     const progress = Math.min(elapsedTime / this.deathAnimationDuration, 1);
-    
+
     // Fade out effect during death animation
     const opacity = 1 - progress;
     this.mesh.traverse((object) => {
@@ -139,7 +139,7 @@ export class Enemy extends Character {
         }
       }
     });
-    
+
     // Mark as ready for removal when animation is complete
     if (progress >= 1) {
       this.readyForRemoval = true;
@@ -149,7 +149,7 @@ export class Enemy extends Character {
   onDeath() {
     this.playAnimation(AnimationNames.DIE);
     this.game.playSound(AssetNames.SFX_KILL);
-    
+
     // Start death animation timing
     this.deathAnimationStartTime = Date.now();
   }

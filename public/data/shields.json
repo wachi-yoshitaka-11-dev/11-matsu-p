@@ -7,7 +7,7 @@
   },
   "ironShield": {
     "name": "鉄の盾",
-    "model": "iron-shield.glb", 
+    "model": "iron-shield.glb",
     "description": "頑丈な鉄製の盾",
     "defense": 25
   },

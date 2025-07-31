@@ -59,7 +59,7 @@ test.describe('Movement System Test', () => {
     const playerState = await page.evaluate(() => {
       const player = window.game?.player;
       if (!player) return { error: 'No player found' };
-      
+
       return {
         playerExists: !!player,
         hasIsJumping: 'isJumping' in player,
@@ -70,22 +70,24 @@ test.describe('Movement System Test', () => {
         isRolling: player.isRolling,
         isBackstepping: player.isBackstepping,
         isDashing: player.isDashing,
-        playerKeys: Object.keys(player).filter(k => k.startsWith('is'))
+        playerKeys: Object.keys(player).filter((k) => k.startsWith('is')),
       };
     });
-    
+
     console.log('Player state:', playerState);
 
     expect(playerState.hasIsJumping).toBe(true);
     expect(playerState.hasIsRolling).toBe(true);
     expect(playerState.hasIsBackstepping).toBe(true);
     expect(playerState.hasIsDashing).toBe(true);
-    
+
     // Initial state should be false (or undefined which gets converted to false in boolean context)
     expect(playerState.isJumping).toBe(false);
     expect(playerState.isRolling).toBe(false);
     expect(playerState.isBackstepping).toBe(false);
-    expect(playerState.isDashing === false || playerState.isDashing === undefined).toBe(true);
+    expect(
+      playerState.isDashing === false || playerState.isDashing === undefined
+    ).toBe(true);
   });
 
   test('should trigger jump animation on Space key', async ({ page }) => {
@@ -123,7 +125,7 @@ test.describe('Movement System Test', () => {
       const player = window.game?.player;
       return {
         isJumping: player.isJumping,
-        currentAnimation: player.currentAnimationName
+        currentAnimation: player.currentAnimationName,
       };
     });
 

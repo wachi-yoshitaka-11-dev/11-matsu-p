@@ -188,10 +188,10 @@ export class Hud {
     });
 
     this.weaponDisplay.innerHTML = `<h3>Weapon</h3><div>${this.player.weapons[this.player.currentWeaponIndex]}</div>`;
-    
+
     const currentShield = this.player.getCurrentShield();
     this.shieldDisplay.innerHTML = `<h3>Shield</h3><div>${currentShield ? currentShield.name : 'なし'}</div>`;
-    
+
     const currentSkill = this.player.getCurrentSkill();
     this.skillDisplay.innerHTML = `<h3>Skill</h3><div>${currentSkill ? currentSkill.name : 'なし'}</div>`;
 

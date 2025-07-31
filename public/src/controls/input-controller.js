@@ -31,10 +31,14 @@ export class InputController {
         attackRange: weaponData.attackRange,
         attackSpeed: weaponData.attackSpeed,
         staminaCost: weaponData.staminaCostAttackWeak,
-        staminaCostStrong: weaponData.staminaCostAttackStrong || weaponData.staminaCostAttackWeak * 2,
+        staminaCostStrong:
+          weaponData.staminaCostAttackStrong ||
+          weaponData.staminaCostAttackWeak * 2,
         damage: weaponData.damageAttackWeak,
-        damageStrong: weaponData.damageAttackStrongMax || weaponData.damageAttackWeak * 2,
-        attackRangeStrong: weaponData.attackRangeStrong || weaponData.attackRange * 1.2,
+        damageStrong:
+          weaponData.damageAttackStrongMax || weaponData.damageAttackWeak * 2,
+        attackRangeStrong:
+          weaponData.attackRangeStrong || weaponData.attackRange * 1.2,
       };
     }
     return {
@@ -66,7 +70,7 @@ export class InputController {
         return;
       }
       if (!this._canProcessInput()) return;
-      
+
       // Handle Shift key press timing
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         if (!this.isShiftPressed) {
@@ -74,12 +78,12 @@ export class InputController {
           this.shiftPressTime = Date.now();
         }
       }
-      
+
       this.keys[e.code] = true;
     });
     document.addEventListener('keyup', (e) => {
       if (!this._canProcessInput()) return;
-      
+
       // Handle Shift key release for Elden Ring style controls
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         if (this.isShiftPressed) {
@@ -88,7 +92,7 @@ export class InputController {
           this.isShiftPressed = false;
         }
       }
-      
+
       this.keys[e.code] = false;
     });
 
@@ -133,16 +137,19 @@ export class InputController {
     document.addEventListener('mousedown', (e) => {
       if (!this._canProcessInput()) return;
       const params = this._getWeaponParams();
-      
+
       // Left click - attack (weak or strong based on Ctrl key)
       if (e.button === 0 && !this.player.isAttacking) {
-        const isStrongAttack = this.keys['ControlLeft'] || this.keys['ControlRight'];
-        const staminaCost = isStrongAttack ? params.staminaCostStrong : params.staminaCost;
-        
+        const isStrongAttack =
+          this.keys['ControlLeft'] || this.keys['ControlRight'];
+        const staminaCost = isStrongAttack
+          ? params.staminaCostStrong
+          : params.staminaCost;
+
         if (this.player.stamina >= staminaCost) {
           this.player.isAttacking = true;
           this.player.stamina -= staminaCost;
-          
+
           if (isStrongAttack) {
             // Strong attack
             this.player.isAttackingStrong = true;
@@ -161,7 +168,7 @@ export class InputController {
             this.performAttack(params.damage, params.attackRange);
           }
         }
-      } 
+      }
       // Middle click (wheel click) - lock-on toggle
       else if (e.button === 1) {
         e.preventDefault();
@@ -178,7 +185,7 @@ export class InputController {
 
     document.addEventListener('mouseup', (e) => {
       if (!this._canProcessInput()) return;
-      
+
       // Right click release - stop guard
       if (e.button === 2) {
         this.player.isGuarding = false;
@@ -224,14 +231,18 @@ export class InputController {
     if (!this.player.isRolling) {
       // Handle Elden Ring style dashing (Shift held + movement)
       const isShiftHeld = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
-      const isMoving = this.movementKeys.some(key => this.keys[key]);
-      
-      this.player.isDashing = isShiftHeld && isMoving && this.player.stamina > 0 && 
-                               !this.player.isRolling && 
-                               !this.player.isBackstepping &&
-                               !this.player.isJumping;
+      const isMoving = this.movementKeys.some((key) => this.keys[key]);
+
+      this.player.isDashing =
+        isShiftHeld &&
+        isMoving &&
+        this.player.stamina > 0 &&
+        !this.player.isRolling &&
+        !this.player.isBackstepping &&
+        !this.player.isJumping;
       if (this.player.isDashing) {
-        this.player.stamina -= this.game.data.player.staminaCostDash * deltaTime;
+        this.player.stamina -=
+          this.game.data.player.staminaCostDash * deltaTime;
       }
 
       const speed = 5.0;
@@ -314,7 +325,6 @@ export class InputController {
       this.keys['Digit1'] = false;
     }
 
-
     if (this.keys['KeyE']) {
       this.game.npcs.forEach((npc) => {
         if (
@@ -379,7 +389,7 @@ export class InputController {
       this.player.stamina -= this.game.data.player.staminaCostJump;
       this.player.playAnimation(AnimationNames.JUMP);
       this.game.playSound(AssetNames.SFX_JUMP);
-      
+
       // Reset jumping flag when animation finishes
       setTimeout(() => {
         this.player.isJumping = false;
@@ -388,9 +398,9 @@ export class InputController {
   }
 
   handleShiftRelease(pressDuration) {
-    const isMoving = this.movementKeys.some(key => this.keys[key]);
+    const isMoving = this.movementKeys.some((key) => this.keys[key]);
     const isShortPress = pressDuration < this.shortPressThreshold;
-    
+
     if (isShortPress) {
       if (isMoving) {
         // Rolling - short press + movement
@@ -412,7 +422,7 @@ export class InputController {
       this.player.stamina -= this.game.data.player.staminaCostRolling;
       this.player.playAnimation(AnimationNames.ROLLING);
       this.game.playSound(AssetNames.SFX_ROLLING);
-      
+
       // Apply rolling movement
       const direction = this.getMovementDirection();
       if (direction.length() > 0) {
@@ -434,14 +444,14 @@ export class InputController {
       this.player.stamina -= this.game.data.player.staminaCostBackstep;
       this.player.playAnimation(AnimationNames.ROLLING); // Using rolling animation for backstep
       this.game.playSound(AssetNames.SFX_ROLLING);
-      
+
       // Apply backstep movement (backward)
       const backwardDirection = new THREE.Vector3(0, 0, 1);
       backwardDirection.applyQuaternion(this.player.mesh.quaternion);
       const backstepSpeed = this.game.data.player.backstepSpeed || 6;
       this.player.physics.velocity.x = backwardDirection.x * backstepSpeed;
       this.player.physics.velocity.z = backwardDirection.z * backstepSpeed;
-      
+
       setTimeout(() => {
         this.player.isBackstepping = false;
       }, 600);
@@ -450,12 +460,12 @@ export class InputController {
 
   getMovementDirection() {
     const direction = new THREE.Vector3();
-    
+
     if (this.keys['KeyW']) direction.z -= 1;
     if (this.keys['KeyS']) direction.z += 1;
     if (this.keys['KeyA']) direction.x -= 1;
     if (this.keys['KeyD']) direction.x += 1;
-    
+
     // Apply camera rotation to movement direction
     if (direction.length() > 0) {
       direction.applyQuaternion(
@@ -464,7 +474,7 @@ export class InputController {
         )
       );
     }
-    
+
     return direction;
   }
 
@@ -491,7 +501,7 @@ export class InputController {
   switchLockOnTarget() {
     if (!this.player.lockedTarget) return;
 
-    const enemies = this.game.enemies.filter(enemy => !enemy.isDead);
+    const enemies = this.game.enemies.filter((enemy) => !enemy.isDead);
     if (enemies.length <= 1) return;
 
     const currentIndex = enemies.indexOf(this.player.lockedTarget);
@@ -515,7 +525,9 @@ export class InputController {
     for (const enemy of this.game.enemies) {
       if (enemy.isDead) continue;
 
-      const distance = this.player.mesh.position.distanceTo(enemy.mesh.position);
+      const distance = this.player.mesh.position.distanceTo(
+        enemy.mesh.position
+      );
       if (distance < nearestDistance && distance <= maxLockOnDistance) {
         nearestDistance = distance;
         nearestEnemy = enemy;
@@ -527,11 +539,9 @@ export class InputController {
 
   performAttack(damage, range) {
     this.game.enemies.forEach((enemy) => {
-      if (
-        this.player.mesh.position.distanceTo(enemy.mesh.position) < range
-      ) {
+      if (this.player.mesh.position.distanceTo(enemy.mesh.position) < range) {
         const finalDamage = damage * this.player.attackBuffMultiplier;
-        
+
         // Check if enemy is guarding and reduce damage
         if (enemy.isGuarding && enemy.getShieldDefense) {
           const shieldDefense = enemy.getShieldDefense();

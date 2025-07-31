@@ -154,11 +154,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
 
     // Wait for enemies to be loaded
-    await page.waitForFunction(
-      () => window.game?.enemies?.length > 0,
-      null,
-      { timeout: 5000 }
-    );
+    await page.waitForFunction(() => window.game?.enemies?.length > 0, null, {
+      timeout: 5000,
+    });
 
     // Kill the first enemy by setting its HP to 0
     await page.evaluate(() => {
@@ -188,7 +186,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
   });
 
-  test('should display enemy health bar when player is close', async ({ page }) => {
+  test('should display enemy health bar when player is close', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -216,11 +216,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
 
     // Wait for enemies to be loaded
-    await page.waitForFunction(
-      () => window.game?.enemies?.length > 0,
-      null,
-      { timeout: 5000 }
-    );
+    await page.waitForFunction(() => window.game?.enemies?.length > 0, null, {
+      timeout: 5000,
+    });
 
     // Move player close to the first enemy
     await page.evaluate(() => {
@@ -266,14 +264,18 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.waitForFunction(
       () => {
         const healthBars = document.querySelectorAll('.enemy-health-bar');
-        return healthBars.length === 0 || healthBars[0].style.display === 'none';
+        return (
+          healthBars.length === 0 || healthBars[0].style.display === 'none'
+        );
       },
       null,
       { timeout: 3000 }
     );
   });
 
-  test('should implement shield system similar to weapons', async ({ page }) => {
+  test('should implement shield system similar to weapons', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -311,7 +313,11 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
-        return player?.shields && Array.isArray(player.shields) && player.shields.length > 0;
+        return (
+          player?.shields &&
+          Array.isArray(player.shields) &&
+          player.shields.length > 0
+        );
       },
       null,
       { timeout: 3000 }
@@ -356,7 +362,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
   });
 
-  test('should implement Elden Ring style movement controls', async ({ page }) => {
+  test('should implement Elden Ring style movement controls', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -399,7 +407,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.keyboard.press('KeyW');
     await page.waitForTimeout(100);
     await page.keyboard.up('Shift');
-    
+
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
@@ -415,7 +423,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.waitForTimeout(50); // Short press
     await page.keyboard.up('Shift');
     await page.keyboard.up('KeyW');
-    
+
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
@@ -429,7 +437,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.keyboard.down('Shift');
     await page.waitForTimeout(100); // Short press
     await page.keyboard.up('Shift');
-    
+
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
@@ -440,7 +448,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
   });
 
-  test('should implement equipment switching system with arrow keys', async ({ page }) => {
+  test('should implement equipment switching system with arrow keys', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -489,7 +499,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         return player.currentWeaponIndex === initialIndex;
       }
     }, initialWeaponIndex);
-    
+
     expect(weaponSwitchResult).toBe(true);
 
     // Test Left Arrow - Shield switching
@@ -509,7 +519,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         return player.currentShieldIndex === initialIndex;
       }
     }, initialShieldIndex);
-    
+
     expect(shieldSwitchResult).toBe(true);
 
     // Test Down Arrow - Item switching
@@ -520,7 +530,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       const player = window.game?.player;
       return typeof player?.currentItemIndex === 'number';
     });
-    
+
     expect(itemIndexResult).toBe(true);
 
     // Test Up Arrow - Skill switching
@@ -540,7 +550,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         return player.currentSkillIndex === initialIndex;
       }
     }, initialSkillIndex);
-    
+
     expect(skillSwitchResult).toBe(true);
 
     // Test Equipment UI visibility
@@ -548,11 +558,13 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       const equipmentUI = document.querySelector('#equipment-ui');
       return equipmentUI && equipmentUI.style.display !== 'none';
     });
-    
+
     expect(equipmentUIVisible).toBe(true);
   });
 
-  test('should implement improved combat system with weak/strong attacks and guard', async ({ page }) => {
+  test('should implement improved combat system with weak/strong attacks and guard', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -583,12 +595,17 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     const combatState = await page.evaluate(() => {
       const player = window.game?.player;
       return {
-        hasAttackStates: typeof player?.isAttackingWeak === 'boolean' && typeof player?.isAttackingStrong === 'boolean',
+        hasAttackStates:
+          typeof player?.isAttackingWeak === 'boolean' &&
+          typeof player?.isAttackingStrong === 'boolean',
         hasGuardState: 'isGuarding' in (player || {}),
         guardValue: player?.isGuarding,
         hasShieldDefense: typeof player?.getShieldDefense === 'function',
-        hasPerformAttack: typeof window.game?.inputController?.performAttack === 'function',
-        playerProperties: Object.keys(player || {}).filter(k => k.startsWith('is'))
+        hasPerformAttack:
+          typeof window.game?.inputController?.performAttack === 'function',
+        playerProperties: Object.keys(player || {}).filter((k) =>
+          k.startsWith('is')
+        ),
       };
     });
 
@@ -598,7 +615,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     expect(combatState.hasPerformAttack).toBe(true);
   });
 
-  test('should implement item and skill usage system with R and F keys', async ({ page }) => {
+  test('should implement item and skill usage system with R and F keys', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -643,7 +662,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         return {
           hp: player?.hp,
           inventoryLength: player?.inventory?.length || 0,
-          hasUseCurrentItem: typeof player?.useCurrentItem === 'function'
+          hasUseCurrentItem: typeof player?.useCurrentItem === 'function',
         };
       });
 
@@ -667,7 +686,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       return {
         fp: player?.fp,
         isUsingSkill: player?.isUsingSkill,
-        hasUseCurrentSkill: typeof player?.useCurrentSkill === 'function'
+        hasUseCurrentSkill: typeof player?.useCurrentSkill === 'function',
       };
     });
 
@@ -678,7 +697,9 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     }
   });
 
-  test('should implement lock-on system with wheel click and Q key', async ({ page }) => {
+  test('should implement lock-on system with wheel click and Q key', async ({
+    page,
+  }) => {
     await setupNetworkRoutes(page);
 
     // Go to the game page
@@ -706,19 +727,19 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
 
     // Wait for enemies to be loaded
-    await page.waitForFunction(
-      () => window.game?.enemies?.length > 0,
-      null,
-      { timeout: 5000 }
-    );
+    await page.waitForFunction(() => window.game?.enemies?.length > 0, null, {
+      timeout: 5000,
+    });
 
     // Test wheel click lock-on
     await page.mouse.click(400, 300, { button: 'middle' });
-    
+
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
-        return player?.lockedTarget !== null && player?.lockedTarget !== undefined;
+        return (
+          player?.lockedTarget !== null && player?.lockedTarget !== undefined
+        );
       },
       null,
       { timeout: 3000 }
@@ -728,9 +749,10 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     const lockOnState = await page.evaluate(() => {
       const player = window.game?.player;
       return {
-        hasLockedTarget: player?.lockedTarget !== null && player?.lockedTarget !== undefined,
+        hasLockedTarget:
+          player?.lockedTarget !== null && player?.lockedTarget !== undefined,
         targetIsEnemy: player?.lockedTarget?.constructor.name === 'Enemy',
-        lockOnUIVisible: !!document.querySelector('.lock-on-target')
+        lockOnUIVisible: !!document.querySelector('.lock-on-target'),
       };
     });
 
@@ -738,21 +760,27 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     expect(lockOnState.targetIsEnemy).toBe(true);
 
     // Test Q key target switching (if multiple enemies)
-    const enemyCount = await page.evaluate(() => window.game?.enemies?.length || 0);
-    
+    const enemyCount = await page.evaluate(
+      () => window.game?.enemies?.length || 0
+    );
+
     if (enemyCount > 1) {
-      const initialTarget = await page.evaluate(() => window.game?.player?.lockedTarget);
-      
+      const initialTarget = await page.evaluate(
+        () => window.game?.player?.lockedTarget
+      );
+
       await page.keyboard.press('KeyQ');
       await page.waitForTimeout(100);
-      
-      const newTarget = await page.evaluate(() => window.game?.player?.lockedTarget);
+
+      const newTarget = await page.evaluate(
+        () => window.game?.player?.lockedTarget
+      );
       expect(newTarget !== initialTarget).toBe(true);
     }
 
     // Test lock-on release (wheel click again)
     await page.mouse.click(400, 300, { button: 'middle' });
-    
+
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
