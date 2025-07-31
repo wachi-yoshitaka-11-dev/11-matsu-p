@@ -14,6 +14,7 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
+import { EquipmentUI } from '../ui/equipment-ui.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 
 export class Game {
@@ -82,6 +83,7 @@ export class Game {
     this.hud = new Hud(this, this.player);
     this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
     this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
+    this.equipmentUI = null; // Will be created when game starts
 
     this.inputController = new InputController(
       this.player,
@@ -243,6 +245,13 @@ export class Game {
 
     this.gameState = GameState.PLAYING;
     this.hud.container.style.display = 'block';
+    
+    // Create equipment UI when game starts
+    if (!this.equipmentUI) {
+      this.equipmentUI = new EquipmentUI(this, this.player);
+    }
+    this.equipmentUI?.setVisibility(true);
+    
     if (this.titleScreen) {
       this.titleScreen.dispose();
       this.titleScreen = null;
@@ -390,6 +399,7 @@ export class Game {
     if (this.gameState !== GameState.PAUSED) {
       this.hud?.update();
       this.lockOnUI?.update();
+      this.equipmentUI?.update();
       
       // Check if locked target is dead and clear lock-on if so
       if (this.player?.lockedTarget?.isDead) {
