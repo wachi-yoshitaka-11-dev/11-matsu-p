@@ -355,6 +355,90 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       { timeout: 1000 }
     );
   });
+
+  test('should implement Elden Ring style movement controls', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test Jump (Space key)
+    await page.keyboard.press('Space');
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.currentAnimationName === 'sit'; // Jump animation
+      },
+      null,
+      { timeout: 2000 }
+    );
+
+    // Test Dash (Shift + movement)
+    await page.keyboard.down('Shift');
+    await page.keyboard.press('KeyW');
+    await page.waitForTimeout(100);
+    await page.keyboard.up('Shift');
+    
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.isDashing === true;
+      },
+      null,
+      { timeout: 1000 }
+    );
+
+    // Test Rolling (Shift + movement direction)
+    await page.keyboard.down('Shift');
+    await page.keyboard.down('KeyW');
+    await page.waitForTimeout(50); // Short press
+    await page.keyboard.up('Shift');
+    await page.keyboard.up('KeyW');
+    
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.isRolling === true;
+      },
+      null,
+      { timeout: 1000 }
+    );
+
+    // Test Backstep (Shift short press without movement)
+    await page.keyboard.down('Shift');
+    await page.waitForTimeout(100); // Short press
+    await page.keyboard.up('Shift');
+    
+    await page.waitForFunction(
+      () => {
+        const player = window.game?.player;
+        return player?.isBackstepping === true;
+      },
+      null,
+      { timeout: 1000 }
+    );
+  });
 });
 
 test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
