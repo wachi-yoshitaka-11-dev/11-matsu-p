@@ -26,7 +26,7 @@ export class LockOnUI {
 
   showLockOnTarget(enemy) {
     this.hideLockOnTarget(); // Hide any existing target first
-    
+
     const indicator = document.createElement('div');
     indicator.className = 'lock-on-target';
     indicator.style.position = 'absolute';
@@ -38,7 +38,7 @@ export class LockOnUI {
     indicator.style.pointerEvents = 'none';
     indicator.style.transform = 'translate(-50%, -50%)';
     indicator.style.animation = 'pulse 1s infinite';
-    
+
     // Add pulse animation if not already defined
     if (!document.querySelector('#lock-on-styles')) {
       const style = document.createElement('style');
@@ -55,7 +55,7 @@ export class LockOnUI {
 
     const container = document.querySelector('#lock-on-container');
     container.appendChild(indicator);
-    
+
     this.lockOnIndicators.set(enemy, indicator);
   }
 
@@ -99,7 +99,7 @@ export class LockOnUI {
     const widthHalf = canvas.clientWidth / 2;
     const heightHalf = canvas.clientHeight / 2;
 
-    vector.x = (vector.x * widthHalf) + widthHalf;
+    vector.x = vector.x * widthHalf + widthHalf;
     vector.y = -(vector.y * heightHalf) + heightHalf;
 
     // Return null if position is behind camera or outside view

@@ -1,19 +1,8 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(npx playwright test:*)",
-      "Bash(npm test)"
-    ]
+    "allow": ["Bash(npx playwright test:*)", "Bash(npm test)"]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "filesystem",
-    "git",
-    "web-search"
-  ],
-  "disabledMcpjsonServers": [
-    "filesystem",
-    "git",
-    "web-search"
-  ]
+  "enabledMcpjsonServers": ["filesystem", "git", "web-search"],
+  "disabledMcpjsonServers": ["filesystem", "git", "web-search"]
 }

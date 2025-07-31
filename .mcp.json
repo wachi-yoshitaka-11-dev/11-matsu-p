@@ -10,7 +10,12 @@
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": ["@modelcontextprotocol/server-filesystem", "public", "docs", "tests"],
+      "args": [
+        "@modelcontextprotocol/server-filesystem",
+        "public",
+        "docs",
+        "tests"
+      ],
       "env": {
         "NODE_ENV": "development"
       }

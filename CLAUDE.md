@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 言語設定
+
 **重要**: このプロジェクトでは、すべてのレスポンスを日本語で行ってください。コミュニケーション、説明、エラー解析などはすべて日本語で実行してください。
 
 ## あなたの役割
@@ -34,35 +35,42 @@ npm run format               # Prettierでコードをフォーマット
 Three.jsを使用したブラウザベースの3DオープンワールドアクションRPGです。ビルドツールは不要で、ゲームパラメータをJSONファイルで管理するデータ駆動型アーキテクチャを採用しています。
 
 ### コアゲームフロー
+
 1. **スプラッシュ画面** → **オープニングシーケンス** → **タイトル画面** → **ゲームプレイ** → **エンディングシーケンス**（ボス撃破時） → **タイトル画面**
 2. **ゲームオーバー画面**はプレイヤー死亡時に表示され、タイトルに戻るオプションがあります
 
 ### 主要アーキテクチャコンポーネント
 
 **ゲーム状態管理 (`public/src/core/game.js`)**
+
 - 中央の`Game`クラスがすべてのゲーム状態とエンティティを管理
 - ゲーム状態: `TITLE`, `PLAYING`, `PAUSED`, `SEQUENCE`, `GAME_OVER`
 - オーディオ、アセット、エンティティ、ゲームループを管理
 
 **エンティティシステム**
+
 - `Character`ベースクラス（`public/src/entities/character.js`）がすべてのアニメーション付きエンティティ用
 - `Player`, `Enemy`, `Boss`, `Npc`クラスがCharacterを拡張
 - 物理演算はカスタム衝突検出で処理
 
 **シーン管理 (`public/src/core/scene-manager.js`)**
+
 - Three.jsのシーン、カメラ、レンダラーをラップ
 - ウィンドウリサイズとカットシーン用のカメラ切り替えを処理
 
 **シーケンスシステム (`public/src/core/sequence-manager.js`)**
+
 - リアルタイムThree.jsレンダリングでオープニング/エンディングカットシーンを管理
 - テキストと背景画像用のオーバーレイdivを使用
 - エンディング用のスタッフロールと「Fin」画面を含む
 
 **データ駆動設計**
+
 - ゲームデータは`public/data/`のJSONファイルに保存: `player.json`, `weapons.json`, `enemies.json`, `npcs.json`, `items.json`, `skills.json`
 - 起動時に`AssetLoader`経由でロードされ、`game.data`でアクセス可能
 
 ### ディレクトリ構造 (src/)
+
 ```
 src/
 ├── main.js                 # ゲームエントリポイント
@@ -79,11 +87,13 @@ src/
 ```
 
 ### アニメーションシステム
+
 - **状態ベース**: 継続的なアニメーション（待機、歩行、ダッシュ）を`updateAnimation()`メソッドで管理
 - **イベント駆動**: アクションアニメーション（攻撃、ローリング）は入力イベントでトリガー
 - **ハイブリッドアプローチ**: Three.js AnimationMixerを使用し、状態間でクロスフェード
 
 ### アセット管理
+
 - 3Dモデル: `public/assets/models/`の`.glb`ファイル
 - テクスチャ: `public/assets/textures/`の`.png`ファイル
 - オーディオ: `public/assets/audio/`の`.mp3`ファイル
@@ -92,24 +102,26 @@ src/
 ## テスト
 
 Three.js CDN依存関係のネットワークルートモッキングを使用したPlaywright end-to-endテストを使用。テストカバレッジ:
+
 - オープニングシーケンス → タイトル画面遷移
 - ゲーム起動とHUD表示
 - ボス撃破 → エンディングシーケンス
 - プレイヤー死亡 → ゲームオーバー画面
 
 主要テストパターン:
+
 ```javascript
 // シーケンス完了を待機
 await page.waitForFunction(
   () => window.game?.sequenceManager?.currentStep === 'idle',
-  null, { timeout: 120000 }
+  null,
+  { timeout: 120000 }
 );
 
 // ゲーム状態をチェック
-await page.waitForFunction(
-  () => window.game?.gameState === 'playing',
-  null, { timeout: 10000 }
-);
+await page.waitForFunction(() => window.game?.gameState === 'playing', null, {
+  timeout: 10000,
+});
 ```
 
 ## 理解すべき主要ファイル

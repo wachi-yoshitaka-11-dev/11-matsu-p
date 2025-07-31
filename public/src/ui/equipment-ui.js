@@ -80,7 +80,7 @@ export class EquipmentUI {
 
     return {
       element: element,
-      nameElement: nameElement
+      nameElement: nameElement,
     };
   }
 

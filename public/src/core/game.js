@@ -147,7 +147,10 @@ export class Game {
       );
       this.audioBuffers[assetName] = buffer;
 
-      if (assetName === AssetNames.BGM_PLAYING || assetName === AssetNames.BGM_TITLE) {
+      if (
+        assetName === AssetNames.BGM_PLAYING ||
+        assetName === AssetNames.BGM_TITLE
+      ) {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
@@ -234,9 +237,12 @@ export class Game {
 
     // Explicitly load ground texture
     try {
-      await this.assetLoader.loadTexture(AssetNames.GROUND_TEXTURE, `assets/textures/${AssetNames.GROUND_TEXTURE}.png`);
+      await this.assetLoader.loadTexture(
+        AssetNames.GROUND_TEXTURE,
+        `assets/textures/${AssetNames.GROUND_TEXTURE}.png`
+      );
     } catch (error) {
-      console.error(`Error loading ground texture:`, error);
+      console.error('Error loading ground texture:', error);
     }
   }
 
@@ -245,13 +251,13 @@ export class Game {
 
     this.gameState = GameState.PLAYING;
     this.hud.container.style.display = 'block';
-    
+
     // Create equipment UI when game starts
     if (!this.equipmentUI) {
       this.equipmentUI = new EquipmentUI(this, this.player);
     }
     this.equipmentUI?.setVisibility(true);
-    
+
     if (this.titleScreen) {
       this.titleScreen.dispose();
       this.titleScreen = null;
@@ -259,7 +265,10 @@ export class Game {
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    if (this.bgmAudios[AssetNames.BGM_PLAYING] && !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying) {
+    if (
+      this.bgmAudios[AssetNames.BGM_PLAYING] &&
+      !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
+    ) {
       this.bgmAudios[AssetNames.BGM_PLAYING].play();
     }
     this.playSound(AssetNames.SFX_START);
@@ -332,7 +341,7 @@ export class Game {
         for (let i = this.enemies.length - 1; i >= 0; i--) {
           const enemy = this.enemies[i];
           enemy.update(deltaTime);
-          
+
           if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
@@ -400,7 +409,7 @@ export class Game {
       this.hud?.update();
       this.lockOnUI?.update();
       this.equipmentUI?.update();
-      
+
       // Check if locked target is dead and clear lock-on if so
       if (this.player?.lockedTarget?.isDead) {
         this.player.lockedTarget = null;
