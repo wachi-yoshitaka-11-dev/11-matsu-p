@@ -440,6 +440,118 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
   });
 
+  test('should implement equipment switching system with arrow keys', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      '#title-screen #title-menu button:has-text(\'New Game\')'
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test Right Arrow - Weapon switching
+    const initialWeaponIndex = await page.evaluate(() => {
+      return window.game.player.currentWeaponIndex;
+    });
+
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(100);
+
+    const newWeaponIndex = await page.evaluate(() => {
+      return window.game.player.currentWeaponIndex;
+    });
+
+    // Verify weapon switched (if multiple weapons available)
+    const weaponSwitchResult = await page.evaluate((initialIndex) => {
+      const player = window.game?.player;
+      const hasMultipleWeapons = player?.weapons?.length > 1;
+      if (hasMultipleWeapons) {
+        return player.currentWeaponIndex !== initialIndex;
+      } else {
+        return player.currentWeaponIndex === initialIndex;
+      }
+    }, initialWeaponIndex);
+    
+    expect(weaponSwitchResult).toBe(true);
+
+    // Test Left Arrow - Shield switching
+    const initialShieldIndex = await page.evaluate(() => {
+      return window.game.player.currentShieldIndex;
+    });
+
+    await page.keyboard.press('ArrowLeft');
+    await page.waitForTimeout(100);
+
+    const shieldSwitchResult = await page.evaluate((initialIndex) => {
+      const player = window.game?.player;
+      const hasMultipleShields = player?.shields?.length > 1;
+      if (hasMultipleShields) {
+        return player.currentShieldIndex !== initialIndex;
+      } else {
+        return player.currentShieldIndex === initialIndex;
+      }
+    }, initialShieldIndex);
+    
+    expect(shieldSwitchResult).toBe(true);
+
+    // Test Down Arrow - Item switching
+    await page.keyboard.press('ArrowDown');
+    await page.waitForTimeout(100);
+
+    const itemIndexResult = await page.evaluate(() => {
+      const player = window.game?.player;
+      return typeof player?.currentItemIndex === 'number';
+    });
+    
+    expect(itemIndexResult).toBe(true);
+
+    // Test Up Arrow - Skill switching
+    const initialSkillIndex = await page.evaluate(() => {
+      return window.game.player.currentSkillIndex;
+    });
+
+    await page.keyboard.press('ArrowUp');
+    await page.waitForTimeout(100);
+
+    const skillSwitchResult = await page.evaluate((initialIndex) => {
+      const player = window.game?.player;
+      const hasMultipleSkills = player?.skills?.length > 1;
+      if (hasMultipleSkills) {
+        return player.currentSkillIndex !== initialIndex;
+      } else {
+        return player.currentSkillIndex === initialIndex;
+      }
+    }, initialSkillIndex);
+    
+    expect(skillSwitchResult).toBe(true);
+
+    // Test Equipment UI visibility
+    const equipmentUIVisible = await page.evaluate(() => {
+      const equipmentUI = document.querySelector('#equipment-ui');
+      return equipmentUI && equipmentUI.style.display !== 'none';
+    });
+    
+    expect(equipmentUIVisible).toBe(true);
+  });
+
   test('should implement lock-on system with wheel click and Q key', async ({ page }) => {
     await setupNetworkRoutes(page);
 

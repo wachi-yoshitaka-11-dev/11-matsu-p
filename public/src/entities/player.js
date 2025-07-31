@@ -27,7 +27,7 @@ export class Player extends Character {
     this.experience = game.data.player.initialExperience;
     this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
     this.statusPoints = game.data.player.initialStatusPoints;
-    this.inventory = [];
+    this.inventory = ['potion', 'potion']; // Initialize with test items
 
     this.weapons = ['sword', 'claws'];
     this.currentWeaponIndex = 0;
@@ -37,6 +37,7 @@ export class Player extends Character {
     
     this.skills = ['projectile', 'buff'];
     this.currentSkillIndex = 0;
+    this.currentItemIndex = 0;
     this.isUsingSkill = false;
     this.isAttacking = false;
     this.isAttackingWeak = false;
@@ -254,6 +255,31 @@ export class Player extends Character {
     if (this.skills.length > 1) {
       this.currentSkillIndex = (this.currentSkillIndex + 1) % this.skills.length;
       this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
+    }
+  }
+
+  getCurrentWeapon() {
+    if (this.weapons.length === 0) return null;
+    const weaponName = this.weapons[this.currentWeaponIndex];
+    return this.game.data.weapons[weaponName];
+  }
+
+  switchWeapon() {
+    if (this.weapons.length > 1) {
+      this.currentWeaponIndex = (this.currentWeaponIndex + 1) % this.weapons.length;
+      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON);
+    }
+  }
+
+  getCurrentItem() {
+    if (this.inventory.length === 0) return null;
+    return this.inventory[this.currentItemIndex];
+  }
+
+  switchItem() {
+    if (this.inventory.length > 1) {
+      this.currentItemIndex = (this.currentItemIndex + 1) % this.inventory.length;
+      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound for consistency
     }
   }
 

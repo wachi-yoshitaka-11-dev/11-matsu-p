@@ -326,12 +326,6 @@ export class InputController {
       this.player.useItem(0);
       this.keys['Digit1'] = false;
     }
-    if (this.keys['Digit2']) {
-      this.player.currentWeaponIndex =
-        (this.player.currentWeaponIndex + 1) % this.player.weapons.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON);
-      this.keys['Digit2'] = false;
-    }
 
     if (this.keys['Digit3']) {
       const skillData = this.game.data.skills.projectile;
@@ -394,6 +388,27 @@ export class InputController {
     if (this.keys['Space'] && !this.player.isJumping) {
       this.handleJump();
       this.keys['Space'] = false;
+    }
+
+    // Equipment switching with arrow keys
+    if (this.keys['ArrowRight']) {
+      this.player.switchWeapon();
+      this.keys['ArrowRight'] = false;
+    }
+
+    if (this.keys['ArrowLeft']) {
+      this.player.switchShield();
+      this.keys['ArrowLeft'] = false;
+    }
+
+    if (this.keys['ArrowDown']) {
+      this.player.switchItem();
+      this.keys['ArrowDown'] = false;
+    }
+
+    if (this.keys['ArrowUp']) {
+      this.player.switchSkill();
+      this.keys['ArrowUp'] = false;
     }
   }
 
