@@ -240,7 +240,7 @@ export class Game {
         `assets/textures/${AssetNames.GROUND_TEXTURE}.png`
       );
     } catch (error) {
-      console.error('Error loading ground texture:', error);
+      console.warn('Error loading ground texture:', error);
     }
   }
 
