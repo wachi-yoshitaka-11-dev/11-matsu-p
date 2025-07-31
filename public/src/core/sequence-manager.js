@@ -319,17 +319,4 @@ export class SequenceManager {
     fade();
   }
 
-  _showNextText(onSequenceComplete) {
-    if (this.currentTextIndex < this.textSequence.length) {
-      this.textElement.textContent = this.textSequence[this.currentTextIndex];
-      this.textElement.style.display = 'block';
-      this.currentTextIndex++;
-      this.textTimer = 0;
-      setTimeout(() => {
-        this._showNextText(onSequenceComplete);
-      }, this.textDisplayDuration);
-    } else {
-      onSequenceComplete();
-    }
-  }
 }

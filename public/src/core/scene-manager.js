@@ -43,6 +43,10 @@ export class SceneManager {
 
   remove(object) {
     this.scene.remove(object);
+    const index = this._gameElements.indexOf(object);
+    if (index !== -1) {
+      this._gameElements.splice(index, 1);
+    }
   }
 
   render() {
@@ -55,6 +59,10 @@ export class SceneManager {
   }
 
   setCamera(newCamera) {
+    if (!newCamera || !newCamera.isCamera) {
+      console.warn('SceneManager.setCamera: Invalid camera provided');
+      return;
+    }
     this.camera = newCamera;
   }
 

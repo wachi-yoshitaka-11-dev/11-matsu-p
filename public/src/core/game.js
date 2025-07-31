@@ -38,7 +38,7 @@ export class Game {
     this.initAudio();
 
     this.gameState = GameState.TITLE;
-    console.log('Initializing UI components... [UPDATED VERSION]');
+    console.log('Initializing UI components...');
     this.titleScreen = new TitleScreen(() => this.startGame());
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
@@ -52,7 +52,12 @@ export class Game {
       this.sequenceManager = null;
     }
     
-    this.gameOverScreen = new GameOverScreen(this);
+    try {
+      this.gameOverScreen = new GameOverScreen(this);
+    } catch (error) {
+      console.error('Failed to initialize GameOverScreen:', error);
+      this.gameOverScreen = null;
+    }
     console.log('All UI components initialized');
   }
 
@@ -310,10 +315,6 @@ export class Game {
       !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
     ) {
       this.playAudio(this.bgmAudios[AssetNames.BGM_PLAYING]);
-    }
-    // Resume audio context on user gesture
-    if (this.listener.context.state === 'suspended') {
-      this.listener.context.resume();
     }
 
     this.playSound(AssetNames.SFX_START);
