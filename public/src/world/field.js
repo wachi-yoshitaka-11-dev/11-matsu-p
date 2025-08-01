@@ -30,7 +30,7 @@ export class Field {
 
     const material = new THREE.MeshStandardMaterial({
       map: groundTexture || null,
-      color: groundTexture ? 0xffffff : 0x4a7d2c, // Fallback color
+      color: groundTexture ? 0xffffff : 0x4a7d2c,
       side: THREE.DoubleSide,
     });
     this.mesh = new THREE.Mesh(geometry, material);
@@ -64,7 +64,6 @@ export class Field {
       return;
     }
 
-    // Place trees
     const treeTexture = this.game.assetLoader.getAsset(AssetNames.TREE_TEXTURE);
     this._placeTerrainObjects(
       treeModel,
@@ -74,7 +73,6 @@ export class Field {
       FieldConst.TREE_MAX_SCALE
     );
 
-    // Place rocks
     const rockTexture = this.game.assetLoader.getAsset(AssetNames.ROCK_TEXTURE);
     this._placeTerrainObjects(
       rockModel,
@@ -84,7 +82,6 @@ export class Field {
       FieldConst.ROCK_MAX_SCALE
     );
 
-    // Place grass
     const grassTexture = this.game.assetLoader.getAsset(
       AssetNames.GRASS_TEXTURE
     );
@@ -96,7 +93,6 @@ export class Field {
       FieldConst.GRASS_MAX_SCALE
     );
 
-    // Place clouds
     const cloudTexture = this.game.assetLoader.getAsset(
       AssetNames.CLOUD_TEXTURE
     );
@@ -104,7 +100,7 @@ export class Field {
       const terrainHalfSize = FieldConst.TERRAIN_SIZE / 2;
       for (let i = 0; i < FieldConst.CLOUD_COUNT; i++) {
         this._placeObject(
-          null, // モデルは不要
+          null,
           cloudTexture,
           FieldConst.CLOUD_MIN_SCALE,
           FieldConst.CLOUD_MAX_SCALE,
@@ -116,7 +112,7 @@ export class Field {
             const y = 50 + (Math.random() * 20 - 10);
             return new THREE.Vector3(x, y, z);
           },
-          true // isBillboardをtrueに設定
+          true
         );
       }
     }
@@ -163,7 +159,6 @@ export class Field {
     if (intersects.length > 0) {
       return intersects[0].point.y;
     }
-    // If no intersection, return a very low value to allow falling below the terrain
     return Fall.MAX_FALL_DEPTH;
   }
 }

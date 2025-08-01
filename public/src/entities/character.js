@@ -22,7 +22,6 @@ export class Character {
         this.playAnimation(AnimationNames.IDLE);
       }
 
-      // Apply texture if available
       const texture = game.assetLoader.getAsset(options.textureName);
       if (texture) {
         applyTextureToObject(this.mesh, texture);
@@ -203,7 +202,6 @@ export class Character {
   onDeath() {}
 
   update(deltaTime) {
-    // Always update physics, even if dead, to allow continuous falling
     this.physics.update(deltaTime);
 
     if (this.mixer) {
@@ -211,11 +209,9 @@ export class Character {
     }
 
     if (this.isDead) {
-      // If dead, only allow physics updates, skip other logic
       return;
     }
 
-    // Check for fall death (only if not already dead)
     if (this.mesh.position.y < Fall.FALL_DEATH_THRESHOLD) {
       this.hp = 0;
       this.isDead = true;
@@ -230,9 +226,7 @@ export class Character {
   placeOnGround(x, z) {
     const groundY = this.game.field.getHeightAt(x, z);
 
-    // Calculate the offset from the mesh's origin to its bottom
     const bbox = new THREE.Box3().setFromObject(this.mesh);
-    const objectHeight = bbox.max.y - bbox.min.y;
     const offsetToBottom = bbox.min.y - this.mesh.position.y;
 
     this.mesh.position.set(x, groundY - offsetToBottom, z);

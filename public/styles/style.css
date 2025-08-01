@@ -79,7 +79,12 @@ canvas {
 #sequence-overlay > div {
   position: relative;
   z-index: 1; /* 背景画像（z-index: -1）より前面に配置 */
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
 }
 
 #sequence-overlay img:not(.sequence-background-image) {
@@ -216,6 +221,12 @@ canvas {
   animation: sequenceTextFin 15s ease-in-out forwards;
   transform-origin: center;
   opacity: 0;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
 }
 
 @keyframes sequenceTextFin {
@@ -236,6 +247,15 @@ canvas {
 }
 
 /* スタッフロール */
+.staff-roll {
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+
 @keyframes scroll-up {
   from {
     transform: translateY(100%);

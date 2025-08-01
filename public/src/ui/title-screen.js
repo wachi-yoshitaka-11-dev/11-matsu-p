@@ -4,7 +4,6 @@ export class TitleScreen {
     this.container = document.createElement('div');
     this.container.id = 'title-screen';
 
-    // ロゴ用の独立した要素（title-screenとは別）
     this.splashContainer = document.createElement('div');
     this.splashContainer.id = 'splash-screen';
 
@@ -19,17 +18,17 @@ export class TitleScreen {
     this.menuContainer.id = 'title-menu';
 
     this.newGameButton = document.createElement('button');
-    this.newGameButton.textContent = 'New Game';
+    this.newGameButton.textContent = 'はじめから';
     this.newGameButton.addEventListener('click', this.onStart);
     this.menuContainer.appendChild(this.newGameButton);
 
     this.continueButton = document.createElement('button');
-    this.continueButton.textContent = 'Continue (Coming Soon)';
+    this.continueButton.textContent = 'つづきから（準備中）';
     this.continueButton.disabled = true;
     this.menuContainer.appendChild(this.continueButton);
 
     this.optionsButton = document.createElement('button');
-    this.optionsButton.textContent = 'Options (Coming Soon)';
+    this.optionsButton.textContent = '設定（準備中）';
     this.optionsButton.disabled = true;
     this.menuContainer.appendChild(this.optionsButton);
 
@@ -37,7 +36,6 @@ export class TitleScreen {
 
     document.body.appendChild(this.container);
     this.addStyles();
-    // 初期状態では非表示にする
     this.hideAll();
     this.showSplash();
   }
@@ -52,7 +50,7 @@ export class TitleScreen {
     setTimeout(() => {
       this.splashContainer.style.display = 'none';
       this.splashContainer.className = '';
-    }, 1000); // フェードアウト完了を待つ
+    }, 1000);
   }
 
   showMenu() {
@@ -66,7 +64,7 @@ export class TitleScreen {
     setTimeout(() => {
       this.container.style.display = 'none';
       this.container.className = '';
-    }, 1000); // フェードアウト完了を待つ
+    }, 1000);
   }
 
   hideAll() {

@@ -69,7 +69,6 @@ export class Boss extends Character {
   }
 
   updateAnimation() {
-    // 攻撃アニメーション中は他のアニメーションに切り替えない
     if (this.isAttacking) {
       return;
     }

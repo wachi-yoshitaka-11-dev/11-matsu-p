@@ -86,7 +86,6 @@ export class Game {
       this.sceneManager.renderer.domElement
     );
 
-    // Load and place entities from data
     this.loadEntities();
   }
 
@@ -157,16 +156,10 @@ export class Game {
   }
 
   loadEntities() {
-    // Example: Load enemies from data (assuming enemies.json has a structure for initial placement)
-    // For simplicity, let's hardcode some initial entities based on data for now
-    // In a real game, you'd have a level data file defining entity placements
-
-    // Place a potion item
     const item = new Item(ItemTypes.POTION, new THREE.Vector3(0, 2, -5), this);
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
-    // Place a grunt enemy
     const enemy = new Enemy(this, this.player, new THREE.Vector3(5, 0, 0), {
       modelName: AssetNames.ENEMY_MODEL,
       textureName: AssetNames.ENEMY_TEXTURE,
@@ -175,7 +168,6 @@ export class Game {
     this.enemies.push(enemy);
     this.sceneManager.add(enemy.mesh);
 
-    // Place the boss
     const boss = new Boss(this, this.player, {
       modelName: AssetNames.BOSS_MODEL,
       textureName: AssetNames.BOSS_TEXTURE,
@@ -184,7 +176,6 @@ export class Game {
     this.enemies.push(boss);
     this.sceneManager.add(boss.mesh);
 
-    // Place an NPC
     const npc = new Npc(
       'こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。',
       new THREE.Vector3(-5, 0.5, -5),
@@ -205,8 +196,8 @@ export class Game {
       { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
       { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
       { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },
-      { texture: AssetNames.CLOUD_TEXTURE }, // 雲のテクスチャを明示的に追加
-      { texture: AssetNames.GROUND_TEXTURE }, // 地面テクスチャを明示的に追加
+      { texture: AssetNames.CLOUD_TEXTURE },
+      { texture: AssetNames.GROUND_TEXTURE },
     ];
 
     for (const asset of assetsToLoad) {
@@ -220,12 +211,12 @@ export class Game {
         const texturePath = `assets/textures/${asset.model || asset.texture}.png`;
         try {
           await this.assetLoader.loadTexture(asset.texture, texturePath);
-        } catch (textureError) {
+        } catch {
           console.warn(
             `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`
           );
         }
-      } catch (error) {
+      } catch {
         console.error(
           `Could not load model ${asset.model}. A placeholder will be used.`
         );
@@ -237,7 +228,6 @@ export class Game {
     if (this.gameState !== GameState.TITLE) return;
 
     this.gameState = GameState.PLAYING;
-    // ゲーム要素を表示
     this.sceneManager.showCanvas();
     this.hud.container.style.display = 'block';
     if (this.titleScreen) {
@@ -340,13 +330,11 @@ export class Game {
           this.player?.addExperience(this.boss.experience);
           this.sceneManager.remove(this.boss.mesh);
           this.boss = null;
-          this.endingTimer = 1; // 1秒のタイマー
+          this.endingTimer = 1;
           this.isEndingSequenceReady = false;
         }
 
-        // エンディングタイマーの更新とレベルアップのチェック
         if (this.endingTimer > 0) {
-          // レベルアップメニューが表示されていない場合のみタイマーを減らす
           if (this.player?.statusPoints === 0) {
             this.endingTimer -= deltaTime;
           }
@@ -420,16 +408,13 @@ export class Game {
     this._updateLoop(deltaTime);
   };
 
-  // 追加
   playOpeningSequence() {
     this.gameState = GameState.OPENING;
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
     this.sequenceManager.startOpeningSequence(() => {
-      // シーケンス終了後少し待ってからタイトル画面を表示
       setTimeout(() => {
         this.gameState = GameState.TITLE;
-        // ゲーム要素を非表示
         this.sceneManager.hideCanvas();
         this.titleScreen.showMenu();
         if (
@@ -438,17 +423,14 @@ export class Game {
         ) {
           this.bgmAudios[AssetNames.BGM_TITLE].play();
         }
-      }, 500); // フェードイン完了まで少し待つ
+      }, 500);
     });
   }
 
-  // 追加
   playEndingSequence() {
     this.gameState = GameState.ENDING;
 
-    // ゲーム画面をフェードアウトしてからエンディングを開始
     this.sceneManager.fadeOutCanvas(1000, () => {
-      // フェードアウト完了後にその他の要素を非表示
       this.hud.container.style.display = 'none';
       this.titleScreen.hideSplash();
       this.titleScreen.hideMenu();

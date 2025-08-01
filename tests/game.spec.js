@@ -51,11 +51,6 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     // Wait for the opening sequence to complete (gameState becomes 'title')
     await page.waitForFunction(
       (titleState) => {
-        console.log('Current gameState:', window.game?.gameState);
-        console.log(
-          'SequenceManager currentStep:',
-          window.game?.sequenceManager?.currentStep
-        );
         return window.game?.gameState === titleState;
       },
       GameState.TITLE,
@@ -65,18 +60,18 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
 
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       { state: 'visible' }
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible({ timeout: 10000 });
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
   });
 
-  test('should start the game when "New Game" is clicked after opening sequence', async ({
+  test('should start the game when "はじめから" is clicked after opening sequence', async ({
     page,
   }) => {
     await setupNetworkRoutes(page);
@@ -92,12 +87,12 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
 
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       { state: 'visible' }
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible({ timeout: 10000 });
     await newGameButton.click();
@@ -107,7 +102,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       (playingState) => {
         try {
           return window.game?.gameState === playingState;
-        } catch (e) {
+        } catch {
           return false;
         }
       },
@@ -142,12 +137,12 @@ test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
     );
 
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       { state: 'visible' }
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible();
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
@@ -170,7 +165,7 @@ test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
 
     // Start the game
     await page
-      .locator('#title-screen #title-menu button:has-text(\'New Game\')')
+      .locator('#title-screen #title-menu button:has-text(\'はじめから\')')
       .click();
     await page.waitForFunction(
       (playingState) => window.game?.gameState === playingState,
@@ -205,12 +200,12 @@ test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
     );
 
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       { state: 'visible' }
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible({ timeout: 10000 });
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
@@ -237,7 +232,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
 
     // Sequence should be skipped and title screen should appear quickly
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       {
         state: 'visible',
         timeout: 5000,
@@ -245,7 +240,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible();
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
@@ -270,7 +265,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
 
     // Sequence should be skipped and title screen should appear quickly
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       {
         state: 'visible',
         timeout: 5000,
@@ -278,7 +273,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible();
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
@@ -330,7 +325,6 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     });
 
     // Check if the text element has size animation classes applied
-    const textElement = page.locator('#sequence-overlay > div').first();
 
     // Wait for the first text with large animation to appear
     await page.waitForFunction(
@@ -373,7 +367,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
 
     // Start the game
     await page
-      .locator('#title-screen #title-menu button:has-text(\'New Game\')')
+      .locator('#title-screen #title-menu button:has-text(\'はじめから\')')
       .click();
     await page.waitForFunction(
       (playingState) => window.game?.gameState === playingState,
@@ -406,7 +400,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
 
     // Ending sequence should be skipped and title screen should appear quickly
     await page.waitForSelector(
-      '#title-screen #title-menu button:has-text(\'New Game\')',
+      '#title-screen #title-menu button:has-text(\'はじめから\')',
       {
         state: 'visible',
         timeout: 5000,
@@ -414,7 +408,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      '#title-screen #title-menu button:has-text(\'はじめから\')'
     );
     await expect(newGameButton).toBeVisible();
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();

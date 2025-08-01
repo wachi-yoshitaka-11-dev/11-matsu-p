@@ -10,10 +10,10 @@ export class SceneManager {
       0.1,
       1000
     );
-    this._defaultCamera = this.camera; // デフォルトカメラを保存
+    this._defaultCamera = this.camera;
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.light = new Light(this.scene);
-    this._gameElements = []; // ゲーム要素を保存する配列
+    this._gameElements = [];
 
     this.init();
   }
@@ -23,7 +23,6 @@ export class SceneManager {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.domElement.setAttribute('tabindex', '0');
-    // 初期状態では非表示
     this.renderer.domElement.style.display = 'none';
     document.body.appendChild(this.renderer.domElement);
 
@@ -51,7 +50,6 @@ export class SceneManager {
     this.renderer.render(this.scene, this.camera);
   }
 
-  // キャンバス表示管理
   showCanvas() {
     this.renderer.domElement.style.display = 'block';
   }
@@ -67,7 +65,7 @@ export class SceneManager {
     setTimeout(() => {
       this.renderer.domElement.style.display = 'none';
       this.renderer.domElement.style.transition = '';
-      this.renderer.domElement.style.opacity = '1'; // 次回表示用にリセット
+      this.renderer.domElement.style.opacity = '1';
       if (callback) callback();
     }, duration);
   }

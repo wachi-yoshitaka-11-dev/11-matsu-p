@@ -76,7 +76,6 @@ export class Enemy extends Character {
   }
 
   updateAnimation() {
-    // Don't switch to other animations during attack animation
     if (this.isAttacking) {
       return;
     }

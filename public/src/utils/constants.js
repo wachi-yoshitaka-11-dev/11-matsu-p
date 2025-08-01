@@ -6,11 +6,9 @@ export const GameConstants = {
 export const Field = {
   TERRAIN_SIZE: 100,
   TERRAIN_SEGMENTS: 50,
-  // General object scale (can be overridden by specific object scales)
   OBJECT_MIN_SCALE: 0.5,
   OBJECT_MAX_SCALE: 1.5,
 
-  // Specific object scales
   TREE_MIN_SCALE: 2.0,
   TREE_MAX_SCALE: 6.0,
   ROCK_MIN_SCALE: 2.0,
@@ -22,14 +20,12 @@ export const Field = {
   SUN_MIN_SCALE: 400.0,
   SUN_MAX_SCALE: 400.0,
 
-  // Object counts
   TREE_COUNT: 20,
   ROCK_COUNT: 40,
   GRASS_COUNT: 1000,
   CLOUD_COUNT: 100,
   SUN_COUNT: 1,
 
-  // Opacity
   CLOUD_OPACITY: 0.4,
   SUN_OPACITY: 0.8,
 };
@@ -48,7 +44,6 @@ export const EffectColors = {
 };
 
 export const AssetNames = {
-  // Models
   PLAYER_MODEL: 'player',
   ENEMY_MODEL: 'enemy',
   BOSS_MODEL: 'boss',
@@ -58,7 +53,6 @@ export const AssetNames = {
   ROCK_MODEL: 'rock',
   GRASS_MODEL: 'grass',
 
-  // Audio
   BGM_PLAYING: 'bgm-playing',
   BGM_TITLE: 'bgm-title',
   BGM_OPENING: 'bgm-opening',
@@ -83,7 +77,6 @@ export const AssetNames = {
   SFX_USE_SKILL_BUFF: 'use-skill-buff',
   SFX_USE_SKILL_PROJECTILE: 'use-skill-projectile',
 
-  // Textures
   PLAYER_TEXTURE: 'player-texture',
   ENEMY_TEXTURE: 'enemy-texture',
   BOSS_TEXTURE: 'boss-texture',
