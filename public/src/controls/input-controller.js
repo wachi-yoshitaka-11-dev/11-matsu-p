@@ -235,8 +235,6 @@ export class InputController {
         this.player.physics.velocity.x = 0;
         this.player.physics.velocity.z = 0;
       }
-    } else {
-      // If rolling, we let the rolling velocity take over and don't apply new input
     }
 
     this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;

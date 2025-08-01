@@ -8,7 +8,6 @@ export function applyTextureToObject(object, texture) {
 
   object.traverse((child) => {
     if (child.isMesh) {
-      // Ensure material is an array for multi-material objects
       const materials = Array.isArray(child.material)
         ? child.material
         : [child.material];
