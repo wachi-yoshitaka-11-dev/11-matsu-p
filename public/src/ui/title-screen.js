@@ -4,14 +4,16 @@ export class TitleScreen {
     this.container = document.createElement('div');
     this.container.id = 'title-screen';
 
-    this.splashOverlay = document.createElement('div');
-    this.splashOverlay.id = 'splash-overlay';
-    this.container.appendChild(this.splashOverlay);
+    // ロゴ用の独立した要素（title-screenとは別）
+    this.splashContainer = document.createElement('div');
+    this.splashContainer.id = 'splash-screen';
 
     this.logoImage = document.createElement('img');
     this.logoImage.src = './assets/images/logo.png';
     this.logoImage.id = 'splash-logo';
-    this.splashOverlay.appendChild(this.logoImage);
+    this.splashContainer.appendChild(this.logoImage);
+
+    document.body.appendChild(this.splashContainer);
 
     this.menuContainer = document.createElement('div');
     this.menuContainer.id = 'title-menu';
@@ -35,36 +37,65 @@ export class TitleScreen {
 
     document.body.appendChild(this.container);
     this.addStyles();
+    // 初期状態では非表示にする
+    this.hideAll();
     this.showSplash();
   }
 
   showSplash() {
-    this.splashOverlay.style.display = 'flex';
-    this.logoImage.style.display = 'block';
-    this.menuContainer.style.display = 'none';
+    this.splashContainer.style.display = 'flex';
+    this.container.style.display = 'none';
   }
 
   hideSplash() {
-    this.splashOverlay.style.display = 'none';
+    this.splashContainer.className = 'logo-fade-out';
+    setTimeout(() => {
+      this.splashContainer.style.display = 'none';
+      this.splashContainer.className = '';
+    }, 1000); // フェードアウト完了を待つ
   }
 
   showMenu() {
-    this.splashOverlay.style.display = 'none';
-    this.logoImage.style.display = 'none';
-    this.menuContainer.style.display = 'flex';
+    this.splashContainer.style.display = 'none';
+    this.container.style.display = 'flex';
+    this.container.className = 'title-fade-in';
   }
 
   hideMenu() {
-    this.menuContainer.style.display = 'none';
+    this.container.className = 'title-fade-out';
+    setTimeout(() => {
+      this.container.style.display = 'none';
+      this.container.className = '';
+    }, 1000); // フェードアウト完了を待つ
   }
 
   hideAll() {
+    this.splashContainer.style.display = 'none';
     this.container.style.display = 'none';
   }
 
   addStyles() {
     const style = document.createElement('style');
     style.textContent = `
+            #splash-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: #f9f3e6;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 102;
+            }
+            #splash-logo {
+                max-width: 80%;
+                max-height: 80%;
+                object-fit: contain;
+                margin-bottom: 50px;
+            }
             #title-screen {
                 position: fixed;
                 top: 0;
@@ -81,25 +112,6 @@ export class TitleScreen {
                 align-items: center;
                 font-family: sans-serif;
                 z-index: 100;
-            }
-            #splash-overlay {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: #f9f3e6;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 101;
-            }
-            #splash-logo {
-                max-width: 80%;
-                max-height: 80%;
-                object-fit: contain;
-                margin-bottom: 50px;
             }
             #title-screen p {
                 margin-bottom: 30px;

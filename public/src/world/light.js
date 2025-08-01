@@ -9,11 +9,13 @@ export class Light {
 
   initLights() {
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.position.set(
-      FieldConst.TERRAIN_SIZE / 2,
-      FieldConst.TERRAIN_SIZE / 2 + 10,
-      -FieldConst.TERRAIN_SIZE / 2
-    ).normalize();
+    light.position
+      .set(
+        FieldConst.TERRAIN_SIZE / 2,
+        FieldConst.TERRAIN_SIZE / 2 + 10,
+        -FieldConst.TERRAIN_SIZE / 2
+      )
+      .normalize();
     this.scene.add(light);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);

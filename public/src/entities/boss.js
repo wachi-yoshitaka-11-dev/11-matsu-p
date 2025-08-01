@@ -7,7 +7,7 @@ export class Boss extends Character {
     const model = game.assetLoader.getAsset(AssetNames.BOSS_MODEL);
     if (model) {
       super(game, model.clone(), null, {
-        hp: 200,
+        hp: game.data.enemies.boss.hp,
         speed: game.data.enemies.boss.speed,
         modelName: AssetNames.BOSS_MODEL,
         textureName: AssetNames.BOSS_TEXTURE,
@@ -16,7 +16,7 @@ export class Boss extends Character {
       const geometry = new THREE.BoxGeometry(2, 2, 2);
       const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
       super(game, geometry, material, {
-        hp: 200,
+        hp: game.data.enemies.boss.hp,
         speed: game.data.enemies.boss.speed,
       });
     }

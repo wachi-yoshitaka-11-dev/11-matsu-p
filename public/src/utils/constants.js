@@ -113,10 +113,11 @@ export const AnimationNames = {
 };
 
 export const GameState = {
+  OPENING: 'opening',
   TITLE: 'title',
   PLAYING: 'playing',
   PAUSED: 'paused',
-  SEQUENCE: 'sequence',
+  ENDING: 'ending',
 };
 
 export const ItemTypes = {

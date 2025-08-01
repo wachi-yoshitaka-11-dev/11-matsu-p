@@ -102,7 +102,12 @@ export class Player extends Character {
     }
 
     // Don't switch animations if a one-shot animation is in progress
-    if (this.isAttacking || this.isAttackingWeak || this.isAttackingStrong || this.isRolling) {
+    if (
+      this.isAttacking ||
+      this.isAttackingWeak ||
+      this.isAttackingStrong ||
+      this.isRolling
+    ) {
       return;
     }
 

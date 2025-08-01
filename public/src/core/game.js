@@ -36,7 +36,7 @@ export class Game {
 
     this.initAudio();
 
-    this.gameState = GameState.TITLE;
+    this.gameState = GameState.OPENING;
     this.titleScreen = new TitleScreen(() => this.startGame());
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
@@ -237,6 +237,8 @@ export class Game {
     if (this.gameState !== GameState.TITLE) return;
 
     this.gameState = GameState.PLAYING;
+    // ゲーム要素を表示
+    this.sceneManager.showCanvas();
     this.hud.container.style.display = 'block';
     if (this.titleScreen) {
       this.titleScreen.hideAll();
@@ -311,7 +313,10 @@ export class Game {
   }
 
   _updateLoop(deltaTime) {
-    if (this.gameState === GameState.SEQUENCE) {
+    if (
+      this.gameState === GameState.OPENING ||
+      this.gameState === GameState.ENDING
+    ) {
       this.sequenceManager.update(deltaTime);
     } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
@@ -417,29 +422,42 @@ export class Game {
 
   // 追加
   playOpeningSequence() {
-    this.gameState = GameState.SEQUENCE;
+    this.gameState = GameState.OPENING;
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
     this.sequenceManager.startOpeningSequence(() => {
-      this.gameState = GameState.TITLE;
-      this.titleScreen.showMenu();
-      if (this.bgmAudios[AssetNames.BGM_TITLE] && !this.bgmAudios[AssetNames.BGM_TITLE].isPlaying) {
-        this.bgmAudios[AssetNames.BGM_TITLE].play();
-      }
+      // シーケンス終了後少し待ってからタイトル画面を表示
+      setTimeout(() => {
+        this.gameState = GameState.TITLE;
+        // ゲーム要素を非表示
+        this.sceneManager.hideCanvas();
+        this.titleScreen.showMenu();
+        if (
+          this.bgmAudios[AssetNames.BGM_TITLE] &&
+          !this.bgmAudios[AssetNames.BGM_TITLE].isPlaying
+        ) {
+          this.bgmAudios[AssetNames.BGM_TITLE].play();
+        }
+      }, 500); // フェードイン完了まで少し待つ
     });
   }
 
   // 追加
   playEndingSequence() {
-    this.gameState = GameState.SEQUENCE;
-    this.hud.container.style.display = 'none';
-    this.titleScreen.hideSplash();
-    this.titleScreen.hideMenu();
-    if (this.bgmAudios[AssetNames.BGM_PLAYING]?.isPlaying) {
-      this.bgmAudios[AssetNames.BGM_PLAYING].stop();
-    }
-    this.sequenceManager.startEndingSequence(() => {
-      this.reloadGame();
+    this.gameState = GameState.ENDING;
+
+    // ゲーム画面をフェードアウトしてからエンディングを開始
+    this.sceneManager.fadeOutCanvas(1000, () => {
+      // フェードアウト完了後にその他の要素を非表示
+      this.hud.container.style.display = 'none';
+      this.titleScreen.hideSplash();
+      this.titleScreen.hideMenu();
+      if (this.bgmAudios[AssetNames.BGM_PLAYING]?.isPlaying) {
+        this.bgmAudios[AssetNames.BGM_PLAYING].stop();
+      }
+      this.sequenceManager.startEndingSequence(() => {
+        this.reloadGame();
+      });
     });
   }
 }

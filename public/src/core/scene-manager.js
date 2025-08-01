@@ -23,6 +23,8 @@ export class SceneManager {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.domElement.setAttribute('tabindex', '0');
+    // 初期状態では非表示
+    this.renderer.domElement.style.display = 'none';
     document.body.appendChild(this.renderer.domElement);
 
     this.scene.background = new THREE.Color(0x87ceeb);
@@ -49,6 +51,27 @@ export class SceneManager {
     this.renderer.render(this.scene, this.camera);
   }
 
+  // キャンバス表示管理
+  showCanvas() {
+    this.renderer.domElement.style.display = 'block';
+  }
+
+  hideCanvas() {
+    this.renderer.domElement.style.display = 'none';
+  }
+
+  fadeOutCanvas(duration = 1000, callback) {
+    this.renderer.domElement.style.transition = `opacity ${duration}ms ease-out`;
+    this.renderer.domElement.style.opacity = '0';
+
+    setTimeout(() => {
+      this.renderer.domElement.style.display = 'none';
+      this.renderer.domElement.style.transition = '';
+      this.renderer.domElement.style.opacity = '1'; // 次回表示用にリセット
+      if (callback) callback();
+    }, duration);
+  }
+
   dispose() {
     window.removeEventListener('resize', this.onWindowResize.bind(this));
     this.renderer.dispose();
@@ -63,13 +86,13 @@ export class SceneManager {
   }
 
   hideGameElements() {
-    this._gameElements.forEach(element => {
+    this._gameElements.forEach((element) => {
       element.visible = false;
     });
   }
 
   restoreGameElements() {
-    this._gameElements.forEach(element => {
+    this._gameElements.forEach((element) => {
       element.visible = true;
     });
   }

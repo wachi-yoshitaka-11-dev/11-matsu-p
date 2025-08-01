@@ -19,7 +19,9 @@ export class Field {
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
 
-    const groundTexture = this.game.assetLoader.getAsset(AssetNames.GROUND_TEXTURE);
+    const groundTexture = this.game.assetLoader.getAsset(
+      AssetNames.GROUND_TEXTURE
+    );
     if (groundTexture) {
       groundTexture.wrapS = THREE.RepeatWrapping;
       groundTexture.wrapT = THREE.RepeatWrapping;
@@ -120,10 +122,21 @@ export class Field {
     }
   }
 
-  _placeObject(model, texture, minScale, maxScale, getPosition, isBillboard = false) {
+  _placeObject(
+    model,
+    texture,
+    minScale,
+    maxScale,
+    getPosition,
+    isBillboard = false
+  ) {
     let instance;
     if (isBillboard && texture) {
-      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: FieldConst.CLOUD_OPACITY });
+      const material = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        opacity: FieldConst.CLOUD_OPACITY,
+      });
       instance = new THREE.Sprite(material);
     } else {
       instance = model.clone();
