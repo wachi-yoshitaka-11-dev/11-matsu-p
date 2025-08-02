@@ -26,9 +26,15 @@
     ],
     "staffRoll": [
       "Director: AI Agent",
-      "Programmer: AI Agent",
-      "Artist: AI Agent",
+      "Programmer: Claude Code",
+      "Artist: ImageFX",
       "Sound: AI Agent",
+      "Development Support: GEMINI CLI",
+      "",
+      "3D Models: Kenny",
+      "BGM: DOVA-SYNDROME",
+      "Sound Effects: 効果音ラボ",
+      "",
       "Special Thanks: User"
     ],
     "finText": "おわり"

@@ -36,6 +36,122 @@ canvas {
   z-index: 101;
 }
 
+#dialog-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  border: 2px solid white;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+#dialog-box p {
+  margin-bottom: 15px;
+  font-size: 1.2em;
+}
+
+#dialog-box button {
+  padding: 10px 20px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+/* HUD関連スタイル */
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-family: sans-serif;
+  font-size: 14px;
+  color: white;
+  z-index: 10;
+}
+
+.status-bar-container {
+  margin-bottom: 5px;
+}
+
+.status-bar-label {
+  font-size: 12px;
+}
+
+.status-bar-background {
+  height: 15px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid #fff;
+}
+
+.status-bar-fill {
+  height: 100%;
+  background-color: #ff0000;
+  transition: width 0.2s;
+}
+
+#fp-bar .status-bar-fill {
+  background-color: #0000ff;
+}
+
+#stamina-bar .status-bar-fill {
+  background-color: #00ff00;
+}
+
+#death-message {
+  font-size: 5em;
+  color: #8b0000;
+  text-align: center;
+}
+
+#death-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 1s;
+  z-index: 100;
+}
+
+#level-up-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+  border: 2px solid white;
+  display: none;
+  z-index: 102;
+}
+
+#inventory {
+  position: absolute;
+  top: 150px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border: 1px solid white;
+}
+
+#weapon-display {
+  position: absolute;
+  top: 300px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border: 1px solid white;
+}
+
 /* =============================================================
    シーケンス関連スタイル
 ============================================================= */
@@ -287,6 +403,110 @@ canvas {
   to {
     transform: translateY(-140%);
   }
+}
+
+/* =============================================================
+   タイトル画面
+============================================================= */
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f9f3e6;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 102;
+}
+
+#splash-logo {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  margin-bottom: 50px;
+}
+
+#title-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../assets/images/title-screen.png');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  font-family: sans-serif;
+  z-index: 100;
+}
+
+#title-screen p {
+  margin-bottom: 30px;
+}
+
+#title-text {
+  font-size: 3rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+  margin-bottom: 30px;
+  text-align: center;
+  font-family: 'Arial', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+  position: absolute;
+  top: 20%;
+}
+
+#title-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 50px;
+  align-items: center;
+}
+
+#title-menu button {
+  padding: 12px 25px;
+  font-size: 1.5em;
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  width: min(350px, 80vw);
+  max-width: 350px;
+  text-shadow: 
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+#title-menu button:hover:not(:disabled) {
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
+  color: white;
+  text-shadow: 
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+#title-menu button:disabled {
+  background-color: transparent;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* =============================================================

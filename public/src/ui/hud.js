@@ -39,8 +39,6 @@ export class Hud {
 
     this.weaponDisplay = this.createWeaponDisplay();
     this.container.appendChild(this.weaponDisplay);
-
-    this.addStyles();
   }
 
   createWeaponDisplay() {
@@ -188,85 +186,4 @@ export class Hud {
     this.deathOverlay.style.opacity = 0;
   }
 
-  addStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-            #hud {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                color: white;
-                font-family: sans-serif;
-            }
-            .status-bar-container {
-                margin-bottom: 5px;
-            }
-            .status-bar-label {
-                font-size: 12px;
-            }
-            .status-bar-background {
-                height: 15px;
-                background-color: rgba(0, 0, 0, 0.5);
-                border: 1px solid #fff;
-            }
-            .status-bar-fill {
-                height: 100%;
-                background-color: #ff0000;
-                transition: width 0.2s;
-            }
-            #fp-bar .status-bar-fill {
-                background-color: #0000ff;
-            }
-            #stamina-bar .status-bar-fill {
-                background-color: #00ff00;
-            }
-            #death-message {
-                font-size: 5em;
-                color: #8b0000;
-                text-align: center;
-            }
-            #death-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.7);
-                display: none;
-                justify-content: center;
-                align-items: center;
-                opacity: 0;
-                transition: opacity 1s;
-                z-index: 100;
-            }
-            #level-up-menu {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background-color: rgba(0,0,0,0.8);
-                padding: 20px;
-                border: 2px solid white;
-                display: none;
-                z-index: 102;
-            }
-            #inventory {
-                position: absolute;
-                top: 150px;
-                left: 10px;
-                background-color: rgba(0,0,0,0.5);
-                padding: 10px;
-                border: 1px solid white;
-            }
-            #weapon-display {
-                position: absolute;
-                top: 300px;
-                left: 10px;
-                background-color: rgba(0,0,0,0.5);
-                padding: 10px;
-                border: 1px solid white;
-            }
-        `;
-    document.head.appendChild(style);
-  }
 }
