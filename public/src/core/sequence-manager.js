@@ -1,35 +1,43 @@
 import * as THREE from 'three';
 import { AssetNames } from '../utils/constants.js';
 
+const SEQUENCE_CAMERA_CONFIG = {
+  FOV: 75,
+  NEAR: 0.1,
+  FAR: 1000,
+  POSITION: { x: 0, y: 5, z: 10 },
+  LOOK_AT: { x: 0, y: 0, z: 0 },
+};
+
 export class SequenceManager {
   constructor(game) {
     this.game = game;
     this.currentSequence = null;
+    this.sequencesData = null;
+
+    // 初期化時にsequencesDataを読み込み
+    this.loadSequencesData();
     this.sequenceCamera = new THREE.PerspectiveCamera(
-      75,
+      SEQUENCE_CAMERA_CONFIG.FOV,
       window.innerWidth / window.innerHeight,
-      0.1,
-      1000
+      SEQUENCE_CAMERA_CONFIG.NEAR,
+      SEQUENCE_CAMERA_CONFIG.FAR
     );
-    this.sequenceCamera.position.set(0, 5, 10);
-    this.sequenceCamera.lookAt(0, 0, 0);
+    this.sequenceCamera.position.set(
+      SEQUENCE_CAMERA_CONFIG.POSITION.x,
+      SEQUENCE_CAMERA_CONFIG.POSITION.y,
+      SEQUENCE_CAMERA_CONFIG.POSITION.z
+    );
+    this.sequenceCamera.lookAt(
+      SEQUENCE_CAMERA_CONFIG.LOOK_AT.x,
+      SEQUENCE_CAMERA_CONFIG.LOOK_AT.y,
+      SEQUENCE_CAMERA_CONFIG.LOOK_AT.z
+    );
 
     this.overlayDiv = document.createElement('div');
     this.overlayDiv.id = 'sequence-overlay';
-    this.overlayDiv.style.position = 'fixed';
-    this.overlayDiv.style.top = '0';
-    this.overlayDiv.style.left = '0';
-    this.overlayDiv.style.width = '100%';
-    this.overlayDiv.style.height = '100%';
-    this.overlayDiv.style.backgroundColor = 'transparent';
-    this.overlayDiv.style.color = 'white';
+    this.overlayDiv.className = 'sequence-overlay';
     this.overlayDiv.style.display = 'none';
-    this.overlayDiv.style.flexDirection = 'column';
-    this.overlayDiv.style.justifyContent = 'center';
-    this.overlayDiv.style.alignItems = 'center';
-    this.overlayDiv.style.fontSize = '2em';
-    this.overlayDiv.style.textAlign = 'center';
-    this.overlayDiv.style.zIndex = '10000';
     document.body.appendChild(this.overlayDiv);
 
     this.backgroundImages = [];
@@ -47,12 +55,6 @@ export class SequenceManager {
 
     this.staffRollElement = document.createElement('div');
     this.staffRollElement.className = 'staff-roll';
-    this.staffRollElement.style.position = 'absolute';
-    this.staffRollElement.style.bottom = '0';
-    this.staffRollElement.style.width = '100%';
-    this.staffRollElement.style.textAlign = 'center';
-    this.staffRollElement.style.fontSize = '1.5em';
-    this.staffRollElement.style.display = 'none';
     this.overlayDiv.appendChild(this.staffRollElement);
 
     this.currentTextIndex = 0;
@@ -82,6 +84,33 @@ export class SequenceManager {
         this.handleAnimationEnd();
       }
     };
+  }
+
+  async loadSequencesData() {
+    if (!this.sequencesData) {
+      try {
+        this.sequencesData = await this.game.assetLoader.loadJSON(
+          'sequences',
+          'data/sequences.json'
+        );
+      } catch (error) {
+        console.error('Failed to load sequences data:', error);
+        // フォールバック
+        this.sequencesData = {
+          opening: {
+            texts: [],
+            backgroundImages: [],
+          },
+          ending: {
+            texts: [],
+            backgroundImages: [],
+            staffRoll: [],
+            finText: '',
+          },
+        };
+      }
+    }
+    return this.sequencesData;
   }
 
   handleAnimationEnd() {
@@ -209,21 +238,9 @@ export class SequenceManager {
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
-    this.textSequence = [
-      '忘れ去られた王国',
-      'かつて、この王国は光に満ちていた。',
-      'しかし、謎の呪いにより、その輝きは失われた。',
-      '今、一匹の猫が目覚める。失われた記憶と、王国を救う使命を胸に。',
-      '希望の光は、再びこの地に灯るのか。',
-    ];
-
-    this.backgroundImagePaths = [
-      './assets/images/opening-bg-01.jpg',
-      './assets/images/opening-bg-02.jpg',
-      './assets/images/opening-bg-03.jpg',
-      './assets/images/opening-bg-04.jpg',
-      './assets/images/opening-bg-05.jpg',
-    ];
+    // 初期化時に読み込まれたデータを使用
+    this.textSequence = this.sequencesData.opening.texts;
+    this.backgroundImagePaths = this.sequencesData.opening.backgroundImages;
     this.currentTextIndex = 0;
     this.textTimer = 0;
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
@@ -293,15 +310,9 @@ export class SequenceManager {
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
-    this.textSequence = [
-      '呪いは解かれ、王国に平和が戻った。',
-      'しかし、冒険はまだ始まったばかりだ…',
-    ];
-
-    this.backgroundImagePaths = [
-      './assets/images/ending-bg-01.jpg',
-      './assets/images/ending-bg-02.jpg',
-    ];
+    // 初期化時に読み込まれたデータを使用
+    this.textSequence = this.sequencesData.ending.texts;
+    this.backgroundImagePaths = this.sequencesData.ending.backgroundImages;
     this.currentTextIndex = 0;
     this.textTimer = 0;
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
@@ -336,19 +347,16 @@ export class SequenceManager {
 
       setTimeout(() => {
         this.staffRollElement.style.display = 'block';
-        this.staffRollElement.innerHTML = `
-          <p>Director: AI Agent</p>
-          <p>Programmer: AI Agent</p>
-          <p>Artist: AI Agent</p>
-          <p>Sound: AI Agent</p>
-          <p>Special Thanks: User</p>
-        `;
+        const staffRollHtml = this.sequencesData.ending.staffRoll
+          .map((credit) => `<p>${credit}</p>`)
+          .join('');
+        this.staffRollElement.innerHTML = staffRollHtml;
         this.staffRollElement.style.animation = 'scroll-up 30s linear forwards';
 
         setTimeout(() => {
           this.staffRollElement.style.display = 'none';
           this.textElement.style.display = 'block';
-          this.textElement.textContent = 'おわり';
+          this.textElement.textContent = this.sequencesData.ending.finText;
           this.textElement.className = 'sequence-text-fin';
           this.currentStep = 'showingFin';
 

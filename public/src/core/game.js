@@ -211,14 +211,16 @@ export class Game {
         const texturePath = `assets/textures/${asset.model || asset.texture}.png`;
         try {
           await this.assetLoader.loadTexture(asset.texture, texturePath);
-        } catch {
+        } catch (error) {
           console.warn(
-            `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`
+            `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`,
+            error
           );
         }
-      } catch {
+      } catch (error) {
         console.error(
-          `Could not load model ${asset.model}. A placeholder will be used.`
+          `Could not load model ${asset.model}. A placeholder will be used.`,
+          error
         );
       }
     }

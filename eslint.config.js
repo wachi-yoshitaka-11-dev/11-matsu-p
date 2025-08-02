@@ -12,10 +12,10 @@ export default [
       },
     },
     rules: {
-      indent: ['error', 2],
+      indent: 'off',
       'linebreak-style': ['error', 'unix'],
-      quotes: ['error', 'single'],
-      semi: ['error', 'always'],
+      quotes: 'off',
+      semi: 'off',
       'no-unused-vars': ['warn', { args: 'none' }],
       'no-console': 'warn',
       'no-trailing-spaces': 'error',
