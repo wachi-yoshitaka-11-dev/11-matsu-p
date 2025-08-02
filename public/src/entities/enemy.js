@@ -14,7 +14,7 @@ export class Enemy extends Character {
     const model = game.assetLoader.getAsset(AssetNames.ENEMY_MODEL);
     if (model) {
       super(game, model.clone(), null, {
-        hp: 30,
+        hp: game.data.enemies.grunt.hp,
         speed: game.data.enemies.grunt.speed,
         modelName: AssetNames.ENEMY_MODEL,
         textureName: AssetNames.ENEMY_TEXTURE,
@@ -23,7 +23,7 @@ export class Enemy extends Character {
       const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
       const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
       super(game, geometry, material, {
-        hp: 30,
+        hp: game.data.enemies.grunt.hp,
         speed: game.data.enemies.grunt.speed,
       });
     }
@@ -76,7 +76,6 @@ export class Enemy extends Character {
   }
 
   updateAnimation() {
-    // Don't switch to other animations during attack animation
     if (this.isAttacking) {
       return;
     }

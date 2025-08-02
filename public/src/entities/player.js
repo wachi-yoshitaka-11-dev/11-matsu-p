@@ -42,7 +42,6 @@ export class Player extends Character {
 
     this.spawn();
 
-    // Listen for animation finished event
     if (this.mixer) {
       this.mixer.addEventListener('finished', (e) => {
         const clipName = e.action.getClip().name;
@@ -57,7 +56,6 @@ export class Player extends Character {
           this.isRolling = false;
         }
 
-        // After a one-shot animation, determine the next logical state
         this.updateAnimation();
       });
     }
@@ -101,8 +99,12 @@ export class Player extends Character {
       return;
     }
 
-    // Don't switch animations if a one-shot animation is in progress
-    if (this.isAttacking || this.isAttackingWeak || this.isAttackingStrong || this.isRolling) {
+    if (
+      this.isAttacking ||
+      this.isAttackingWeak ||
+      this.isAttackingStrong ||
+      this.isRolling
+    ) {
       return;
     }
 

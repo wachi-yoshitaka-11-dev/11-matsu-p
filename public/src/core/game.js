@@ -13,6 +13,7 @@ import { TitleScreen } from '../ui/title-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
+import { SequenceManager } from './sequence-manager.js';
 
 export class Game {
   constructor() {
@@ -35,10 +36,11 @@ export class Game {
 
     this.initAudio();
 
-    this.gameState = GameState.TITLE;
+    this.gameState = GameState.OPENING;
     this.titleScreen = new TitleScreen(() => this.startGame());
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
+    this.sequenceManager = new SequenceManager(this);
   }
 
   initAudio() {
@@ -63,8 +65,7 @@ export class Game {
     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
     setTimeout(() => {
-      this.titleScreen.showMenu();
-      this.bgmAudios[AssetNames.BGM_TITLE].play();
+      this.playOpeningSequence();
     }, remainingTime);
 
     this.field = new Field(this);
@@ -85,7 +86,6 @@ export class Game {
       this.sceneManager.renderer.domElement
     );
 
-    // Load and place entities from data
     this.loadEntities();
   }
 
@@ -111,6 +111,8 @@ export class Game {
     const audioAssets = [
       AssetNames.BGM_PLAYING,
       AssetNames.BGM_TITLE,
+      AssetNames.BGM_OPENING,
+      AssetNames.BGM_ENDING,
       AssetNames.SFX_ATTACK_STRONG,
       AssetNames.SFX_ATTACK_WEAK,
       AssetNames.SFX_CLICK,
@@ -139,7 +141,12 @@ export class Game {
       );
       this.audioBuffers[assetName] = buffer;
 
-      if (assetName === AssetNames.BGM_PLAYING || assetName === AssetNames.BGM_TITLE) {
+      if (
+        assetName === AssetNames.BGM_PLAYING ||
+        assetName === AssetNames.BGM_TITLE ||
+        assetName === AssetNames.BGM_OPENING ||
+        assetName === AssetNames.BGM_ENDING
+      ) {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
@@ -149,16 +156,10 @@ export class Game {
   }
 
   loadEntities() {
-    // Example: Load enemies from data (assuming enemies.json has a structure for initial placement)
-    // For simplicity, let's hardcode some initial entities based on data for now
-    // In a real game, you'd have a level data file defining entity placements
-
-    // Place a potion item
     const item = new Item(ItemTypes.POTION, new THREE.Vector3(0, 2, -5), this);
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
-    // Place a grunt enemy
     const enemy = new Enemy(this, this.player, new THREE.Vector3(5, 0, 0), {
       modelName: AssetNames.ENEMY_MODEL,
       textureName: AssetNames.ENEMY_TEXTURE,
@@ -167,7 +168,6 @@ export class Game {
     this.enemies.push(enemy);
     this.sceneManager.add(enemy.mesh);
 
-    // Place the boss
     const boss = new Boss(this, this.player, {
       modelName: AssetNames.BOSS_MODEL,
       textureName: AssetNames.BOSS_TEXTURE,
@@ -176,7 +176,6 @@ export class Game {
     this.enemies.push(boss);
     this.sceneManager.add(boss.mesh);
 
-    // Place an NPC
     const npc = new Npc(
       'こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。',
       new THREE.Vector3(-5, 0.5, -5),
@@ -197,8 +196,8 @@ export class Game {
       { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
       { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
       { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },
-      { model: AssetNames.CLOUD_MODEL, texture: AssetNames.CLOUD_TEXTURE },
-      { model: AssetNames.SUN_MODEL, texture: AssetNames.SUN_TEXTURE },
+      { texture: AssetNames.CLOUD_TEXTURE },
+      { texture: AssetNames.GROUND_TEXTURE },
     ];
 
     for (const asset of assetsToLoad) {
@@ -212,23 +211,18 @@ export class Game {
         const texturePath = `assets/textures/${asset.model || asset.texture}.png`;
         try {
           await this.assetLoader.loadTexture(asset.texture, texturePath);
-        } catch (textureError) {
+        } catch (error) {
           console.warn(
-            `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`
+            `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`,
+            error
           );
         }
       } catch (error) {
         console.error(
-          `Could not load model ${asset.model}. A placeholder will be used.`
+          `Could not load model ${asset.model}. A placeholder will be used.`,
+          error
         );
       }
-    }
-
-    // Explicitly load ground texture
-    try {
-      await this.assetLoader.loadTexture(AssetNames.GROUND_TEXTURE, `assets/textures/${AssetNames.GROUND_TEXTURE}.png`);
-    } catch (error) {
-      console.error(`Error loading ground texture:`, error);
     }
   }
 
@@ -236,15 +230,18 @@ export class Game {
     if (this.gameState !== GameState.TITLE) return;
 
     this.gameState = GameState.PLAYING;
+    this.sceneManager.showCanvas();
     this.hud.container.style.display = 'block';
     if (this.titleScreen) {
-      this.titleScreen.dispose();
-      this.titleScreen = null;
+      this.titleScreen.hideAll();
     }
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    if (this.bgmAudios[AssetNames.BGM_PLAYING] && !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying) {
+    if (
+      this.bgmAudios[AssetNames.BGM_PLAYING] &&
+      !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
+    ) {
       this.bgmAudios[AssetNames.BGM_PLAYING].play();
     }
     this.playSound(AssetNames.SFX_START);
@@ -308,7 +305,12 @@ export class Game {
   }
 
   _updateLoop(deltaTime) {
-    if (this.gameState !== GameState.PAUSED) {
+    if (
+      this.gameState === GameState.OPENING ||
+      this.gameState === GameState.ENDING
+    ) {
+      this.sequenceManager.update(deltaTime);
+    } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
       this.inputController?.update(deltaTime);
 
@@ -330,6 +332,18 @@ export class Game {
           this.player?.addExperience(this.boss.experience);
           this.sceneManager.remove(this.boss.mesh);
           this.boss = null;
+          this.endingTimer = 1;
+          this.isEndingSequenceReady = false;
+        }
+
+        if (this.endingTimer > 0) {
+          if (this.player?.statusPoints === 0) {
+            this.endingTimer -= deltaTime;
+          }
+          if (this.endingTimer <= 0 && !this.isEndingSequenceReady) {
+            this.playEndingSequence();
+            this.isEndingSequenceReady = true;
+          }
         }
 
         for (let i = this.items.length - 1; i >= 0; i--) {
@@ -395,4 +409,39 @@ export class Game {
     const deltaTime = this.clock.getDelta();
     this._updateLoop(deltaTime);
   };
+
+  playOpeningSequence() {
+    this.gameState = GameState.OPENING;
+    this.titleScreen.hideSplash();
+    this.titleScreen.hideMenu();
+    this.sequenceManager.startOpeningSequence(() => {
+      setTimeout(() => {
+        this.gameState = GameState.TITLE;
+        this.sceneManager.hideCanvas();
+        this.titleScreen.showMenu();
+        if (
+          this.bgmAudios[AssetNames.BGM_TITLE] &&
+          !this.bgmAudios[AssetNames.BGM_TITLE].isPlaying
+        ) {
+          this.bgmAudios[AssetNames.BGM_TITLE].play();
+        }
+      }, 500);
+    });
+  }
+
+  playEndingSequence() {
+    this.gameState = GameState.ENDING;
+
+    this.sceneManager.fadeOutCanvas(1000, () => {
+      this.hud.container.style.display = 'none';
+      this.titleScreen.hideSplash();
+      this.titleScreen.hideMenu();
+      if (this.bgmAudios[AssetNames.BGM_PLAYING]?.isPlaying) {
+        this.bgmAudios[AssetNames.BGM_PLAYING].stop();
+      }
+      this.sequenceManager.startEndingSequence(() => {
+        this.reloadGame();
+      });
+    });
+  }
 }
