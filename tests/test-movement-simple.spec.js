@@ -44,7 +44,7 @@ test.describe('Movement System Test', () => {
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      "#title-screen #title-menu button:has-text('New Game')"
     );
     await newGameButton.click();
 
@@ -104,7 +104,7 @@ test.describe('Movement System Test', () => {
     );
 
     const newGameButton = page.locator(
-      '#title-screen #title-menu button:has-text(\'New Game\')'
+      "#title-screen #title-menu button:has-text('New Game')"
     );
     await newGameButton.click();
 

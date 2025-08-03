@@ -422,5 +422,4 @@ export class Player extends Character {
 
     return true;
   }
-
 }

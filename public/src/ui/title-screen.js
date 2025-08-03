@@ -75,5 +75,4 @@ export class TitleScreen {
     this.splashContainer.style.display = 'none';
     this.container.style.display = 'none';
   }
-
 }

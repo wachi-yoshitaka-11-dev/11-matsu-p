@@ -28,5 +28,4 @@ export class DialogBox {
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);
   }
-
 }

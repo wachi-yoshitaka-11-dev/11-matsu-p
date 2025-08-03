@@ -202,7 +202,6 @@ export class InputController {
       return;
     }
 
-
     if (!this.player.isRolling) {
       // Handle Elden Ring style dashing (Shift held + movement)
       const isShiftHeld = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
