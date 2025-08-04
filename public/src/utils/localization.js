@@ -42,7 +42,7 @@ export class Localization {
         current = current[key];
       } else {
         console.warn(`Localization key not found: ${path}`);
-        return ''; // キーが見つからない場合は空文字を返す
+        return `[${path}]`; // Show missing key for easier debugging
       }
     }
 
@@ -63,5 +63,7 @@ export class Localization {
   }
 }
 
-// グローバルインスタンス
+// グローバルインスタンス (シングルトンパターン)
+// この設計により、どこからでも同じインスタンスにアクセスできますが、
+// テストの際には依存関係の注入が難しくなる可能性があります。
 export const localization = new Localization();

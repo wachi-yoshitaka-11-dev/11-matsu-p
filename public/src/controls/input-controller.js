@@ -347,7 +347,7 @@ export class InputController {
 
       setTimeout(() => {
         this.player.isJumping = false;
-      }, 1000);
+      }, this.game.data.player.jumpDuration || 1000);
     }
   }
 
@@ -503,7 +503,7 @@ export class InputController {
         const finalDamage = damage * this.player.attackBuffMultiplier;
 
         // Check if enemy is guarding and reduce damage
-        if (enemy.isGuarding && enemy.getShieldDefense) {
+        if (enemy.isGuarding && typeof enemy.getShieldDefense === 'function') {
           const shieldDefense = enemy.getShieldDefense();
           const reducedDamage = Math.max(1, finalDamage - shieldDefense);
           enemy.takeDamage(reducedDamage);

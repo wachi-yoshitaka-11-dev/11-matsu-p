@@ -76,12 +76,14 @@ export class Npc extends Character {
   }
 
   update(playerPosition) {
+    if (!this.data) return;
     const distance = this.mesh.position.distanceTo(playerPosition);
     const interactionRange = this.data.interactionRange;
     this.interactionPrompt.visible = distance < interactionRange;
   }
 
   interact() {
+    if (!this.game.dialogBox || !this.data || !this.dialogue) return;
     // Show current dialogue line
     const currentLine = this.dialogue[this.currentDialogueIndex];
     this.game.dialogBox.show(currentLine);
@@ -103,5 +105,9 @@ export class Npc extends Character {
       sprite?.material?.map?.dispose();
       sprite?.material?.dispose();
     }
+    // Reset dialogue state
+    this.currentDialogueIndex = 0;
+    this.dialogue = null;
+    this.data = null;
   }
 }

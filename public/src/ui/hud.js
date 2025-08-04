@@ -244,10 +244,6 @@ export class Hud {
     ).style.width =
       `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
 
-    this.deathOverlay.message.style.display = this.player.isDead
-      ? 'block'
-      : 'none';
-
     if (this.player.statusPoints > 0) {
       this.levelUpMenu.element.style.display = 'block';
       this._updateStatusPointsDisplay();

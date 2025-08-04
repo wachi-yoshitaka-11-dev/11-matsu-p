@@ -32,6 +32,9 @@ canvas {
     rgba(0, 0, 0, 0.9) 100%
   );
   backdrop-filter: blur(15px);
+  @supports not (backdrop-filter: blur(15px)) {
+    background: rgba(0, 0, 0, 0.85);
+  }
   color: white;
   display: none;
   flex-direction: column;
@@ -50,6 +53,9 @@ canvas {
   100% {
     opacity: 1;
     backdrop-filter: blur(15px);
+    @supports not (backdrop-filter: blur(15px)) {
+      background: rgba(0, 0, 0, 0.85);
+    }
   }
 }
 
@@ -911,6 +917,7 @@ canvas {
 /* =============================================================
    表示制御ユーティリティクラス
 ============================================================= */
+/* Utility classes for controlling visibility - !important ensures these override inline styles */
 .show {
   display: flex !important;
 }

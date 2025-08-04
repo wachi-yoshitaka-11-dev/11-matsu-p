@@ -33,15 +33,15 @@ export class Player extends Character {
     this.experience = game.data.player.initialExperience;
     this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
     this.statusPoints = game.data.player.initialStatusPoints;
-    this.inventory = ['potion', 'fpPotion'];
+    this.inventory = game.data.player.initialInventory || [];
 
-    this.weapons = ['sword', 'claws'];
+    this.weapons = game.data.player.initialWeapons || [];
     this.currentWeaponIndex = 0;
 
-    this.shields = ['woodenShield', 'ironShield'];
+    this.shields = game.data.player.initialShields || [];
     this.currentShieldIndex = 0;
 
-    this.skills = ['projectile', 'buff'];
+    this.skills = game.data.player.initialSkills || [];
     this.currentSkillIndex = 0;
     this.currentItemIndex = 0;
     this.isUsingSkill = false;
@@ -63,17 +63,6 @@ export class Player extends Character {
     this.defenseBuffMultiplier = 1.0;
 
     this.spawn();
-
-    // Initialize all movement and combat states
-    this.isJumping = false;
-    this.isDashing = false;
-    this.isRolling = false;
-    this.isBackStepping = false;
-    this.isGuarding = false;
-    this.isAttacking = false;
-    this.isAttackingWeak = false;
-    this.isAttackingStrong = false;
-    this.isPickingUp = false;
 
     // Footstep sound system
     this.footstepAudio = null;
@@ -203,7 +192,9 @@ export class Player extends Character {
       this.takeStaminaDamage(staminaDamage);
 
       this.game.playSound(
-        AssetNames.SFX_GUARD_SUCCESS || AssetNames.SFX_DAMAGE
+        this.game.audioBuffers[AssetNames.SFX_GUARD_SUCCESS]
+          ? AssetNames.SFX_GUARD_SUCCESS
+          : AssetNames.SFX_DAMAGE
       );
     } else {
       this.game.playSound(AssetNames.SFX_DAMAGE);
@@ -350,7 +341,7 @@ export class Player extends Character {
     let itemUsed = false;
 
     // HP recovery items
-    if (currentItem === ItemTypes.POTION || itemData.healAmount) {
+    if (itemData.healAmount) {
       this.hp += itemData.healAmount || 50;
       if (this.hp > this.maxHp) this.hp = this.maxHp;
       itemUsed = true;

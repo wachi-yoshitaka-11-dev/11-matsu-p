@@ -98,6 +98,7 @@ export class DialogBox {
   }
 
   parseHTMLString(htmlString) {
+    // Note: This parser only handles <br> tags. Other HTML tags will be displayed as text.
     const characters = [];
     let i = 0;
 
