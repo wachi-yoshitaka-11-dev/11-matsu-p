@@ -17,7 +17,7 @@ export class InputController {
     // Elden Ring style movement controls
     this.shiftPressTime = 0;
     this.isShiftPressed = false;
-    this.shortPressThreshold = 200; // milliseconds for short press
+    this.shortPressThreshold = 250; // milliseconds for short press
     this.movementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
     this.setupEventListeners();
@@ -60,9 +60,13 @@ export class InputController {
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         if (this.game.gameState === GameState.PLAYING) {
+          // Clear key states when pausing to prevent stuck movement
+          this.clearKeyStates();
           this.game.togglePause();
           this.game.setPauseMenuVisibility(true);
         } else if (this.game.gameState === GameState.PAUSED) {
+          // Clear key states when unpausing to prevent stuck movement
+          this.clearKeyStates();
           this.game.togglePause();
           this.game.setPauseMenuVisibility(false);
         }
@@ -202,7 +206,7 @@ export class InputController {
       return;
     }
 
-    if (!this.player.isRolling) {
+    if (!this.player.isRolling && !this.player.isBackStepping) {
       // Handle Elden Ring style dashing (Shift held + movement)
       const isShiftHeld = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
       const isMoving = this.movementKeys.some((key) => this.keys[key]);
@@ -212,7 +216,7 @@ export class InputController {
         isMoving &&
         this.player.stamina > 0 &&
         !this.player.isRolling &&
-        !this.player.isBackstepping &&
+        !this.player.isBackStepping &&
         !this.player.isJumping;
       if (this.player.isDashing) {
         this.player.stamina -=
@@ -252,7 +256,8 @@ export class InputController {
           targetAngle
         );
         this.player.mesh.quaternion.slerp(targetQuaternion, 0.2);
-      } else {
+      } else if (!this.player.isBackStepping) {
+        // Don't reset velocity during backStep
         this.player.physics.velocity.x = 0;
         this.player.physics.velocity.z = 0;
       }
@@ -303,11 +308,11 @@ export class InputController {
       this.game.npcs.forEach((npc) => {
         if (
           this.player.mesh.position.distanceTo(npc.mesh.position) <
-          this.game.data.npcs.default.interactionRange
+          npc.data.interactionRange
         ) {
           npc.interact();
           this.player.playAnimation(AnimationNames.TALK);
-          this.game.playSound(AssetNames.SFX_TALK);
+          // talk.mp3 is now handled by dialog-box.js typewriter effect
         }
       });
       this.keys['KeyE'] = false;
@@ -380,8 +385,8 @@ export class InputController {
         // Rolling - short press + movement
         this.handleRolling();
       } else {
-        // Backstep - short press without movement
-        this.handleBackstep();
+        // BackStep - short press without movement
+        this.handleBackStep();
       }
     }
   }
@@ -408,27 +413,37 @@ export class InputController {
     }
   }
 
-  handleBackstep() {
+  handleBackStep() {
     if (
-      !this.player.isBackstepping &&
-      this.player.stamina >= this.game.data.player.staminaCostBackstep &&
+      !this.player.isBackStepping &&
+      this.player.stamina >= this.game.data.player.staminaCostBackStep &&
       this.player.onGround
     ) {
-      this.player.isBackstepping = true;
-      this.player.stamina -= this.game.data.player.staminaCostBackstep;
-      this.player.playAnimation(AnimationNames.ROLLING); // Using rolling animation for backstep
-      this.game.playSound(AssetNames.SFX_ROLLING);
+      this.player.isBackStepping = true;
+      this.player.stamina -= this.game.data.player.staminaCostBackStep;
+      this.player.playAnimation(AnimationNames.BACK_STEP);
+      this.game.playSound(AssetNames.SFX_BACK_STEP);
 
-      // Apply backstep movement (backward)
-      const backwardDirection = new THREE.Vector3(0, 0, 1);
-      backwardDirection.applyQuaternion(this.player.mesh.quaternion);
-      const backstepSpeed = this.game.data.player.backstepSpeed || 6;
-      this.player.physics.velocity.x = backwardDirection.x * backstepSpeed;
-      this.player.physics.velocity.z = backwardDirection.z * backstepSpeed;
+      // Get player's facing direction (not camera direction)
+      const playerForward = new THREE.Vector3(0, 0, 1);
+      playerForward.applyQuaternion(this.player.mesh.quaternion);
+      playerForward.y = 0;
+      playerForward.normalize();
 
+      // Move backward relative to player's facing direction (negate for backward)
+      const direction = playerForward.clone().negate();
+
+      const backStepSpeed = this.game.data.player.backStepSpeed || 6;
+      this.player.physics.velocity.x = direction.x * backStepSpeed;
+      this.player.physics.velocity.z = direction.z * backStepSpeed;
+
+      // Set timer to stop backStep movement after a set duration
       setTimeout(() => {
-        this.player.isBackstepping = false;
-      }, 600);
+        if (this.player.isBackStepping) {
+          this.player.physics.velocity.x = 0;
+          this.player.physics.velocity.z = 0;
+        }
+      }, this.game.data.player.rollDuration || 500); // Use same duration as rolling
     }
   }
 
@@ -526,5 +541,10 @@ export class InputController {
         }
       }
     });
+  }
+
+  // Clear all key states (useful when pausing/unpausing)
+  clearKeyStates() {
+    this.keys = {};
   }
 }

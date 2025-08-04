@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 export class LockOnUI {
   constructor(sceneManager, camera) {
     this.sceneManager = sceneManager;
@@ -13,13 +11,6 @@ export class LockOnUI {
     if (!document.querySelector('#lock-on-container')) {
       const container = document.createElement('div');
       container.id = 'lock-on-container';
-      container.style.position = 'absolute';
-      container.style.top = '0';
-      container.style.left = '0';
-      container.style.width = '100%';
-      container.style.height = '100%';
-      container.style.pointerEvents = 'none';
-      container.style.zIndex = '1000';
       document.body.appendChild(container);
     }
   }
@@ -29,29 +20,6 @@ export class LockOnUI {
 
     const indicator = document.createElement('div');
     indicator.className = 'lock-on-target';
-    indicator.style.position = 'absolute';
-    indicator.style.width = '40px';
-    indicator.style.height = '40px';
-    indicator.style.border = '2px solid #ff4444';
-    indicator.style.borderRadius = '50%';
-    indicator.style.backgroundColor = 'transparent';
-    indicator.style.pointerEvents = 'none';
-    indicator.style.transform = 'translate(-50%, -50%)';
-    indicator.style.animation = 'pulse 1s infinite';
-
-    // Add pulse animation if not already defined
-    if (!document.querySelector('#lock-on-styles')) {
-      const style = document.createElement('style');
-      style.id = 'lock-on-styles';
-      style.textContent = `
-        @keyframes pulse {
-          0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
-          100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
 
     const container = document.querySelector('#lock-on-container');
     container.appendChild(indicator);

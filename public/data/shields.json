@@ -2,18 +2,21 @@
   "woodenShield": {
     "name": "木の盾",
     "model": "wooden-shield.glb",
+    "image": "wooden-shield.png",
     "description": "基本的な木製の盾",
     "defense": 15
   },
   "ironShield": {
     "name": "鉄の盾",
     "model": "iron-shield.glb",
+    "image": "iron-shield.png",
     "description": "頑丈な鉄製の盾",
     "defense": 25
   },
   "steelShield": {
     "name": "鋼の盾",
     "model": "steel-shield.glb",
+    "image": "steel-shield.png",
     "description": "高品質な鋼製の盾",
     "defense": 35
   }

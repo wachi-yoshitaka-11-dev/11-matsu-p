@@ -14,9 +14,9 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { EquipmentUI } from '../ui/equipment-ui.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
+import { localization } from '../utils/localization.js';
 
 export class Game {
   constructor() {
@@ -42,9 +42,11 @@ export class Game {
 
     this.gameState = GameState.OPENING;
     this.titleScreen = new TitleScreen(() => this.startGame());
-    this.pauseMenu = new PauseMenu(this);
-    this.dialogBox = new DialogBox(this);
-    this.sequenceManager = new SequenceManager(this);
+
+    // UI components will be initialized after localization is loaded
+    this.pauseMenu = null;
+    this.dialogBox = null;
+    this.sequenceManager = null;
   }
 
   initAudio() {
@@ -52,6 +54,9 @@ export class Game {
     this.sceneManager.camera.add(this.listener);
     this.audioBuffers = {};
     this.bgmAudios = {};
+    this.currentBGM = null;
+    this.currentLevel = 1;
+    this.currentLevelProgress = 1;
   }
 
   async init() {
@@ -82,9 +87,11 @@ export class Game {
     this.sceneManager.add(this.player.mesh);
 
     this.hud = new Hud(this, this.player);
+
+    // Update UI text after localization is loaded
+    this.updateUITexts();
     this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
     this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
-    this.equipmentUI = null; // Will be created when game starts
 
     this.inputController = new InputController(
       this.player,
@@ -105,6 +112,7 @@ export class Game {
       'npcs',
       'items',
       'skills',
+      'localization',
     ];
     for (const fileName of dataFiles) {
       const data = await this.assetLoader.loadJSON(
@@ -113,18 +121,32 @@ export class Game {
       );
       this.data[fileName] = data;
     }
+
+    // Initialize localization
+    localization.init(this.data.localization);
+
+    // Initialize UI components after localization is loaded
+    this.pauseMenu = new PauseMenu(this);
+    this.dialogBox = new DialogBox(this);
+    this.sequenceManager = new SequenceManager(this);
+
+    // Update UI texts after localization is loaded
+    if (this.titleScreen) {
+      this.titleScreen.updateTexts();
+    }
   }
 
   async loadAudio() {
     const audioAssets = [
-      AssetNames.BGM_PLAYING,
-      AssetNames.BGM_TITLE,
-      AssetNames.BGM_OPENING,
       AssetNames.BGM_ENDING,
+      AssetNames.BGM_OPENING,
+      AssetNames.BGM_TITLE,
       AssetNames.SFX_ATTACK_STRONG,
       AssetNames.SFX_ATTACK_WEAK,
+      AssetNames.SFX_BACK_STEP,
       AssetNames.SFX_CLICK,
       AssetNames.SFX_DAMAGE,
+      AssetNames.SFX_DASH,
       AssetNames.SFX_DEATH,
       AssetNames.SFX_GUARD,
       AssetNames.SFX_JUMP,
@@ -132,14 +154,19 @@ export class Game {
       AssetNames.SFX_LEVEL_UP,
       AssetNames.SFX_LOCK_ON,
       AssetNames.SFX_PAUSE,
+      AssetNames.SFX_PICKUP_ITEM,
       AssetNames.SFX_ROLLING,
       AssetNames.SFX_START,
+      AssetNames.SFX_SWITCH_ITEM,
+      AssetNames.SFX_SWITCH_SHIELD,
+      AssetNames.SFX_SWITCH_SKILL,
       AssetNames.SFX_SWITCH_WEAPON,
       AssetNames.SFX_TALK,
+      AssetNames.SFX_UNPAUSE,
       AssetNames.SFX_USE_ITEM,
-      AssetNames.SFX_PICKUP_ITEM,
       AssetNames.SFX_USE_SKILL_BUFF,
       AssetNames.SFX_USE_SKILL_PROJECTILE,
+      AssetNames.SFX_WALK,
     ];
 
     for (const assetName of audioAssets) {
@@ -150,7 +177,6 @@ export class Game {
       this.audioBuffers[assetName] = buffer;
 
       if (
-        assetName === AssetNames.BGM_PLAYING ||
         assetName === AssetNames.BGM_TITLE ||
         assetName === AssetNames.BGM_OPENING ||
         assetName === AssetNames.BGM_ENDING
@@ -158,7 +184,7 @@ export class Game {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
-        this.bgmAudios[assetName].setVolume(0.2);
+        this.bgmAudios[assetName].setVolume(0.4);
       }
     }
   }
@@ -185,7 +211,7 @@ export class Game {
     this.sceneManager.add(boss.mesh);
 
     const npc = new Npc(
-      'こんにちは、冒険者よ。この先には強力なボスが待ち構えているぞ。',
+      'guide', // NPCタイプ
       new THREE.Vector3(-5, 0.5, -5),
       this,
       { modelName: AssetNames.NPC_MODEL, textureName: AssetNames.NPC_TEXTURE }
@@ -244,18 +270,12 @@ export class Game {
     }
   }
 
-  startGame() {
+  async startGame() {
     if (this.gameState !== GameState.TITLE) return;
 
     this.gameState = GameState.PLAYING;
     this.sceneManager.showCanvas();
-    this.hud.container.style.display = 'block';
-
-    // Create equipment UI when game starts
-    if (!this.equipmentUI) {
-      this.equipmentUI = new EquipmentUI(this, this.player);
-    }
-    this.equipmentUI?.setVisibility(true);
+    this.hud.show();
 
     if (this.titleScreen) {
       this.titleScreen.hideAll();
@@ -263,12 +283,8 @@ export class Game {
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    if (
-      this.bgmAudios[AssetNames.BGM_PLAYING] &&
-      !this.bgmAudios[AssetNames.BGM_PLAYING].isPlaying
-    ) {
-      this.bgmAudios[AssetNames.BGM_PLAYING].play();
-    }
+    // Start current level BGM
+    await this.startLevelBGM();
     this.playSound(AssetNames.SFX_START);
     this.sceneManager.renderer.domElement.requestPointerLock();
   }
@@ -289,12 +305,14 @@ export class Game {
   togglePause() {
     if (this.gameState === GameState.PLAYING) {
       this.gameState = GameState.PAUSED;
-      this.bgmAudios[AssetNames.BGM_PLAYING]?.pause();
+      this.pauseBGM();
       document.exitPointerLock();
+      this.playSound(AssetNames.SFX_PAUSE);
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
-      this.bgmAudios[AssetNames.BGM_PLAYING]?.play();
+      this.resumeBGM();
       this.sceneManager.renderer.domElement.requestPointerLock();
+      this.playSound(AssetNames.SFX_UNPAUSE);
     }
   }
 
@@ -306,6 +324,90 @@ export class Game {
     location.reload();
   }
 
+  // Level BGM lazy loading
+  async loadLevelBGM(level, progress = null) {
+    const bgmName = this.getLevelBGMName(level, progress);
+    if (!bgmName) return null;
+
+    if (this.bgmAudios[bgmName]) {
+      return bgmName;
+    }
+
+    try {
+      const buffer = await this.assetLoader.loadAudio(
+        bgmName,
+        `assets/audio/${bgmName}.mp3`
+      );
+      this.audioBuffers[bgmName] = buffer;
+
+      this.bgmAudios[bgmName] = new THREE.Audio(this.listener);
+      this.bgmAudios[bgmName].setBuffer(buffer);
+      this.bgmAudios[bgmName].setLoop(true);
+      this.bgmAudios[bgmName].setVolume(0.4);
+
+      return bgmName;
+    } catch (error) {
+      console.warn(`Failed to load level BGM: ${bgmName}`, error);
+      return null;
+    }
+  }
+
+  getLevelBGMName(level, progress = null) {
+    const currentProgress = progress || this.currentLevelProgress;
+
+    const progressString = currentProgress.toString().padStart(2, '0');
+    const bgmKey = `BGM_LEVEL_${level.toString().padStart(2, '0')}_${progressString}`;
+
+    return AssetNames[bgmKey] || null;
+  }
+
+  // BGM management methods
+  playBGM(bgmName) {
+    if (this.currentBGM) {
+      this.stopBGM();
+    }
+
+    if (this.bgmAudios[bgmName] && !this.bgmAudios[bgmName].isPlaying) {
+      this.bgmAudios[bgmName].play();
+      this.currentBGM = bgmName;
+    }
+  }
+
+  stopBGM() {
+    if (this.currentBGM && this.bgmAudios[this.currentBGM]) {
+      this.bgmAudios[this.currentBGM].stop();
+      this.currentBGM = null;
+    }
+  }
+
+  pauseBGM() {
+    if (this.currentBGM && this.bgmAudios[this.currentBGM]) {
+      this.bgmAudios[this.currentBGM].pause();
+    }
+  }
+
+  resumeBGM() {
+    if (this.currentBGM && this.bgmAudios[this.currentBGM]) {
+      this.bgmAudios[this.currentBGM].play();
+    }
+  }
+
+  async startLevelBGM(level = null, progress = null) {
+    const targetLevel = level || this.currentLevel;
+    const bgmName = await this.loadLevelBGM(targetLevel, progress);
+    if (bgmName) {
+      this.playBGM(bgmName);
+    }
+  }
+
+  // Method to change level progress and switch BGM accordingly
+  async setLevelProgress(progress) {
+    if (progress !== this.currentLevelProgress) {
+      this.currentLevelProgress = progress;
+      await this.startLevelBGM(this.currentLevel, progress);
+    }
+  }
+
   playSound(name) {
     if (this.audioBuffers[name]) {
       const sound = new THREE.Audio(this.listener);
@@ -313,6 +415,19 @@ export class Game {
       sound.setVolume(1);
       sound.play();
     }
+  }
+
+  createAudio(name, options = {}) {
+    if (this.audioBuffers[name]) {
+      const sound = new THREE.Audio(this.listener);
+      sound.setBuffer(this.audioBuffers[name]);
+      sound.setVolume(options.volume || 1);
+      if (options.loop) {
+        sound.setLoop(true);
+      }
+      return sound;
+    }
+    return null;
   }
 
   onWindowResize() {
@@ -378,8 +493,13 @@ export class Game {
             item.mesh.position
           );
           if (distance < (this.data.items?.generic?.pickupRange || 0.5)) {
+            // Skip if player is already picking up an item
+            if (this.player?.isPickingUp) {
+              continue;
+            }
+
             this.player?.inventory.push(item.type);
-            this.playSound(AssetNames.SFX_PICKUP_ITEM);
+            this.player?.playPickUpAnimation();
             this.sceneManager.remove(item.mesh);
             this.items.splice(i, 1);
           }
@@ -423,7 +543,6 @@ export class Game {
     if (this.gameState !== GameState.PAUSED) {
       this.hud?.update();
       this.lockOnUI?.update();
-      this.equipmentUI?.update();
 
       // Check if locked target is dead and clear lock-on if so
       if (this.player?.lockedTarget?.isDead) {
@@ -452,6 +571,7 @@ export class Game {
       setTimeout(() => {
         this.gameState = GameState.TITLE;
         this.sceneManager.hideCanvas();
+        this.hud.hide();
         this.titleScreen.showMenu();
         if (
           this.bgmAudios[AssetNames.BGM_TITLE] &&
@@ -466,16 +586,32 @@ export class Game {
   playEndingSequence() {
     this.gameState = GameState.ENDING;
 
+    // Hide HUD immediately when ending starts
+    this.hud.hide();
+
     this.sceneManager.fadeOutCanvas(1000, () => {
-      this.hud.container.style.display = 'none';
       this.titleScreen.hideSplash();
       this.titleScreen.hideMenu();
-      if (this.bgmAudios[AssetNames.BGM_PLAYING]?.isPlaying) {
-        this.bgmAudios[AssetNames.BGM_PLAYING].stop();
-      }
+      this.stopBGM();
       this.sequenceManager.startEndingSequence(() => {
         this.reloadGame();
       });
     });
+  }
+
+  updateUITexts() {
+    // Update UI text after localization is loaded
+    if (
+      this.titleScreen &&
+      typeof this.titleScreen.updateTexts === 'function'
+    ) {
+      this.titleScreen.updateTexts();
+    }
+    if (this.pauseMenu && typeof this.pauseMenu.updateTexts === 'function') {
+      this.pauseMenu.updateTexts();
+    }
+    if (this.dialogBox && typeof this.dialogBox.updateTexts === 'function') {
+      this.dialogBox.updateTexts();
+    }
   }
 }

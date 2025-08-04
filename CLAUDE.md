@@ -66,8 +66,9 @@ Three.jsを使用したブラウザベースの3Dオープンワールドアク�
 
 **データ駆動設計**
 
-- ゲームデータは`public/data/`のJSONファイルに保存: `player.json`, `weapons.json`, `enemies.json`, `npcs.json`, `items.json`, `skills.json`
+- ゲームデータは`public/data/`のJSONファイルに保存: `player.json`, `weapons.json`, `enemies.json`, `npcs.json`, `items.json`, `skills.json`, `localization.json`
 - 起動時に`AssetLoader`経由でロードされ、`game.data`でアクセス可能
+- **JSON命名規約**: すべてのJSONファイルのキー名はcamelCaseを使用（例: `gameStart`, `fpPotion`, `clickToStart`）
 
 ### ディレクトリ構造 (src/)
 

@@ -64,11 +64,11 @@ test.describe('Movement System Test', () => {
         playerExists: !!player,
         hasIsJumping: 'isJumping' in player,
         hasIsRolling: 'isRolling' in player,
-        hasIsBackstepping: 'isBackstepping' in player,
+        hasIsBackStepping: 'isBackStepping' in player,
         hasIsDashing: 'isDashing' in player,
         isJumping: player.isJumping,
         isRolling: player.isRolling,
-        isBackstepping: player.isBackstepping,
+        isBackStepping: player.isBackStepping,
         isDashing: player.isDashing,
         playerKeys: Object.keys(player).filter((k) => k.startsWith('is')),
       };
@@ -78,13 +78,13 @@ test.describe('Movement System Test', () => {
 
     expect(playerState.hasIsJumping).toBe(true);
     expect(playerState.hasIsRolling).toBe(true);
-    expect(playerState.hasIsBackstepping).toBe(true);
+    expect(playerState.hasIsBackStepping).toBe(true);
     expect(playerState.hasIsDashing).toBe(true);
 
     // Initial state should be false (or undefined which gets converted to false in boolean context)
     expect(playerState.isJumping).toBe(false);
     expect(playerState.isRolling).toBe(false);
-    expect(playerState.isBackstepping).toBe(false);
+    expect(playerState.isBackStepping).toBe(false);
     expect(
       playerState.isDashing === false || playerState.isDashing === undefined
     ).toBe(true);

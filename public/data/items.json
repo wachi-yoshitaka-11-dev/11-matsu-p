@@ -2,8 +2,16 @@
   "potion": {
     "name": "ポーション",
     "model": "potion.glb",
+    "image": "potion.png",
     "description": "体力を回復するポーション",
     "healAmount": 20
+  },
+  "fpPotion": {
+    "name": "FPポーション",
+    "model": "fp-potion.glb",
+    "image": "fp-potion.png",
+    "description": "FPを回復するポーション",
+    "fpHealAmount": 30
   },
   "generic": {
     "name": "アイテム",

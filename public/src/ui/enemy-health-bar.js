@@ -1,51 +1,9 @@
-import * as THREE from 'three';
-
 export class EnemyHealthBar {
   constructor(game, sceneManager) {
     this.game = game;
     this.sceneManager = sceneManager;
     this.healthBars = new Map();
     this.maxDisplayDistance = 8; // Maximum distance to show health bar
-
-    this.addStyles();
-  }
-
-  addStyles() {
-    if (document.getElementById('enemy-health-bar-styles')) return;
-
-    const style = document.createElement('style');
-    style.id = 'enemy-health-bar-styles';
-    style.textContent = `
-      .enemy-health-bar {
-        position: absolute;
-        width: 60px;
-        height: 8px;
-        background-color: rgba(0, 0, 0, 0.7);
-        border: 1px solid #333;
-        border-radius: 4px;
-        overflow: hidden;
-        z-index: 10;
-        pointer-events: none;
-      }
-      
-      .enemy-health-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #ff4444 0%, #ffaa44 50%, #44ff44 100%);
-        transition: width 0.3s ease;
-        border-radius: 3px;
-      }
-      
-      .enemy-health-bar-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(100, 0, 0, 0.5);
-        border-radius: 3px;
-      }
-    `;
-    document.head.appendChild(style);
   }
 
   createHealthBarElement(enemy) {
@@ -81,9 +39,9 @@ export class EnemyHealthBar {
   }
 
   getScreenPosition(enemy) {
-    // Get enemy's world position (slightly above the enemy)
+    // Get enemy's world position (above the enemy's head)
     const enemyWorldPos = enemy.mesh.position.clone();
-    enemyWorldPos.y += 2; // Position above enemy's head
+    enemyWorldPos.y += 3.0; // Position above enemy's head
 
     // Project to screen coordinates
     const screenPos = enemyWorldPos.clone();
@@ -153,7 +111,7 @@ export class EnemyHealthBar {
 
   dispose() {
     // Remove all health bar elements
-    for (const [enemy, element] of this.healthBars) {
+    for (const [, element] of this.healthBars) {
       element.remove();
     }
     this.healthBars.clear();

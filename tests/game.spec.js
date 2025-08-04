@@ -433,7 +433,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       { timeout: 1000 }
     );
 
-    // Test Backstep (Shift short press without movement)
+    // Test BackStep (Shift short press without movement)
     await page.keyboard.down('Shift');
     await page.waitForTimeout(100); // Short press
     await page.keyboard.up('Shift');
@@ -441,7 +441,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.waitForFunction(
       () => {
         const player = window.game?.player;
-        return player?.isBackstepping === true;
+        return player?.isBackStepping === true;
       },
       null,
       { timeout: 1000 }
@@ -485,7 +485,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(100);
 
-    const newWeaponIndex = await page.evaluate(() => {
+    await page.evaluate(() => {
       return window.game.player.currentWeaponIndex;
     });
 
@@ -555,7 +555,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
 
     // Test Equipment UI visibility
     const equipmentUIVisible = await page.evaluate(() => {
-      const equipmentUI = document.querySelector('#equipment-ui');
+      const equipmentUI = document.querySelector('#equipment-container');
       return equipmentUI && equipmentUI.style.display !== 'none';
     });
 

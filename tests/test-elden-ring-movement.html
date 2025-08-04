@@ -25,7 +25,7 @@
             console.log('Player initial state:');
             console.log('- isJumping:', player.isJumping);
             console.log('- isRolling:', player.isRolling);
-            console.log('- isBackstepping:', player.isBackstepping);
+            console.log('- isBackStepping:', player.isBackStepping);
             console.log('- isDashing:', player.isDashing);
             console.log('- stamina:', player.stamina);
 
@@ -34,7 +34,7 @@
             console.log('1. Press Space to Jump');
             console.log('2. Hold Shift + WASD to Dash');
             console.log('3. Short press Shift + WASD to Roll');
-            console.log('4. Short press Shift (no movement) to Backstep');
+            console.log('4. Short press Shift (no movement) to BackStep');
 
             // Listen for keyboard events to test
             document.addEventListener('keydown', (e) => {
@@ -51,7 +51,7 @@
                 setTimeout(() => {
                   console.log('Player state after Shift release:');
                   console.log('- isRolling:', player.isRolling);
-                  console.log('- isBackstepping:', player.isBackstepping);
+                  console.log('- isBackStepping:', player.isBackStepping);
                   console.log('- isDashing:', player.isDashing);
                   console.log(
                     '- current animation:',
@@ -85,7 +85,7 @@
         <li><strong>Space</strong>: Jump</li>
         <li><strong>Shift + WASD (hold)</strong>: Dash</li>
         <li><strong>Shift + WASD (short press)</strong>: Roll in direction</li>
-        <li><strong>Shift (short press, no movement)</strong>: Backstep</li>
+        <li><strong>Shift (short press, no movement)</strong>: BackStep</li>
       </ul>
       <p>
         Open browser console to see detailed test results and state changes.

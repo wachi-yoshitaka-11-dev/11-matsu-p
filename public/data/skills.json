@@ -2,6 +2,7 @@
   "projectile": {
     "name": "魔法弾",
     "model": "projectile.glb",
+    "image": "projectile.png",
     "description": "魔力を込めた遠距離攻撃",
     "fpCost": 20,
     "duration": 1000,
@@ -13,6 +14,7 @@
   "buff": {
     "name": "強化",
     "model": "buff.glb",
+    "image": "buff.png",
     "description": "攻撃力と防御力を一時的に強化",
     "fpCost": 30,
     "duration": 10000,

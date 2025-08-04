@@ -53,10 +53,19 @@ export const AssetNames = {
   ROCK_MODEL: 'rock',
   GRASS_MODEL: 'grass',
 
-  BGM_PLAYING: 'bgm-playing',
   BGM_TITLE: 'bgm-title',
   BGM_OPENING: 'bgm-opening',
   BGM_ENDING: 'bgm-ending',
+  BGM_LEVEL_01_01: 'bgm-level-01_01',
+  BGM_LEVEL_01_02: 'bgm-level-01_02',
+  BGM_LEVEL_02_01: 'bgm-level-02_01',
+  BGM_LEVEL_02_02: 'bgm-level-02_02',
+  BGM_LEVEL_03_01: 'bgm-level-03_01',
+  BGM_LEVEL_03_02: 'bgm-level-03_02',
+  BGM_LEVEL_04_01: 'bgm-level-04_01',
+  BGM_LEVEL_04_02: 'bgm-level-04_02',
+  BGM_LEVEL_05_01: 'bgm-level-05_01',
+  BGM_LEVEL_05_02: 'bgm-level-05_02',
   SFX_ATTACK_STRONG: 'attack-strong',
   SFX_ATTACK_WEAK: 'attack-weak',
   SFX_CLICK: 'click',
@@ -68,14 +77,21 @@ export const AssetNames = {
   SFX_LEVEL_UP: 'level-up',
   SFX_LOCK_ON: 'lock-on',
   SFX_PAUSE: 'pause',
+  SFX_UNPAUSE: 'unpause',
   SFX_ROLLING: 'rolling',
+  SFX_BACK_STEP: 'back-step',
+  SFX_DASH: 'dash',
   SFX_START: 'start',
   SFX_SWITCH_WEAPON: 'switch-weapon',
+  SFX_SWITCH_SHIELD: 'switch-shield',
+  SFX_SWITCH_ITEM: 'switch-item',
+  SFX_SWITCH_SKILL: 'switch-skill',
   SFX_TALK: 'talk',
   SFX_USE_ITEM: 'use-item',
   SFX_PICKUP_ITEM: 'pickup-item',
   SFX_USE_SKILL_BUFF: 'use-skill-buff',
   SFX_USE_SKILL_PROJECTILE: 'use-skill-projectile',
+  SFX_WALK: 'walk',
 
   PLAYER_TEXTURE: 'player-texture',
   ENEMY_TEXTURE: 'enemy-texture',
@@ -94,6 +110,7 @@ export const AnimationNames = {
   WALK: 'walk',
   DASH: 'sprint',
   ROLLING: 'wheelchair-move-forward',
+  BACK_STEP: 'wheelchair-move-back',
   JUMP: 'sit',
   DIE: 'die',
   ATTACK_WEAK: 'attack-melee-left',
@@ -103,6 +120,7 @@ export const AnimationNames = {
   USE_ITEM: 'interact-right',
   USE_SKILL_BUFF: 'interact-right',
   USE_SKILL_PROJECTILE: 'attack-kick-right',
+  PICK_UP: 'pick-up',
 };
 
 export const GameState = {
@@ -113,6 +131,25 @@ export const GameState = {
   ENDING: 'ending',
 };
 
+export const MovementState = {
+  WALK: 'walk',
+  DASH: 'dash',
+};
+
 export const ItemTypes = {
   POTION: 'potion',
 };
+
+// BGM Level constants array for easier management
+export const LevelBGM = [
+  AssetNames.BGM_LEVEL_01_01,
+  AssetNames.BGM_LEVEL_01_02,
+  AssetNames.BGM_LEVEL_02_01,
+  AssetNames.BGM_LEVEL_02_02,
+  AssetNames.BGM_LEVEL_03_01,
+  AssetNames.BGM_LEVEL_03_02,
+  AssetNames.BGM_LEVEL_04_01,
+  AssetNames.BGM_LEVEL_04_02,
+  AssetNames.BGM_LEVEL_05_01,
+  AssetNames.BGM_LEVEL_05_02,
+];

@@ -1,3 +1,5 @@
+import { localization } from '../utils/localization.js';
+
 export class TitleScreen {
   constructor(onStart) {
     this.onStart = onStart;
@@ -18,22 +20,18 @@ export class TitleScreen {
     this.menuContainer.id = 'title-menu';
 
     this.titleText = document.createElement('h1');
-    this.titleText.textContent = 'もふもふアドベンチャー';
     this.titleText.id = 'title-text';
     this.menuContainer.appendChild(this.titleText);
 
     this.newGameButton = document.createElement('button');
-    this.newGameButton.textContent = 'はじめから';
     this.newGameButton.addEventListener('click', this.onStart);
     this.menuContainer.appendChild(this.newGameButton);
 
     this.continueButton = document.createElement('button');
-    this.continueButton.textContent = 'つづきから（準備中）';
     this.continueButton.disabled = true;
     this.menuContainer.appendChild(this.continueButton);
 
     this.optionsButton = document.createElement('button');
-    this.optionsButton.textContent = '設定（準備中）';
     this.optionsButton.disabled = true;
     this.menuContainer.appendChild(this.optionsButton);
 
@@ -74,5 +72,12 @@ export class TitleScreen {
   hideAll() {
     this.splashContainer.style.display = 'none';
     this.container.style.display = 'none';
+  }
+
+  updateTexts() {
+    this.titleText.textContent = localization.getText('ui.title');
+    this.newGameButton.textContent = localization.getText('ui.newGame');
+    this.continueButton.textContent = localization.getText('ui.continue');
+    this.optionsButton.textContent = localization.getText('ui.options');
   }
 }

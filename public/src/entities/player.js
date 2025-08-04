@@ -1,7 +1,12 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
 import { Projectile } from '../world/projectile.js';
-import { AnimationNames, AssetNames, ItemTypes } from '../utils/constants.js';
+import {
+  AnimationNames,
+  AssetNames,
+  ItemTypes,
+  MovementState,
+} from '../utils/constants.js';
 
 export class Player extends Character {
   constructor(game) {
@@ -28,7 +33,7 @@ export class Player extends Character {
     this.experience = game.data.player.initialExperience;
     this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
     this.statusPoints = game.data.player.initialStatusPoints;
-    this.inventory = ['potion', 'potion']; // Initialize with test items
+    this.inventory = ['potion', 'fpPotion'];
 
     this.weapons = ['sword', 'claws'];
     this.currentWeaponIndex = 0;
@@ -48,7 +53,7 @@ export class Player extends Character {
 
     // Elden Ring style movement states
     this.isJumping = false;
-    this.isBackstepping = false;
+    this.isBackStepping = false;
     this.isDashing = false;
 
     // Lock-on system
@@ -63,11 +68,17 @@ export class Player extends Character {
     this.isJumping = false;
     this.isDashing = false;
     this.isRolling = false;
-    this.isBackstepping = false;
+    this.isBackStepping = false;
     this.isGuarding = false;
     this.isAttacking = false;
     this.isAttackingWeak = false;
     this.isAttackingStrong = false;
+    this.isPickingUp = false;
+
+    // Footstep sound system
+    this.footstepAudio = null;
+    this.isPlayingFootsteps = false;
+    this.lastMovementState = null;
 
     // Listen for animation finished event
     if (this.mixer) {
@@ -82,9 +93,12 @@ export class Player extends Character {
           this.isAttackingStrong = false;
         } else if (clipName === AnimationNames.ROLLING) {
           this.isRolling = false;
-          this.isBackstepping = false;
+        } else if (clipName === AnimationNames.BACK_STEP) {
+          this.isBackStepping = false;
         } else if (clipName === AnimationNames.JUMP) {
           this.isJumping = false;
+        } else if (clipName === AnimationNames.PICK_UP) {
+          this.isPickingUp = false;
         }
 
         this.updateAnimation();
@@ -110,12 +124,15 @@ export class Player extends Character {
   update(deltaTime) {
     super.update(deltaTime);
     this.updateAnimation();
+    this.updateFootsteps();
 
     if (
       !this.isDashing &&
       !this.isGuarding &&
       !this.isAttacking &&
-      !this.isRolling
+      !this.isRolling &&
+      !this.isBackStepping &&
+      !this.isPickingUp
     ) {
       this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
       if (this.stamina > this.maxStamina) {
@@ -135,7 +152,9 @@ export class Player extends Character {
       this.isAttacking ||
       this.isAttackingWeak ||
       this.isAttackingStrong ||
-      this.isRolling
+      this.isRolling ||
+      this.isBackStepping ||
+      this.isPickingUp
     ) {
       return;
     }
@@ -176,11 +195,11 @@ export class Player extends Character {
     // Apply guard damage reduction if guarding
     if (this.isGuarding) {
       const shieldDefense = this.getShieldDefense();
-      const blockPercentage = Math.min(0.8, shieldDefense / 100); // Max 80% block
+      const blockPercentage = Math.min(0.8, shieldDefense / 100);
       finalDamage = finalDamage * (1 - blockPercentage);
 
       // Take stamina damage when guarding
-      const staminaDamage = amount * 0.3; // 30% of original damage as stamina cost
+      const staminaDamage = amount * 0.3;
       this.takeStaminaDamage(staminaDamage);
 
       this.game.playSound(
@@ -265,7 +284,7 @@ export class Player extends Character {
     if (this.shields.length > 1) {
       this.currentShieldIndex =
         (this.currentShieldIndex + 1) % this.shields.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
+      this.game.playSound(AssetNames.SFX_SWITCH_SHIELD);
     }
   }
 
@@ -284,7 +303,7 @@ export class Player extends Character {
     if (this.skills.length > 1) {
       this.currentSkillIndex =
         (this.currentSkillIndex + 1) % this.skills.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound as weapon switch
+      this.game.playSound(AssetNames.SFX_SWITCH_SKILL);
     }
   }
 
@@ -311,7 +330,7 @@ export class Player extends Character {
     if (this.inventory.length > 1) {
       this.currentItemIndex =
         (this.currentItemIndex + 1) % this.inventory.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON); // Using same sound for consistency
+      this.game.playSound(AssetNames.SFX_SWITCH_ITEM);
     }
   }
 
@@ -328,10 +347,23 @@ export class Player extends Character {
     }
 
     // Use the item based on its type
+    let itemUsed = false;
+
+    // HP recovery items
     if (currentItem === ItemTypes.POTION || itemData.healAmount) {
       this.hp += itemData.healAmount || 50;
       if (this.hp > this.maxHp) this.hp = this.maxHp;
+      itemUsed = true;
+    }
 
+    // FP recovery items
+    if (currentItem === 'fpPotion' || itemData.fpHealAmount) {
+      this.fp += itemData.fpHealAmount || 30;
+      if (this.fp > this.maxFp) this.fp = this.maxFp;
+      itemUsed = true;
+    }
+
+    if (itemUsed) {
       this.playAnimation(AnimationNames.USE_ITEM);
       this.game.playSound(AssetNames.SFX_USE_ITEM);
 
@@ -359,13 +391,11 @@ export class Player extends Character {
     if (!currentSkill) return false;
 
     if (this.isUsingSkill) {
-      console.log('Already using a skill');
       return false;
     }
 
     // Check if we have enough FP
     if (this.fp < currentSkill.fpCost) {
-      console.log('Not enough FP to use skill');
       return false;
     }
 
@@ -421,5 +451,94 @@ export class Player extends Character {
     }, skillData.duration);
 
     return true;
+  }
+
+  updateFootsteps() {
+    // Skip footsteps if player is not moving or is doing an action that shouldn't have footsteps
+    if (
+      this.isDead ||
+      this.isJumping ||
+      this.isRolling ||
+      this.isBackStepping ||
+      this.isAttacking ||
+      this.isPickingUp
+    ) {
+      this.stopFootsteps();
+      return;
+    }
+
+    // Check if player is moving based on velocity
+    const velocity = this.physics.velocity;
+    if (!velocity) {
+      this.stopFootsteps();
+      return;
+    }
+    const isMoving = velocity.length() > 0.1;
+
+    if (!isMoving) {
+      this.stopFootsteps();
+      return;
+    }
+
+    // Determine movement state based on isDashing
+    const currentMovementState = this.isDashing
+      ? MovementState.DASH
+      : MovementState.WALK;
+
+    // If movement state changed, switch footstep sound
+    if (currentMovementState !== this.lastMovementState) {
+      this.stopFootsteps();
+      this.startFootsteps(currentMovementState);
+      this.lastMovementState = currentMovementState;
+    }
+
+    // If not playing footsteps but should be, start them
+    if (!this.isPlayingFootsteps) {
+      this.startFootsteps(currentMovementState);
+    }
+  }
+
+  startFootsteps(movementState) {
+    if (this.isPlayingFootsteps) {
+      this.stopFootsteps();
+    }
+
+    const soundName =
+      movementState === MovementState.DASH
+        ? AssetNames.SFX_DASH
+        : AssetNames.SFX_WALK;
+
+    // Create looping audio for footsteps using common method
+    this.footstepAudio = this.game.createAudio(soundName, {
+      volume: 0.3,
+      loop: true,
+    });
+
+    if (this.footstepAudio) {
+      this.footstepAudio.play();
+    }
+
+    this.isPlayingFootsteps = true;
+  }
+
+  stopFootsteps() {
+    if (this.footstepAudio) {
+      this.footstepAudio.stop();
+      this.footstepAudio = null;
+    }
+    this.isPlayingFootsteps = false;
+    this.lastMovementState = null;
+  }
+
+  playPickUpAnimation() {
+    if (this.isPickingUp || this.isDead) {
+      return;
+    }
+
+    this.isPickingUp = true;
+    this.playAnimation(AnimationNames.PICK_UP);
+
+    // Play pickup sound effect
+    this.game.playSound(AssetNames.SFX_PICKUP_ITEM);
   }
 }
