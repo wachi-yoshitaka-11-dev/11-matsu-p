@@ -153,3 +153,6 @@ tasks.md
 *~
 *.swp
 *.swo
+
+# Temporary scripts and work directories
+temp-scripts/

@@ -26,7 +26,7 @@ export class Npc extends Character {
   }
 
   constructor(
-    dialogue,
+    npcType = 'default',
     position = new THREE.Vector3(-5, 0.5, -5),
     game,
     options = {}
@@ -43,7 +43,10 @@ export class Npc extends Character {
       super(game, geometry, material, {});
     }
 
-    this.dialogue = dialogue;
+    this.npcType = npcType;
+    this.data = game.data.npcs[npcType] || game.data.npcs.default;
+    this.dialogue = this.data.dialogue || ['...'];
+    this.currentDialogueIndex = 0;
 
     this.placeOnGround(position.x, position.z);
 
@@ -73,13 +76,21 @@ export class Npc extends Character {
   }
 
   update(playerPosition) {
+    if (!this.data) return;
     const distance = this.mesh.position.distanceTo(playerPosition);
-    const interactionRange = this.game.data.npcs.default.interactionRange;
+    const interactionRange = this.data.interactionRange;
     this.interactionPrompt.visible = distance < interactionRange;
   }
 
   interact() {
-    this.game.dialogBox.show(this.dialogue);
+    if (!this.game.dialogBox || !this.data || !this.dialogue) return;
+    // Show current dialogue line
+    const currentLine = this.dialogue[this.currentDialogueIndex];
+    this.game.dialogBox.show(currentLine);
+
+    // Move to next dialogue line, loop back to start if at end
+    this.currentDialogueIndex =
+      (this.currentDialogueIndex + 1) % this.dialogue.length;
   }
 
   dispose() {
@@ -94,5 +105,9 @@ export class Npc extends Character {
       sprite?.material?.map?.dispose();
       sprite?.material?.dispose();
     }
+    // Reset dialogue state
+    this.currentDialogueIndex = 0;
+    this.dialogue = null;
+    this.data = null;
   }
 }

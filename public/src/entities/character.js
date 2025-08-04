@@ -168,7 +168,9 @@ export class Character {
         name === AnimationNames.ATTACK_WEAK ||
         name === AnimationNames.ATTACK_STRONG ||
         name === AnimationNames.DIE ||
-        name === AnimationNames.ROLLING;
+        name === AnimationNames.ROLLING ||
+        name === AnimationNames.BACK_STEP ||
+        name === AnimationNames.PICK_UP;
       if (isOneShot) {
         newAction.setLoop(THREE.LoopOnce);
         newAction.clampWhenFinished = true;

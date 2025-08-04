@@ -210,7 +210,11 @@ export class SequenceManager {
     const nextImage = this.backgroundImages[nextIndex];
     const currentImage = this.backgroundImages[this.currentBackgroundIndex];
 
-    nextImage.src = imagePath;
+    // ファイルパスを自動補完（./assets/images/プレフィックスを追加）
+    const fullImagePath = imagePath.startsWith('./')
+      ? imagePath
+      : `./assets/images/${imagePath}`;
+    nextImage.src = fullImagePath;
     nextImage.style.display = 'block';
     nextImage.style.zIndex = '-1';
 

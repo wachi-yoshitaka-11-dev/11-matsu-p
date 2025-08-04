@@ -1,0 +1,104 @@
+{
+  "ja": {
+    "ui": {
+      "clickToStart": "タッチしてはじめる",
+      "continue": "つづきから（準備中）",
+      "experience": "経験値:",
+      "levelUp": "Level Up!",
+      "newGame": "はじめから",
+      "none": "なし",
+      "options": "設定（準備中）",
+      "resume": "再開",
+      "shield": "Shield",
+      "skill": "Skill",
+      "statusPoints": "Status Points",
+      "title": "もふもふアドベンチャー",
+      "weapon": "Weapon",
+      "youDied": "YOU DIED"
+    },
+    "equipment": {
+      "weapon": "武器",
+      "shield": "盾",
+      "item": "アイテム",
+      "skill": "スキル"
+    },
+    "stats": {
+      "hp": "HP",
+      "fp": "FP",
+      "stamina": "Stamina"
+    },
+    "interactions": {
+      "talkPrompt": "[E] Talk"
+    },
+    "dialog": {
+      "close": "閉じる"
+    },
+    "messages": {
+      "gameStart": "ゲーム開始",
+      "gamePaused": "ポーズ中",
+      "gameOver": "ゲームオーバー"
+    },
+    "items": {
+      "potion": "ポーション",
+      "fpPotion": "FPポーション",
+      "empty": "-"
+    },
+    "controls": {
+      "weapon": "→",
+      "shield": "←",
+      "item": "↓",
+      "skill": "↑"
+    }
+  },
+  "en": {
+    "ui": {
+      "clickToStart": "Click to Start",
+      "continue": "Continue (Coming Soon)",
+      "experience": "Experience:",
+      "levelUp": "Level Up!",
+      "newGame": "New Game",
+      "none": "None",
+      "options": "Options (Coming Soon)",
+      "resume": "Resume",
+      "shield": "Shield",
+      "skill": "Skill",
+      "statusPoints": "Status Points",
+      "title": "Mofumofu Adventure",
+      "weapon": "Weapon",
+      "youDied": "YOU DIED"
+    },
+    "equipment": {
+      "weapon": "Weapon",
+      "shield": "Shield",
+      "item": "Item",
+      "skill": "Skill"
+    },
+    "stats": {
+      "hp": "HP",
+      "fp": "FP",
+      "stamina": "Stamina"
+    },
+    "interactions": {
+      "talkPrompt": "[E] Talk"
+    },
+    "dialog": {
+      "close": "Close"
+    },
+    "messages": {
+      "gameStart": "Game Start",
+      "gamePaused": "Paused",
+      "gameOver": "Game Over"
+    },
+    "items": {
+      "potion": "Potion",
+      "fpPotion": "FP Potion",
+      "empty": "-"
+    },
+    "controls": {
+      "weapon": "→",
+      "shield": "←",
+      "item": "↓",
+      "skill": "↑"
+    }
+  }
+}

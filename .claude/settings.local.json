@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx playwright test:*)",
+      "Bash(npm test)",
+      "Bash(gh pr view:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["filesystem", "git", "web-search"],
+  "disabledMcpjsonServers": ["filesystem", "git", "web-search"]
+}

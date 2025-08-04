@@ -41,13 +41,13 @@ Three.jsを使用したブラウザベースの3Dオープンワールドアク�
 
 ### 主要アーキテクチャコンポーネント
 
-**ゲーム状態管理 (`public/src/core/game.js`)**
+#### ゲーム状態管理 (`public/src/core/game.js`)
 
 - 中央の`Game`クラスがすべてのゲーム状態とエンティティを管理
 - ゲーム状態: `TITLE`, `PLAYING`, `PAUSED`, `SEQUENCE`, `GAME_OVER`
 - オーディオ、アセット、エンティティ、ゲームループを管理
 
-**エンティティシステム**
+#### エンティティシステム
 
 - `Character`ベースクラス（`public/src/entities/character.js`）がすべてのアニメーション付きエンティティ用
 - `Player`, `Enemy`, `Boss`, `Npc`クラスがCharacterを拡張
@@ -66,8 +66,9 @@ Three.jsを使用したブラウザベースの3Dオープンワールドアク�
 
 **データ駆動設計**
 
-- ゲームデータは`public/data/`のJSONファイルに保存: `player.json`, `weapons.json`, `enemies.json`, `npcs.json`, `items.json`, `skills.json`
+- ゲームデータは`public/data/`のJSONファイルに保存: `player.json`, `weapons.json`, `enemies.json`, `npcs.json`, `items.json`, `skills.json`, `localization.json`
 - 起動時に`AssetLoader`経由でロードされ、`game.data`でアクセス可能
+- **JSON命名規約**: すべてのJSONファイルのキー名はcamelCaseを使用（例: `gameStart`, `fpPotion`, `clickToStart`）
 
 ### ディレクトリ構造 (src/)
 
