@@ -18,12 +18,11 @@ export class DialogBox {
 
     document.body.appendChild(this.container);
 
-    // Typewriter effect properties
     this.typewriterSpeed = 50; // milliseconds per character
     this.currentTypewriterTimeout = null;
     this.isTypewriting = false;
-    this.fullMessage = ''; // Store the complete message for skip functionality
-    this.talkSound = null; // Store the talk sound for loop control
+    this.fullMessage = '';
+    this.talkSound = null;
   }
 
   updateTexts() {
@@ -31,21 +30,14 @@ export class DialogBox {
   }
 
   show(message) {
-    // Clear any existing typewriter effect
     this.stopTypewriter();
 
-    // Convert newline characters to <br> tags for multi-line display
     const formattedMessage = message.replace(/\n/g, '<br>');
 
-    // Clear key states when showing dialog to prevent stuck movement
-    this.game.inputController.clearKeyStates();
-
-    // Show dialog box immediately
     this.container.style.display = 'flex';
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);
 
-    // Start typewriter effect
     this.startTypewriter(formattedMessage);
   }
 
@@ -53,11 +45,9 @@ export class DialogBox {
     this.stopTypewriter();
     this.container.style.display = 'none';
 
-    // Clear key states when closing dialog to prevent stuck movement
-    this.game.inputController.clearKeyStates();
-
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);
+    this.game.inputController.reevaluateKeyStates();
   }
 
   startTypewriter(fullMessage) {
@@ -65,7 +55,6 @@ export class DialogBox {
     this.isTypewriting = true;
     this.messageElement.innerHTML = '';
 
-    // Start talk sound loop
     this.startTalkSound();
 
     let currentIndex = 0;
@@ -82,7 +71,6 @@ export class DialogBox {
         );
       } else {
         this.isTypewriting = false;
-        // Stop talk sound when typewriting is complete
         this.stopTalkSound();
       }
     };
@@ -92,12 +80,10 @@ export class DialogBox {
 
   handleClick() {
     if (this.isTypewriting) {
-      // Skip typewriter effect and show full message immediately
       this.stopTypewriter();
       this.messageElement.innerHTML = this.fullMessage;
-      this.stopTalkSound(); // Stop talk sound when skipping
+      this.stopTalkSound();
     } else {
-      // Close dialog if typewriting is complete
       this.hide();
     }
   }
@@ -112,7 +98,6 @@ export class DialogBox {
   }
 
   parseHTMLString(htmlString) {
-    // Simple parser to handle <br> tags properly
     const characters = [];
     let i = 0;
 
@@ -130,7 +115,6 @@ export class DialogBox {
   }
 
   startTalkSound() {
-    // Use common createAudio method for standardized audio creation
     this.talkSound = this.game.createAudio(AssetNames.SFX_TALK, {
       volume: 0.7,
       loop: true,

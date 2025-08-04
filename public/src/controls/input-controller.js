@@ -14,7 +14,6 @@ export class InputController {
     this.cameraPitch = 0;
     this.cameraSensitivity = 0.002;
 
-    // Elden Ring style movement controls
     this.shiftPressTime = 0;
     this.isShiftPressed = false;
     this.shortPressThreshold = 250; // milliseconds for short press
@@ -60,22 +59,18 @@ export class InputController {
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         if (this.game.gameState === GameState.PLAYING) {
-          // Clear key states when pausing to prevent stuck movement
-          this.clearKeyStates();
           this.game.togglePause();
           this.game.setPauseMenuVisibility(true);
         } else if (this.game.gameState === GameState.PAUSED) {
-          // Clear key states when unpausing to prevent stuck movement
-          this.clearKeyStates();
           this.game.togglePause();
           this.game.setPauseMenuVisibility(false);
+          this.reevaluateKeyStates();
         }
         this.keys[e.code] = false;
         return;
       }
       if (!this._canProcessInput()) return;
 
-      // Handle Shift key press timing
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         if (!this.isShiftPressed) {
           this.isShiftPressed = true;
@@ -88,7 +83,6 @@ export class InputController {
     document.addEventListener('keyup', (e) => {
       if (!this._canProcessInput()) return;
 
-      // Handle Shift key release for Elden Ring style controls
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         if (this.isShiftPressed) {
           const pressDuration = Date.now() - this.shiftPressTime;
@@ -129,7 +123,6 @@ export class InputController {
       if (!this._canProcessInput()) return;
     });
 
-    // Prevent context menu on right click and middle click
     this.canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     });
@@ -142,7 +135,6 @@ export class InputController {
       if (!this._canProcessInput()) return;
       const params = this._getWeaponParams();
 
-      // Left click - attack (weak or strong based on Ctrl key)
       if (e.button === 0 && !this.player.isAttacking) {
         const isStrongAttack =
           this.keys['ControlLeft'] || this.keys['ControlRight'];
@@ -155,7 +147,6 @@ export class InputController {
           this.player.stamina -= staminaCost;
 
           if (isStrongAttack) {
-            // Strong attack
             this.player.isAttackingStrong = true;
             this.player.isAttackingWeak = false;
             this.player.showAttackEffect();
@@ -163,7 +154,6 @@ export class InputController {
             this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
             this.performAttack(params.damageStrong, params.attackRangeStrong);
           } else {
-            // Weak attack
             this.player.isAttackingWeak = true;
             this.player.isAttackingStrong = false;
             this.player.showAttackEffect();
@@ -172,14 +162,10 @@ export class InputController {
             this.performAttack(params.damage, params.attackRange);
           }
         }
-      }
-      // Middle click (wheel click) - lock-on toggle
-      else if (e.button === 1) {
+      } else if (e.button === 1) {
         e.preventDefault();
         this.handleLockOnToggle();
-      }
-      // Right click - guard (alternative to G key)
-      else if (e.button === 2) {
+      } else if (e.button === 2) {
         e.preventDefault();
         if (!this.player.isGuarding && this.player.stamina > 0) {
           this.player.isGuarding = true;
@@ -190,7 +176,6 @@ export class InputController {
     document.addEventListener('mouseup', (e) => {
       if (!this._canProcessInput()) return;
 
-      // Right click release - stop guard
       if (e.button === 2) {
         this.player.isGuarding = false;
       }
@@ -207,7 +192,6 @@ export class InputController {
     }
 
     if (!this.player.isRolling && !this.player.isBackStepping) {
-      // Handle Elden Ring style dashing (Shift held + movement)
       const isShiftHeld = this.keys['ShiftLeft'] || this.keys['ShiftRight'];
       const isMoving = this.movementKeys.some((key) => this.keys[key]);
 
@@ -257,7 +241,6 @@ export class InputController {
         );
         this.player.mesh.quaternion.slerp(targetQuaternion, 0.2);
       } else if (!this.player.isBackStepping) {
-        // Don't reset velocity during backStep
         this.player.physics.velocity.x = 0;
         this.player.physics.velocity.z = 0;
       }
@@ -269,13 +252,11 @@ export class InputController {
         (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
     }
 
-    // Q key - switch lock-on target
     if (this.keys['KeyQ'] && this.player.lockedTarget) {
       this.switchLockOnTarget();
       this.keys['KeyQ'] = false;
     }
 
-    // Camera handling for lock-on system
     if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
       const targetPosition = this.player.lockedTarget.mesh.position;
       const playerPosition = this.player.mesh.position;
@@ -312,19 +293,16 @@ export class InputController {
         ) {
           npc.interact();
           this.player.playAnimation(AnimationNames.TALK);
-          // talk.mp3 is now handled by dialog-box.js typewriter effect
         }
       });
       this.keys['KeyE'] = false;
     }
 
-    // Handle Jump (Space key)
     if (this.keys['Space'] && !this.player.isJumping) {
       this.handleJump();
       this.keys['Space'] = false;
     }
 
-    // Equipment switching with arrow keys
     if (this.keys['ArrowRight']) {
       this.player.switchWeapon();
       this.keys['ArrowRight'] = false;
@@ -345,13 +323,11 @@ export class InputController {
       this.keys['ArrowUp'] = false;
     }
 
-    // R key - Use current item
     if (this.keys['KeyR']) {
       this.player.useCurrentItem();
       this.keys['KeyR'] = false;
     }
 
-    // F key - Use current skill
     if (this.keys['KeyF']) {
       this.player.useCurrentSkill();
       this.keys['KeyF'] = false;
@@ -369,7 +345,6 @@ export class InputController {
       this.player.playAnimation(AnimationNames.JUMP);
       this.game.playSound(AssetNames.SFX_JUMP);
 
-      // Reset jumping flag when animation finishes
       setTimeout(() => {
         this.player.isJumping = false;
       }, 1000);
@@ -382,10 +357,8 @@ export class InputController {
 
     if (isShortPress) {
       if (isMoving) {
-        // Rolling - short press + movement
         this.handleRolling();
       } else {
-        // BackStep - short press without movement
         this.handleBackStep();
       }
     }
@@ -402,7 +375,6 @@ export class InputController {
       this.player.playAnimation(AnimationNames.ROLLING);
       this.game.playSound(AssetNames.SFX_ROLLING);
 
-      // Apply rolling movement
       const direction = this.getMovementDirection();
       if (direction.length() > 0) {
         direction.normalize();
@@ -424,7 +396,6 @@ export class InputController {
       this.player.playAnimation(AnimationNames.BACK_STEP);
       this.game.playSound(AssetNames.SFX_BACK_STEP);
 
-      // Get player's facing direction (not camera direction)
       const playerForward = new THREE.Vector3(0, 0, 1);
       playerForward.applyQuaternion(this.player.mesh.quaternion);
       playerForward.y = 0;
@@ -546,5 +517,42 @@ export class InputController {
   // Clear all key states (useful when pausing/unpausing)
   clearKeyStates() {
     this.keys = {};
+  }
+
+  // Re-evaluate current key states based on actual keyboard state
+  reevaluateKeyStates() {
+    // Create a temporary event listener to detect currently pressed keys
+    const currentlyPressed = new Set();
+
+    // Listen for keydown events briefly to capture currently pressed keys
+    const keydownHandler = (e) => {
+      currentlyPressed.add(e.code);
+    };
+
+    const keyupHandler = (e) => {
+      currentlyPressed.delete(e.code);
+    };
+
+    // Add listeners temporarily
+    document.addEventListener('keydown', keydownHandler);
+    document.addEventListener('keyup', keyupHandler);
+
+    // After a brief delay, update our key states to match actual pressed keys
+    setTimeout(() => {
+      // Remove temporary listeners
+      document.removeEventListener('keydown', keydownHandler);
+      document.removeEventListener('keyup', keyupHandler);
+
+      // Update our key states to match currently pressed keys
+      const allKeys = Object.keys(this.keys);
+      for (const key of allKeys) {
+        this.keys[key] = currentlyPressed.has(key);
+      }
+
+      // Also add any newly detected pressed keys
+      for (const key of currentlyPressed) {
+        this.keys[key] = true;
+      }
+    }, 16); // One frame delay at 60fps
   }
 }

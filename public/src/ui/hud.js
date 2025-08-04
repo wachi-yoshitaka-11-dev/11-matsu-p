@@ -137,11 +137,11 @@ export class Hud {
           this.player.fp = this.player.maxFp;
           this.player.stamina = this.player.maxStamina;
 
-          // Clear key states to prevent movement after level up
-          this.game.inputController.clearKeyStates();
-
           this.game.togglePause();
           this.game.setPauseMenuVisibility(false);
+
+          // Re-evaluate key states to sync with actual keyboard state
+          this.game.inputController.reevaluateKeyStates();
         } else {
           this._updateStatusPointsDisplay();
         }

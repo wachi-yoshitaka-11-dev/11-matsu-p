@@ -13,10 +13,10 @@ export class PauseMenu {
     this.resumeButton = document.createElement('button');
     this.resumeButton.textContent = localization.getText('ui.resume');
     this.resumeButton.addEventListener('click', () => {
-      // Clear key states when resuming to prevent stuck movement
-      this.game.inputController.clearKeyStates();
       this.game.togglePause();
       this.game.setPauseMenuVisibility(false);
+      // Re-evaluate key states to sync with actual keyboard state
+      this.game.inputController.reevaluateKeyStates();
     });
     this.container.appendChild(this.resumeButton);
 
@@ -31,10 +31,7 @@ export class PauseMenu {
   toggle(show) {
     this.container.style.display = show ? 'flex' : 'none';
 
-    // Clear key states when showing pause menu to prevent stuck movement
-    if (show) {
-      this.game.inputController.clearKeyStates();
-    }
+    // Keys will naturally stop having effect during pause display
   }
 
   dispose() {
