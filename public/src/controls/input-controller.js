@@ -246,7 +246,6 @@ export class InputController {
       }
     }
 
-    this.player.isGuarding = this.keys['KeyG'] && this.player.stamina > 0;
     if (this.player.isGuarding) {
       this.player.stamina -=
         (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
