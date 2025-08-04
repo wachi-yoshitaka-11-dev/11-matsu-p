@@ -1,35 +1,76 @@
 {
-  "default": {
-    "name": "村人",
-    "model": "npc.glb",
-    "description": "村の住民",
+  "owl": {
+    "name": "賢者フクロウ",
+    "model": "owl.glb",
+    "description": "冒険の始まりを見守る賢い鳥",
+    "stage": "tutorial-plains",
     "interactionRange": 5,
     "dialogue": [
-      "こんにちは、冒険者よ。\n村へようこそ。",
-      "この先には強力なボスが\n待ち構えているぞ。\n\n十分に準備してから挑むのじゃ。",
-      "気をつけて進むんじゃ。\n幸運を祈っておる。"
+      "ホーホー、新たな冒険者がやってきたな。\nこの「始まりの地」へようこそ。",
+      "ここは君の冒険の第一歩となる場所だ。\n基本的な戦闘を覚えて、\n次のステージへ進む準備をしなさい。",
+      "敵を全て倒せば、次のエリアへの道が開かれる。\n気をつけて進むのじゃ。\nホーホー。"
     ]
   },
-  "guide": {
-    "name": "案内人",
-    "model": "npc.glb",
-    "description": "冒険の案内をしてくれる",
+  "forest-hermit": {
+    "name": "森の隠者",
+    "model": "hermit.glb",
+    "description": "呪われた森に住む謎の人物",
+    "stage": "cursed-forest",
     "interactionRange": 5,
     "dialogue": [
-      "ようこそ、冒険者よ！\nこの世界は危険に満ちている。",
-      "WASDキーで移動\nマウスで視点を動かせるぞ。\n\nスペースキーでジャンプだ！",
-      "敵を倒してレベルアップしよう！\n経験を積めば強くなれる。"
+      "フフフ...また迷い込んできた者がいるな。\nこの森は危険じゃ。",
+      "毒キノコの胞子に気をつけろ。\n解毒薬があれば安心だが...。\nあそこの茂みに生えているぞ。",
+      "この森の奥には古い城がある。\nそこには更なる試練が待っている。\n準備はよいか？"
     ]
   },
-  "merchant": {
-    "name": "商人",
-    "model": "npc.glb",
-    "description": "アイテムを売ってくれる商人",
+  "ghost-knight": {
+    "name": "亡霊騎士",
+    "model": "ghost-knight.glb",
+    "description": "古城を守り続ける騎士の霊",
+    "stage": "ancient-ruins",
     "interactionRange": 5,
     "dialogue": [
-      "いらっしゃい！\n何か必要なものはあるかい？\n\n品揃えには自信があるぞ！",
-      "良い武器や防具を揃えているよ。\n君にぴったりのものが\nきっと見つかるはずだ。",
-      "冒険に役立つアイテムもあるぞ！\nポーションや特別な道具など\n何でも揃っている。"
+      "我が名は古城の守護騎士...。\n生者よ、何故この地に？",
+      "この城にはかつての栄光が眠っている。\n番犬を倒せば、\n古の武器を手に入れられるだろう。",
+      "北の雪山は過酷な環境だ。\n十分な準備をして挑むがよい。\n武運を祈る..."
     ]
+  },
+  "mountain-spirit": {
+    "name": "雪山の精霊",
+    "model": "mountain-spirit.glb",
+    "description": "雪山に宿る自然の精霊",
+    "stage": "snowy-mountain",
+    "interactionRange": 5,
+    "dialogue": [
+      "風の声が聞こえる...。\n勇敢な魂がここまで辿り着いた。",
+      "この山は厳しい寒さで旅人を試す。\n防寒具があれば、\n寒さによるダメージを軽減できる。",
+      "深淵の洞窟...そこには古の封印がある。\n強大な力を持つ者が眠っている。\n覚悟はあるか？"
+    ]
+  },
+  "crystal-sage": {
+    "name": "水晶の賢者",
+    "model": "crystal-sage.glb",
+    "description": "洞窟の奥で古の知識を守る賢者",
+    "stage": "abyss-cave",
+    "interactionRange": 5,
+    "dialogue": [
+      "ここまで来るとは...。\n汝、真の勇者なり。\nしかし最後の試練が待っている。",
+      "猫又は古の封印によって\nこの洞窟の最深部に眠っている。\nボスの鍵が必要じゃ。",
+      "この戦いが終われば、\n汝の冒険も一つの区切りを迎える。\n全ての力を出し切るのじゃ！"
+    ]
+  },
+  "wandering-merchant": {
+    "name": "旅商人",
+    "model": "wandering-merchant.glb",
+    "description": "各地を旅する謎の商人",
+    "stage": "any",
+    "interactionRange": 5,
+    "canTravel": true,
+    "dialogue": [
+      "やあやあ、お疲れさま！\n良いものを取り揃えているよ。\n何か必要なものはあるかい？",
+      "この先の道は険しいだろう。\n回復アイテムは多めに\n持っておくことをお勧めするよ。",
+      "君のような冒険者には\n特別価格でご提供しよう！\nまた会ったら声をかけてくれ。"
+    ],
+    "shopItems": ["potion", "fpPotion", "antidote"]
   }
 }

@@ -1085,3 +1085,69 @@ canvas {
     transform: scale(1.05);
   }
 }
+
+/* =============================================================
+   ステージシステム
+============================================================= */
+
+/* ステージ情報表示 */
+#stage-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+#current-stage-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+#stage-progress {
+  font-size: 12px;
+  color: #ccc;
+}
+
+#stage-clear-status {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* ステージローディング画面 */
+#stage-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 24px;
+  z-index: 1000;
+  font-family: 'Arial', sans-serif;
+}
+
+/* ステージ出口プロンプト */
+#exit-prompt {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+  z-index: 500;
+}

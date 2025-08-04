@@ -412,7 +412,7 @@ export class Player extends Character {
     const direction = new THREE.Vector3();
     this.mesh.getWorldDirection(direction);
     const projectile = new Projectile(
-      this.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
+      this.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0)),
       direction,
       this.game
     );

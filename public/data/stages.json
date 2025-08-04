@@ -1,0 +1,771 @@
+{
+  "stages": [
+    {
+      "id": "tutorial-plains",
+      "name": {
+        "ja": "始まりの地",
+        "en": "Plains of Beginning"
+      },
+      "description": "穏やかな平原と小さな遺跡。冒険の始まりの場所。",
+      "type": "plains",
+      "clearCondition": {
+        "type": "kill-all-enemies"
+      },
+      "environment": {
+        "lighting": {
+          "intensity": 1.0,
+          "color": 16777215
+        },
+        "fog": {
+          "density": 0.0
+        },
+        "weather": "clear",
+        "bgm": {
+          "normal": "bgm-level-01_01",
+          "nearClear": "bgm-level-01_02"
+        }
+      },
+      "fieldConfig": {
+        "size": 120,
+        "segments": 60,
+        "heightVariation": 3.0,
+        "heightFrequency": 0.08,
+        "texture": "ground-texture",
+        "textureRepeat": { "x": 12, "y": 12 },
+        "color": 0x4a7d2c
+      },
+      "environmentalEffects": {
+        "coldDamage": { "enabled": false },
+        "poisonAreas": { "enabled": false },
+        "slippery": { "enabled": false },
+        "movementSpeedModifier": 1.0,
+        "jumpHeightModifier": 1.0
+      },
+      "boundaries": {
+        "playableArea": { "minX": -60, "maxX": 60, "minZ": -60, "maxZ": 60 },
+        "fallDeathY": -20,
+        "maxHeight": 50,
+        "safeZones": [{ "center": { "x": 0, "z": 0 }, "radius": 10 }]
+      },
+      "particles": {
+        "enabled": true,
+        "effects": [
+          { "type": "dust", "intensity": 0.3, "color": 0xd2b48c },
+          { "type": "pollen", "intensity": 0.5, "color": 0xffff99 }
+        ]
+      },
+      "audio": {
+        "ambient": ["wind-soft", "bird-chirping"],
+        "footsteps": "grass",
+        "echo": { "enabled": false },
+        "distanceAttenuation": 1.0,
+        "environmentalSounds": []
+      },
+      "config": {
+        "enemies": [
+          {
+            "type": "normal",
+            "enemyType": "rat",
+            "count": 3,
+            "spawnArea": {
+              "center": { "x": 15, "y": 1, "z": 15 },
+              "size": { "x": 20, "y": 0, "z": 20 }
+            }
+          },
+          {
+            "type": "normal",
+            "enemyType": "crow",
+            "count": 2,
+            "spawnArea": {
+              "center": { "x": -15, "y": 1, "z": -15 },
+              "size": { "x": 15, "y": 0, "z": 15 }
+            }
+          }
+        ],
+        "npcs": [
+          {
+            "type": "owl",
+            "position": { "x": 5, "y": 1, "z": 5 }
+          }
+        ],
+        "items": [
+          {
+            "type": "potion",
+            "count": 3,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 0 },
+              "size": { "x": 40, "y": 0, "z": 40 }
+            }
+          }
+        ]
+      },
+      "terrain": [
+        {
+          "type": "tree",
+          "count": 8,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 80, "y": 0, "z": 80 }
+          }
+        },
+        {
+          "type": "grass",
+          "count": 25,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 100, "y": 0, "z": 100 }
+          }
+        },
+        {
+          "type": "rock",
+          "count": 5,
+          "spawnArea": {
+            "center": { "x": 20, "y": 0, "z": -20 },
+            "size": { "x": 40, "y": 0, "z": 40 }
+          }
+        }
+      ],
+      "spawnPoints": [{ "x": 0, "y": 2, "z": 0 }],
+      "exitPoints": [
+        {
+          "x": 40,
+          "y": 1,
+          "z": 0,
+          "targetStage": "cursed-forest"
+        }
+      ]
+    },
+    {
+      "id": "cursed-forest",
+      "name": {
+        "ja": "呪われた森",
+        "en": "Cursed Forest"
+      },
+      "description": "薄暗く霧深い森。視界が悪く、隠れた敵が多い。",
+      "type": "forest",
+      "clearCondition": {
+        "type": "kill-all-enemies"
+      },
+      "environment": {
+        "lighting": {
+          "intensity": 0.6,
+          "color": 13421772
+        },
+        "fog": {
+          "density": 0.003,
+          "color": 8947848
+        },
+        "weather": "foggy",
+        "bgm": {
+          "normal": "bgm-level-02_01",
+          "nearClear": "bgm-level-02_02"
+        }
+      },
+      "fieldConfig": {
+        "size": 100,
+        "segments": 50,
+        "heightVariation": 2.0,
+        "heightFrequency": 0.12,
+        "texture": "ground-texture",
+        "textureRepeat": { "x": 10, "y": 10 },
+        "color": 0x2d4a2d
+      },
+      "environmentalEffects": {
+        "coldDamage": { "enabled": false },
+        "poisonAreas": {
+          "enabled": true,
+          "zones": [
+            {
+              "center": { "x": -10, "z": -20 },
+              "radius": 15,
+              "damagePerSecond": 1
+            }
+          ],
+          "damagePerSecond": 1,
+          "warningColor": 0x90ee90
+        },
+        "slippery": { "enabled": false },
+        "movementSpeedModifier": 0.9,
+        "jumpHeightModifier": 0.8
+      },
+      "boundaries": {
+        "playableArea": { "minX": -50, "maxX": 50, "minZ": -50, "maxZ": 50 },
+        "fallDeathY": -15,
+        "maxHeight": 40,
+        "restrictedZones": [
+          { "center": { "x": -10, "z": -20 }, "radius": 15, "type": "poison" }
+        ]
+      },
+      "particles": {
+        "enabled": true,
+        "effects": [
+          { "type": "mist", "intensity": 0.8, "color": 0x708090 },
+          { "type": "spores", "intensity": 0.6, "color": 0x90ee90 },
+          { "type": "fireflies", "intensity": 0.4, "color": 0xffff00 }
+        ]
+      },
+      "audio": {
+        "ambient": ["forest-ambience", "mysterious-whispers"],
+        "footsteps": "leaves",
+        "echo": { "enabled": true, "intensity": 0.3 },
+        "distanceAttenuation": 0.8,
+        "environmentalSounds": [
+          { "type": "owl-hoot", "chance": 0.1, "volume": 0.4 },
+          { "type": "branch-crack", "chance": 0.05, "volume": 0.6 }
+        ]
+      },
+      "config": {
+        "enemies": [
+          {
+            "type": "normal",
+            "enemyType": "wolf",
+            "count": 4,
+            "spawnArea": {
+              "center": { "x": 10, "y": 1, "z": 20 },
+              "size": { "x": 30, "y": 0, "z": 30 }
+            }
+          },
+          {
+            "type": "normal",
+            "enemyType": "mushroom",
+            "count": 6,
+            "spawnArea": {
+              "center": { "x": -10, "y": 1, "z": -20 },
+              "size": { "x": 25, "y": 0, "z": 25 }
+            }
+          }
+        ],
+        "npcs": [],
+        "items": [
+          {
+            "type": "antidote",
+            "count": 2,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 0 },
+              "size": { "x": 50, "y": 0, "z": 50 }
+            }
+          },
+          {
+            "type": "potion",
+            "count": 2,
+            "spawnArea": {
+              "center": { "x": 25, "y": 1, "z": -25 },
+              "size": { "x": 20, "y": 0, "z": 20 }
+            }
+          }
+        ]
+      },
+      "terrain": [
+        {
+          "type": "dead-tree",
+          "count": 15,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 90, "y": 0, "z": 90 }
+          }
+        },
+        {
+          "type": "bush",
+          "count": 20,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 80, "y": 0, "z": 80 }
+          }
+        },
+        {
+          "type": "rock",
+          "count": 8,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 70, "y": 0, "z": 70 }
+          }
+        }
+      ],
+      "spawnPoints": [{ "x": -35, "y": 2, "z": 0 }],
+      "exitPoints": [
+        {
+          "x": 45,
+          "y": 1,
+          "z": 10,
+          "targetStage": "ancient-ruins"
+        }
+      ]
+    },
+    {
+      "id": "ancient-ruins",
+      "name": {
+        "ja": "古城の廃墟",
+        "en": "Ancient Ruins"
+      },
+      "description": "崩れた城壁と塔。高低差のある立体的な構造。",
+      "type": "ruins",
+      "clearCondition": {
+        "type": "defeat-boss"
+      },
+      "environment": {
+        "lighting": {
+          "intensity": 0.8,
+          "color": 16764108
+        },
+        "fog": {
+          "density": 0.001,
+          "color": 11184810
+        },
+        "weather": "clear",
+        "bgm": {
+          "normal": "bgm-level-03_01",
+          "nearClear": "bgm-level-03_02"
+        }
+      },
+      "fieldConfig": {
+        "size": 140,
+        "segments": 70,
+        "heightVariation": 5.0,
+        "heightFrequency": 0.06,
+        "texture": "ground-texture",
+        "textureRepeat": { "x": 14, "y": 14 },
+        "color": 0x8b7d6b
+      },
+      "environmentalEffects": {
+        "coldDamage": { "enabled": false },
+        "poisonAreas": { "enabled": false },
+        "slippery": { "enabled": false },
+        "movementSpeedModifier": 1.0,
+        "jumpHeightModifier": 1.2,
+        "fallDamageMultiplier": 1.5
+      },
+      "boundaries": {
+        "playableArea": { "minX": -70, "maxX": 70, "minZ": -70, "maxZ": 70 },
+        "fallDeathY": -30,
+        "maxHeight": 80,
+        "climbableAreas": [
+          { "center": { "x": 0, "z": 30 }, "radius": 20, "maxHeight": 15 }
+        ]
+      },
+      "particles": {
+        "enabled": true,
+        "effects": [
+          { "type": "dust", "intensity": 0.4, "color": 0x8b7d6b },
+          { "type": "debris", "intensity": 0.3, "color": 0x696969 }
+        ]
+      },
+      "audio": {
+        "ambient": ["ruins-wind", "distant-echoes"],
+        "footsteps": "stone",
+        "echo": { "enabled": true, "intensity": 0.6 },
+        "distanceAttenuation": 1.2,
+        "environmentalSounds": [
+          { "type": "stone-drop", "chance": 0.08, "volume": 0.5 },
+          { "type": "ghost-wail", "chance": 0.03, "volume": 0.3 }
+        ]
+      },
+      "config": {
+        "enemies": [
+          {
+            "type": "normal",
+            "enemyType": "ghost",
+            "count": 3,
+            "spawnArea": {
+              "center": { "x": 20, "y": 1, "z": 15 },
+              "size": { "x": 25, "y": 0, "z": 25 }
+            }
+          },
+          {
+            "type": "normal",
+            "enemyType": "gargoyle",
+            "count": 2,
+            "spawnArea": {
+              "center": { "x": -15, "y": 1, "z": -20 },
+              "size": { "x": 20, "y": 0, "z": 20 }
+            }
+          },
+          {
+            "type": "boss",
+            "enemyType": "dog",
+            "count": 1,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 30 },
+              "size": { "x": 5, "y": 0, "z": 5 }
+            }
+          }
+        ],
+        "npcs": [],
+        "items": [
+          {
+            "type": "powerful-weapon",
+            "count": 1,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 35 },
+              "size": { "x": 5, "y": 0, "z": 5 }
+            }
+          },
+          {
+            "type": "potion",
+            "count": 4,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 0 },
+              "size": { "x": 60, "y": 0, "z": 60 }
+            }
+          }
+        ]
+      },
+      "terrain": [
+        {
+          "type": "ruins-pillar",
+          "count": 6,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 60, "y": 0, "z": 60 }
+          }
+        },
+        {
+          "type": "rock",
+          "count": 10,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 80, "y": 0, "z": 80 }
+          }
+        },
+        {
+          "type": "small-rock",
+          "count": 15,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 90, "y": 0, "z": 90 }
+          }
+        }
+      ],
+      "spawnPoints": [{ "x": -40, "y": 2, "z": -10 }],
+      "exitPoints": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 45,
+          "targetStage": "snowy-mountain"
+        }
+      ]
+    },
+    {
+      "id": "snowy-mountain",
+      "name": {
+        "ja": "雪山",
+        "en": "Snowy Mountain"
+      },
+      "description": "吹雪が吹き荒れる極寒の山。滑りやすい地形と環境ギミック。",
+      "type": "mountain",
+      "clearCondition": {
+        "type": "kill-all-enemies"
+      },
+      "environment": {
+        "lighting": {
+          "intensity": 0.8,
+          "color": 9215743
+        },
+        "fog": {
+          "density": 0.002,
+          "color": 15658734
+        },
+        "weather": "snowy",
+        "bgm": {
+          "normal": "bgm-level-04_01",
+          "nearClear": "bgm-level-04_02"
+        }
+      },
+      "fieldConfig": {
+        "size": 130,
+        "segments": 65,
+        "heightVariation": 8.0,
+        "heightFrequency": 0.05,
+        "texture": "ground-texture",
+        "textureRepeat": { "x": 13, "y": 13 },
+        "color": 0xf0f8ff
+      },
+      "environmentalEffects": {
+        "coldDamage": {
+          "enabled": true,
+          "damagePerSecond": 2,
+          "protectionItems": ["warm-gear"],
+          "immunityDuration": 300
+        },
+        "poisonAreas": { "enabled": false },
+        "slippery": {
+          "enabled": true,
+          "frictionMultiplier": 0.3,
+          "slipChance": 0.1
+        },
+        "movementSpeedModifier": 0.8,
+        "jumpHeightModifier": 0.7
+      },
+      "boundaries": {
+        "playableArea": { "minX": -65, "maxX": 65, "minZ": -65, "maxZ": 65 },
+        "fallDeathY": -50,
+        "maxHeight": 100,
+        "dangerousAreas": [
+          { "center": { "x": 25, "z": 20 }, "radius": 18, "type": "avalanche" }
+        ],
+        "slipperySlopes": [
+          { "center": { "x": -20, "z": -15 }, "radius": 25, "angle": 30 }
+        ]
+      },
+      "particles": {
+        "enabled": true,
+        "effects": [
+          {
+            "type": "snow",
+            "intensity": 1.0,
+            "color": 0xffffff,
+            "windStrength": 0.5
+          },
+          { "type": "ice_crystals", "intensity": 0.3, "color": 0x87ceeb }
+        ]
+      },
+      "audio": {
+        "ambient": ["howling-wind", "ice-cracking"],
+        "footsteps": "snow",
+        "echo": { "enabled": true, "intensity": 0.4 },
+        "distanceAttenuation": 1.5,
+        "environmentalSounds": [
+          { "type": "wind-gust", "chance": 0.15, "volume": 0.7 },
+          { "type": "avalanche-distant", "chance": 0.02, "volume": 0.8 }
+        ]
+      },
+      "config": {
+        "enemies": [
+          {
+            "type": "normal",
+            "enemyType": "ice-golem",
+            "count": 2,
+            "spawnArea": {
+              "center": { "x": 25, "y": 1, "z": 20 },
+              "size": { "x": 20, "y": 0, "z": 20 }
+            }
+          },
+          {
+            "type": "normal",
+            "enemyType": "snow-leopard",
+            "count": 3,
+            "spawnArea": {
+              "center": { "x": -20, "y": 1, "z": -15 },
+              "size": { "x": 30, "y": 0, "z": 30 }
+            }
+          }
+        ],
+        "npcs": [],
+        "items": [
+          {
+            "type": "warm-gear",
+            "count": 1,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 0 },
+              "size": { "x": 10, "y": 0, "z": 10 }
+            }
+          },
+          {
+            "type": "potion",
+            "count": 3,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 0 },
+              "size": { "x": 70, "y": 0, "z": 70 }
+            }
+          }
+        ]
+      },
+      "terrain": [
+        {
+          "type": "ice-rock",
+          "count": 12,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 90, "y": 0, "z": 90 }
+          }
+        },
+        {
+          "type": "small-rock",
+          "count": 8,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 70, "y": 0, "z": 70 }
+          }
+        }
+      ],
+      "spawnPoints": [{ "x": 0, "y": 2, "z": -40 }],
+      "exitPoints": [
+        {
+          "x": 0,
+          "y": 1,
+          "z": 45,
+          "targetStage": "abyss-cave"
+        }
+      ]
+    },
+    {
+      "id": "abyss-cave",
+      "name": {
+        "ja": "深淵の洞窟",
+        "en": "Abyss Cave"
+      },
+      "description": "溶岩と水晶が輝く地下洞窟。強力な敵とラスボスが待つ最終エリア。",
+      "type": "cave",
+      "clearCondition": {
+        "type": "defeat-boss"
+      },
+      "environment": {
+        "lighting": {
+          "intensity": 0.3,
+          "color": 8947848
+        },
+        "fog": {
+          "density": 0.005,
+          "color": 5592405
+        },
+        "weather": "clear",
+        "bgm": {
+          "normal": "bgm-level-05_01",
+          "nearClear": "bgm-level-05_02"
+        }
+      },
+      "fieldConfig": {
+        "size": 110,
+        "segments": 55,
+        "heightVariation": 4.0,
+        "heightFrequency": 0.1,
+        "texture": "ground-texture",
+        "textureRepeat": { "x": 11, "y": 11 },
+        "color": 0x4a3c2a
+      },
+      "environmentalEffects": {
+        "coldDamage": { "enabled": false },
+        "poisonAreas": { "enabled": false },
+        "slippery": { "enabled": false },
+        "movementSpeedModifier": 1.0,
+        "jumpHeightModifier": 1.1,
+        "echoEffect": { "enabled": true, "intensity": 0.8 },
+        "darkVision": { "enabled": true, "lightRadius": 10 }
+      },
+      "boundaries": {
+        "playableArea": { "minX": -55, "maxX": 55, "minZ": -55, "maxZ": 55 },
+        "fallDeathY": -100,
+        "maxHeight": 30,
+        "lavaZones": [
+          {
+            "center": { "x": 15, "z": 25 },
+            "radius": 12,
+            "damagePerSecond": 10
+          }
+        ],
+        "hiddenPassages": [
+          {
+            "entrance": { "x": -30, "z": -30 },
+            "exit": { "x": 30, "z": 30 },
+            "width": 3
+          }
+        ]
+      },
+      "particles": {
+        "enabled": true,
+        "effects": [
+          { "type": "embers", "intensity": 0.7, "color": 0xff4500 },
+          { "type": "smoke", "intensity": 0.4, "color": 0x2f4f4f },
+          { "type": "crystal_sparkles", "intensity": 0.8, "color": 0x00ced1 }
+        ]
+      },
+      "audio": {
+        "ambient": ["cave-drips", "lava-bubbling", "crystal-hum"],
+        "footsteps": "cave",
+        "echo": { "enabled": true, "intensity": 0.8 },
+        "distanceAttenuation": 0.6,
+        "environmentalSounds": [
+          { "type": "lava-splash", "chance": 0.12, "volume": 0.6 },
+          { "type": "crystal-chime", "chance": 0.08, "volume": 0.4 },
+          { "type": "deep-rumble", "chance": 0.05, "volume": 0.9 }
+        ]
+      },
+      "config": {
+        "enemies": [
+          {
+            "type": "normal",
+            "enemyType": "fire-elemental",
+            "count": 4,
+            "spawnArea": {
+              "center": { "x": 15, "y": 1, "z": 25 },
+              "size": { "x": 30, "y": 0, "z": 30 }
+            }
+          },
+          {
+            "type": "normal",
+            "enemyType": "crystal-guardian",
+            "count": 2,
+            "spawnArea": {
+              "center": { "x": -20, "y": 1, "z": -15 },
+              "size": { "x": 25, "y": 0, "z": 25 }
+            }
+          },
+          {
+            "type": "boss",
+            "enemyType": "nekomata",
+            "count": 1,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 40 },
+              "size": { "x": 5, "y": 0, "z": 5 }
+            }
+          }
+        ],
+        "npcs": [],
+        "items": [
+          {
+            "type": "ultimate-skill",
+            "count": 1,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 45 },
+              "size": { "x": 5, "y": 0, "z": 5 }
+            }
+          },
+          {
+            "type": "boss-key",
+            "count": 1,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 35 },
+              "size": { "x": 5, "y": 0, "z": 5 }
+            }
+          },
+          {
+            "type": "potion",
+            "count": 5,
+            "spawnArea": {
+              "center": { "x": 0, "y": 1, "z": 0 },
+              "size": { "x": 80, "y": 0, "z": 80 }
+            }
+          }
+        ]
+      },
+      "terrain": [
+        {
+          "type": "crystal-formation",
+          "count": 8,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 80, "y": 0, "z": 80 }
+          }
+        },
+        {
+          "type": "rock",
+          "count": 15,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 100, "y": 0, "z": 100 }
+          }
+        },
+        {
+          "type": "small-rock",
+          "count": 20,
+          "spawnArea": {
+            "center": { "x": 0, "y": 0, "z": 0 },
+            "size": { "x": 90, "y": 0, "z": 90 }
+          }
+        }
+      ],
+      "spawnPoints": [{ "x": 0, "y": 2, "z": -45 }],
+      "exitPoints": []
+    }
+  ]
+}

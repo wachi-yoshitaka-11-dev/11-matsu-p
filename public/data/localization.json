@@ -48,6 +48,20 @@
       "shield": "←",
       "item": "↓",
       "skill": "↑"
+    },
+    "stages": {
+      "info": "ステージ情報",
+      "loading": "ステージを読み込み中...",
+      "cleared": "ステージクリア！",
+      "killAllEnemies": "敵を全て倒そう",
+      "defeatBoss": "ボスを倒そう",
+      "collectItem": "アイテムを取得しよう",
+      "reachExit": "出口に向かおう",
+      "enemiesRemaining": "敵を倒そう (残り: {0})",
+      "canProceed": "移動可能",
+      "needToClear": "ステージクリアが必要",
+      "enterToMove": "Enterキーで「{0}」に移動",
+      "unknownCondition": "不明な条件"
     }
   },
   "en": {
@@ -99,6 +113,20 @@
       "shield": "←",
       "item": "↓",
       "skill": "↑"
+    },
+    "stages": {
+      "info": "Stage Info",
+      "loading": "Loading stage...",
+      "cleared": "Stage Cleared!",
+      "killAllEnemies": "Defeat all enemies",
+      "defeatBoss": "Defeat the boss",
+      "collectItem": "Collect the item",
+      "reachExit": "Reach the exit",
+      "enemiesRemaining": "Defeat enemies (remaining: {0})",
+      "canProceed": "Can proceed",
+      "needToClear": "Stage clear required",
+      "enterToMove": "Press Enter to move to \"{0}\"",
+      "unknownCondition": "Unknown condition"
     }
   }
 }

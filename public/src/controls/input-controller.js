@@ -69,6 +69,12 @@ export class InputController {
         this.keys[e.code] = false;
         return;
       }
+
+      if (e.code === 'Enter') {
+        this.handleStageTransition();
+        this.keys[e.code] = false;
+        return;
+      }
       if (!this._canProcessInput()) return;
 
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
@@ -554,5 +560,16 @@ export class InputController {
         this.keys[key] = true;
       }
     }, 16); // One frame delay at 60fps
+  }
+
+  handleStageTransition() {
+    if (!this._canProcessInput() || !this.game.stageManager) return;
+
+    const playerPosition = this.player.mesh.position;
+    const exitPoint = this.game.stageManager.checkExitCollision(playerPosition);
+
+    if (exitPoint) {
+      this.game.stageManager.handleExitInteraction(exitPoint);
+    }
   }
 }

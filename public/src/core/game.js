@@ -16,6 +16,7 @@ import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
 import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
+import { StageManager } from './stage-manager.js';
 import { localization } from '../utils/localization.js';
 
 export class Game {
@@ -29,6 +30,7 @@ export class Game {
     this.inputController = null;
     this.hud = null;
     this.enemyHealthBar = null;
+    this.stageManager = null;
 
     this.enemies = [];
     this.items = [];
@@ -113,6 +115,7 @@ export class Game {
       'items',
       'skills',
       'localization',
+      'terrain-objects',
     ];
     for (const fileName of dataFiles) {
       const data = await this.assetLoader.loadJSON(
@@ -283,10 +286,25 @@ export class Game {
     if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
-    // Start current level BGM
-    await this.startLevelBGM();
+
+    // Initialize and start stage system
+    try {
+      this.stageManager = new StageManager(this);
+      await this.stageManager.initialize();
+      await this.stageManager.startFirstStage();
+    } catch (error) {
+      console.error('Failed to initialize stage system:', error);
+      // Fallback to old field system
+      await this.startLevelBGM();
+    }
+
     this.playSound(AssetNames.SFX_START);
     this.sceneManager.renderer.domElement.requestPointerLock();
+  }
+
+  onStageChanged(stage) {
+    console.log(`Stage changed: ${stage.name}`);
+    // HUD update is handled automatically
   }
 
   isTextureAppliedToModel(modelName) {
@@ -453,6 +471,7 @@ export class Game {
     } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
       this.inputController?.update(deltaTime);
+      this.stageManager?.update(deltaTime);
 
       if (this.gameState === GameState.PLAYING) {
         this.enemyHealthBar?.update();

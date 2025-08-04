@@ -1,4 +1,8 @@
-import { GameState, AssetNames } from '../utils/constants.js';
+import {
+  GameState,
+  AssetNames,
+  StageClearConditions,
+} from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
@@ -19,6 +23,7 @@ export class Hud {
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
+    this.stageInfo = this.createStageInfo();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
 
@@ -26,6 +31,7 @@ export class Hud {
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
     this.container.appendChild(this.experienceDisplay);
+    this.container.appendChild(this.stageInfo);
     this.container.appendChild(this.levelUpMenu.element);
 
     // Add death overlay to body
@@ -197,6 +203,29 @@ export class Hud {
     return container;
   }
 
+  createStageInfo() {
+    const container = document.createElement('div');
+    container.id = 'stage-info';
+
+    const stageName = document.createElement('div');
+    stageName.id = 'current-stage-name';
+    stageName.textContent = localization.getText('stages.info');
+
+    const progress = document.createElement('div');
+    progress.id = 'stage-progress';
+    progress.textContent = '';
+
+    const clearStatus = document.createElement('div');
+    clearStatus.id = 'stage-clear-status';
+    clearStatus.textContent = localization.getText('stages.killAllEnemies');
+
+    container.appendChild(stageName);
+    container.appendChild(progress);
+    container.appendChild(clearStatus);
+
+    return container;
+  }
+
   createEquipmentSlot(keyHint, type) {
     const element = document.createElement('div');
     element.className = `equipment-slot ${type}`;
@@ -259,6 +288,9 @@ export class Hud {
 
     // Update experience display
     this.updateExperienceDisplay();
+
+    // Update stage info
+    this.updateStageInfo();
 
     this.deathOverlay.element.style.display = this.player.isDead
       ? 'flex'
@@ -334,6 +366,64 @@ export class Hud {
     const totalExpElement = document.getElementById('total-experience');
     if (totalExpElement) {
       totalExpElement.textContent = this.player.experience.toLocaleString();
+    }
+  }
+
+  updateStageInfo() {
+    if (!this.game.stageManager) return;
+
+    const stageNameElement = document.getElementById('current-stage-name');
+    const progressElement = document.getElementById('stage-progress');
+    const clearStatusElement = document.getElementById('stage-clear-status');
+
+    if (stageNameElement) {
+      const currentStageName = this.game.stageManager.getCurrentStageName();
+      stageNameElement.textContent =
+        currentStageName || localization.getText('stages.info');
+    }
+
+    if (progressElement) {
+      const progress = this.game.stageManager.getProgress();
+      progressElement.textContent = `${progress.current}/${progress.total} (${progress.percentage}%)`;
+    }
+
+    if (clearStatusElement) {
+      const currentStage = this.game.stageManager.getCurrentStage();
+      if (currentStage) {
+        let statusText = localization.getText('stages.unknownCondition');
+        switch (currentStage.clearCondition.type) {
+          case StageClearConditions.KILL_ALL_ENEMIES:
+            const aliveEnemies = this.game.enemies.filter(
+              (e) => !e.isDead
+            ).length;
+            statusText =
+              aliveEnemies > 0
+                ? localization
+                    .getText('stages.enemiesRemaining')
+                    .replace('{0}', aliveEnemies)
+                : localization.getText('stages.cleared');
+            break;
+          case StageClearConditions.DEFEAT_BOSS:
+            const boss = this.game.enemies.find(
+              (e) => e.constructor.name === 'Boss'
+            );
+            statusText =
+              boss && !boss.isDead
+                ? localization.getText('stages.defeatBoss')
+                : localization.getText('stages.cleared');
+            break;
+          case StageClearConditions.COLLECT_ITEM:
+            statusText = localization.getText('stages.collectItem');
+            break;
+          case StageClearConditions.REACH_EXIT:
+            statusText = localization.getText('stages.reachExit');
+            break;
+        }
+        clearStatusElement.textContent = statusText;
+        clearStatusElement.style.color = currentStage.isCleared
+          ? '#00ff00'
+          : '#fff';
+      }
     }
   }
 

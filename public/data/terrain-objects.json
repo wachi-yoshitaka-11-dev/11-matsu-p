@@ -1,0 +1,117 @@
+{
+  "tree": {
+    "name": "木",
+    "model": "tree.glb",
+    "description": "自然の木",
+    "type": "vegetation",
+    "scale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["tree"]
+  },
+  "grass": {
+    "name": "草",
+    "model": "grass.glb",
+    "description": "地面に生える草",
+    "type": "vegetation",
+    "scale": { "x": 0.8, "y": 0.8, "z": 0.8 },
+    "collision": false,
+    "castShadow": false,
+    "receiveShadow": true,
+    "variants": ["grass"]
+  },
+  "rock": {
+    "name": "岩",
+    "model": "rock.glb",
+    "description": "自然の岩石",
+    "type": "mineral",
+    "scale": { "x": 1.2, "y": 1.2, "z": 1.2 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["rock"]
+  },
+  "small-rock": {
+    "name": "小さな岩",
+    "model": "rock.glb",
+    "description": "小さな岩石",
+    "type": "mineral",
+    "scale": { "x": 0.6, "y": 0.6, "z": 0.6 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["rock"]
+  },
+  "large-tree": {
+    "name": "大きな木",
+    "model": "tree.glb",
+    "description": "大きく成長した木",
+    "type": "vegetation",
+    "scale": { "x": 1.5, "y": 1.8, "z": 1.5 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["tree"]
+  },
+  "bush": {
+    "name": "茂み",
+    "model": "grass.glb",
+    "description": "低い茂み",
+    "type": "vegetation",
+    "scale": { "x": 1.2, "y": 0.6, "z": 1.2 },
+    "collision": false,
+    "castShadow": false,
+    "receiveShadow": true,
+    "variants": ["grass"]
+  },
+  "dead-tree": {
+    "name": "枯れ木",
+    "model": "tree.glb",
+    "description": "枯れた木",
+    "type": "vegetation",
+    "scale": { "x": 0.9, "y": 1.1, "z": 0.9 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["tree"],
+    "tint": 0x8b7d6b
+  },
+  "crystal-formation": {
+    "name": "水晶の群生",
+    "model": "rock.glb",
+    "description": "洞窟に生える水晶",
+    "type": "mineral",
+    "scale": { "x": 0.8, "y": 1.4, "z": 0.8 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["rock"],
+    "tint": 0x87ceeb,
+    "emissive": 0x1a4d6b
+  },
+  "ice-rock": {
+    "name": "氷の岩",
+    "model": "rock.glb",
+    "description": "氷に覆われた岩",
+    "type": "mineral",
+    "scale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["rock"],
+    "tint": 0xb0e0e6
+  },
+  "ruins-pillar": {
+    "name": "遺跡の柱",
+    "model": "rock.glb",
+    "description": "古い建造物の柱",
+    "type": "structure",
+    "scale": { "x": 0.6, "y": 2.0, "z": 0.6 },
+    "collision": true,
+    "castShadow": true,
+    "receiveShadow": true,
+    "variants": ["rock"],
+    "tint": 0x8b7d6b
+  }
+}

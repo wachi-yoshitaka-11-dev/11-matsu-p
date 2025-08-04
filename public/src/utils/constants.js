@@ -153,3 +153,49 @@ export const LevelBGM = [
   AssetNames.BGM_LEVEL_05_01,
   AssetNames.BGM_LEVEL_05_02,
 ];
+
+// Stage System Constants
+export const StageIds = {
+  TUTORIAL_PLAINS: 'tutorial-plains',
+  CURSED_FOREST: 'cursed-forest',
+  ANCIENT_RUINS: 'ancient-ruins',
+  SNOWY_MOUNTAIN: 'snowy-mountain',
+  ABYSS_CAVE: 'abyss-cave',
+};
+
+export const StageTypes = {
+  PLAINS: 'plains',
+  FOREST: 'forest',
+  RUINS: 'ruins',
+  MOUNTAIN: 'mountain',
+  CAVE: 'cave',
+};
+
+export const StageClearConditions = {
+  KILL_ALL_ENEMIES: 'kill-all-enemies',
+  DEFEAT_BOSS: 'defeat-boss',
+  COLLECT_ITEM: 'collect-item',
+  REACH_EXIT: 'reach-exit',
+};
+
+export const StageEnvironment = {
+  LIGHTING: {
+    BRIGHT: { intensity: 1.0, color: 0xffffff },
+    DIM: { intensity: 0.6, color: 0xcccccc },
+    DARK: { intensity: 0.3, color: 0x888888 },
+    COLD: { intensity: 0.8, color: 0x8ccfff },
+    WARM: { intensity: 0.9, color: 0xffd08c },
+  },
+  FOG: {
+    NONE: { density: 0.0 },
+    LIGHT: { density: 0.001, color: 0xffffff },
+    MEDIUM: { density: 0.003, color: 0xcccccc },
+    HEAVY: { density: 0.007, color: 0x888888 },
+  },
+  WEATHER: {
+    CLEAR: 'clear',
+    FOGGY: 'foggy',
+    SNOWY: 'snowy',
+    STORMY: 'stormy',
+  },
+};

@@ -23,9 +23,6 @@ export class Boss extends Character {
 
     this.player = player;
 
-    const initialPosition = this.game.data.enemies.boss.initialPosition;
-    this.placeOnGround(initialPosition.x, initialPosition.z);
-
     this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
     this.experience = this.game.data.enemies.boss.experience;
     this.isAttacking = false;

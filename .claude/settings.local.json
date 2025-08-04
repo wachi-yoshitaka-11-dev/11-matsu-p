@@ -5,7 +5,8 @@
       "Bash(npm test)",
       "Bash(gh pr view:*)",
       "Bash(npm run format:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "Bash(gh issue view:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

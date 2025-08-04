@@ -4,21 +4,126 @@
     "model": "potion.glb",
     "image": "potion.png",
     "description": "体力を回復するポーション",
-    "healAmount": 20
+    "healAmount": 20,
+    "type": "consumable"
   },
   "fpPotion": {
     "name": "FPポーション",
     "model": "fp-potion.glb",
     "image": "fp-potion.png",
     "description": "FPを回復するポーション",
-    "fpHealAmount": 30
+    "fpHealAmount": 30,
+    "type": "consumable"
   },
-  "generic": {
-    "name": "アイテム",
-    "model": "generic-item.glb",
-    "description": "一般的なアイテム",
-    "pickupRange": 2.0,
-    "sphereRadius": 0.2,
-    "geometrySegments": 8
+  "antidote": {
+    "name": "解毒薬",
+    "model": "antidote.glb",
+    "image": "antidote.png",
+    "description": "毒状態を治療し、毒耐性を一時的に付与する",
+    "stage": "cursed-forest",
+    "type": "consumable",
+    "healAmount": 10,
+    "curePoison": true,
+    "poisonResistance": 300
+  },
+  "powerful-weapon": {
+    "name": "強力な武器",
+    "model": "powerful-weapon.glb",
+    "image": "powerful-weapon.png",
+    "description": "古城で発見された強力な武器",
+    "stage": "ancient-ruins",
+    "type": "weapon",
+    "attackPower": 50,
+    "attackSpeed": 1.2,
+    "durability": 200
+  },
+  "warm-gear": {
+    "name": "防寒具",
+    "model": "warm-gear.glb",
+    "image": "warm-gear.png",
+    "description": "極寒から身を守る防具",
+    "stage": "snowy-mountain",
+    "type": "armor",
+    "coldResistance": 0.8,
+    "continuousDamageReduction": 0.5
+  },
+  "ultimate-skill": {
+    "name": "究極のスキル",
+    "model": "ultimate-skill.glb",
+    "image": "ultimate-skill.png",
+    "description": "伝説の力を秘めたスキル書",
+    "stage": "abyss-cave",
+    "type": "skill",
+    "skillType": "ultimate",
+    "damage": 150,
+    "range": 8,
+    "fpCost": 80
+  },
+  "boss-key": {
+    "name": "ボスの鍵",
+    "model": "boss-key.glb",
+    "image": "boss-key.png",
+    "description": "最深部への扉を開く古い鍵",
+    "stage": "abyss-cave",
+    "type": "key",
+    "opensArea": "final-boss-room"
+  },
+  "tutorial-treasure": {
+    "name": "初心者の宝箱",
+    "model": "treasure-chest.glb",
+    "image": "treasure-chest.png",
+    "description": "冒険者のための基本装備が入った宝箱",
+    "stage": "tutorial-plains",
+    "type": "container",
+    "contains": ["potion", "fpPotion"]
+  },
+  "forest-herb": {
+    "name": "森のハーブ",
+    "model": "herb.glb",
+    "image": "herb.png",
+    "description": "薬草として使える自然の恵み",
+    "stage": "cursed-forest",
+    "type": "material",
+    "healAmount": 15,
+    "canCraft": true
+  },
+  "ancient-coin": {
+    "name": "古代のコイン",
+    "model": "ancient-coin.glb",
+    "image": "ancient-coin.png",
+    "description": "古城時代の貴重な硬貨",
+    "stage": "ancient-ruins",
+    "type": "currency",
+    "value": 100
+  },
+  "ice-crystal": {
+    "name": "氷の結晶",
+    "model": "ice-crystal.glb",
+    "image": "ice-crystal.png",
+    "description": "永遠に溶けない美しい氷の結晶",
+    "stage": "snowy-mountain",
+    "type": "material",
+    "magicValue": 50,
+    "freezeEffect": true
+  },
+  "fire-gem": {
+    "name": "火の宝石",
+    "model": "fire-gem.glb",
+    "image": "fire-gem.png",
+    "description": "内部で炎が踊る神秘的な宝石",
+    "stage": "abyss-cave",
+    "type": "material",
+    "magicValue": 80,
+    "fireEffect": true
+  },
+  "crystal-shard": {
+    "name": "水晶の欠片",
+    "model": "crystal-shard.glb",
+    "image": "crystal-shard.png",
+    "description": "魔法の力を宿した水晶の欠片",
+    "stage": "abyss-cave",
+    "type": "material",
+    "magicValue": 30,
+    "lightEffect": true
   }
 }
