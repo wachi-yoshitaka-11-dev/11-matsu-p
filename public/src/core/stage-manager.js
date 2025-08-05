@@ -70,9 +70,28 @@ export class StageManager {
       }
 
       this.showLoadingScreen();
+
+      // Show stage transition message
+      this.updateLoadingProgress(
+        10,
+        localization.getText('stages.loadingStage').replace('{0}', stage.name)
+      );
+
+      // Load stage components with progress updates
       await stage.load();
+      this.updateLoadingProgress(
+        80,
+        localization.getText('stages.initializingEntities')
+      );
+
       this.currentStage = stage;
       this.currentStageIndex = this.stageOrder.indexOf(stageId);
+
+      this.updateLoadingProgress(100, localization.getText('stages.complete'));
+
+      // Brief delay to show completion
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       this.hideLoadingScreen();
 
       this.onStageLoaded(stage);
@@ -107,9 +126,22 @@ export class StageManager {
       }
 
       this.showLoadingScreen();
+
+      this.updateLoadingProgress(
+        20,
+        localization.getText('stages.creatingField').replace('{0}', stage.name)
+      );
       await stage.loadField();
+
       this.currentStage = stage;
       this.currentStageIndex = this.stageOrder.indexOf(stageId);
+
+      this.updateLoadingProgress(
+        100,
+        localization.getText('stages.fieldReady')
+      );
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       this.hideLoadingScreen();
 
       console.log(`Stage field "${stage.name}" loaded successfully`);
@@ -139,16 +171,46 @@ export class StageManager {
     if (!loadingElement) {
       loadingElement = document.createElement('div');
       loadingElement.id = 'stage-loading';
-      loadingElement.textContent = localization.getText('stages.loading');
+      loadingElement.innerHTML = `
+        <div class="loading-content">
+          <div class="loading-text">${localization.getText('stages.loading')}</div>
+          <div class="loading-progress">
+            <div class="loading-bar"></div>
+          </div>
+          <div class="loading-stage-info"></div>
+        </div>
+      `;
       document.body.appendChild(loadingElement);
     }
     loadingElement.style.display = 'flex';
+    loadingElement.style.opacity = '0';
+    loadingElement.offsetHeight; // Force reflow
+    loadingElement.style.opacity = '1';
   }
 
   hideLoadingScreen() {
     const loadingElement = document.getElementById('stage-loading');
     if (loadingElement) {
-      loadingElement.style.display = 'none';
+      loadingElement.style.opacity = '0';
+      setTimeout(() => {
+        loadingElement.style.display = 'none';
+      }, 300);
+    }
+  }
+
+  updateLoadingProgress(progress, message = '') {
+    const loadingElement = document.getElementById('stage-loading');
+    if (loadingElement) {
+      const progressBar = loadingElement.querySelector('.loading-bar');
+      const stageInfo = loadingElement.querySelector('.loading-stage-info');
+
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+      }
+
+      if (stageInfo && message) {
+        stageInfo.textContent = message;
+      }
     }
   }
 
@@ -230,6 +292,65 @@ export class StageManager {
     return this.stages.size;
   }
 
+  isOnFinalStage() {
+    return this.currentStageIndex >= this.getTotalStagesCount() - 1;
+  }
+
+  showStageTransitionPrompt() {
+    if (this.isOnFinalStage()) {
+      return;
+    }
+
+    const nextStage = this.stages.get(
+      this.stageOrder[this.currentStageIndex + 1]
+    );
+    const nextStageName = nextStage
+      ? nextStage.name
+      : localization.getText('stages.unknown');
+
+    const promptDiv = document.createElement('div');
+    promptDiv.id = 'stage-transition-prompt';
+    promptDiv.innerHTML = `
+      <div class="transition-content">
+        <h3>${localization.getText('stages.clearComplete')}</h3>
+        <p>${localization.getText('stages.nextStage')}: ${nextStageName}</p>
+        <div class="transition-buttons">
+          <button id="advance-stage-btn">${localization.getText('stages.advance')}</button>
+          <button id="stay-stage-btn">${localization.getText('stages.stay')}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(promptDiv);
+
+    // Event listeners
+    document
+      .getElementById('advance-stage-btn')
+      .addEventListener('click', () => {
+        this.hideStageTransitionPrompt();
+        this.goToNextStage();
+      });
+
+    document.getElementById('stay-stage-btn').addEventListener('click', () => {
+      this.hideStageTransitionPrompt();
+    });
+
+    // Auto-advance after 10 seconds
+    setTimeout(() => {
+      if (document.getElementById('stage-transition-prompt')) {
+        this.hideStageTransitionPrompt();
+        this.goToNextStage();
+      }
+    }, 10000);
+  }
+
+  hideStageTransitionPrompt() {
+    const promptDiv = document.getElementById('stage-transition-prompt');
+    if (promptDiv) {
+      promptDiv.remove();
+    }
+  }
+
   getProgress() {
     return {
       current: this.currentStageIndex + 1,
@@ -294,7 +415,8 @@ export class StageManager {
     }
 
     const targetStageName =
-      this.stages.get(exitPoint.targetStage)?.name || 'Next Stage';
+      this.stages.get(exitPoint.targetStage)?.name ||
+      localization.getText('stages.nextStage');
     const enterToMoveText = localization
       .getText('stages.enterToMove')
       .replace('{0}', targetStageName);
@@ -339,5 +461,51 @@ export class StageManager {
     this.currentStage = null;
     this.hideLoadingScreen();
     this.hideExitPrompt();
+  }
+
+  // Simple balance validation for stage difficulty progression
+  validateStageBalance() {
+    const balanceIssues = [];
+
+    this.stageOrder.forEach((stageId, index) => {
+      const stage = this.stages.get(stageId);
+      if (!stage || !stage.config.enemies) return;
+
+      stage.config.enemies.forEach((enemyConfig) => {
+        const enemyData = this.game.data.enemies[enemyConfig.enemyType];
+        if (!enemyData) return;
+
+        // Check if enemy difficulty scales appropriately with stage progression
+        const expectedMinHP = 20 + index * 30; // HP should increase with stage
+        const expectedMaxHP = 60 + index * 60;
+
+        if (enemyData.hp < expectedMinHP || enemyData.hp > expectedMaxHP) {
+          balanceIssues.push({
+            stage: stageId,
+            enemy: enemyConfig.enemyType,
+            issue: `HP ${enemyData.hp} outside expected range ${expectedMinHP}-${expectedMaxHP}`,
+            severity: 'warning',
+          });
+        }
+
+        // Check damage scaling
+        const expectedMinDamage = 5 + index * 10;
+        const expectedMaxDamage = 20 + index * 15;
+
+        if (
+          enemyData.damage < expectedMinDamage ||
+          enemyData.damage > expectedMaxDamage
+        ) {
+          balanceIssues.push({
+            stage: stageId,
+            enemy: enemyConfig.enemyType,
+            issue: `Damage ${enemyData.damage} outside expected range ${expectedMinDamage}-${expectedMaxDamage}`,
+            severity: 'info',
+          });
+        }
+      });
+    });
+
+    return balanceIssues;
   }
 }

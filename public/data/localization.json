@@ -61,7 +61,18 @@
       "canProceed": "移動可能",
       "needToClear": "ステージクリアが必要",
       "enterToMove": "Enterキーで「{0}」に移動",
-      "unknownCondition": "不明な条件"
+      "unknownCondition": "不明な条件",
+      "clearComplete": "ステージクリア！",
+      "nextStage": "次のステージ",
+      "advance": "進む",
+      "stay": "とどまる",
+      "progress": "進捗",
+      "loadingStage": "{0}を読み込み中...",
+      "initializingEntities": "エンティティを初期化中...",
+      "complete": "完了！",
+      "creatingField": "{0}のフィールドを作成中...",
+      "fieldReady": "フィールド準備完了！",
+      "unknown": "不明"
     }
   },
   "en": {
@@ -126,7 +137,18 @@
       "canProceed": "Can proceed",
       "needToClear": "Stage clear required",
       "enterToMove": "Press Enter to move to \"{0}\"",
-      "unknownCondition": "Unknown condition"
+      "unknownCondition": "Unknown condition",
+      "clearComplete": "Stage Cleared!",
+      "nextStage": "Next Stage",
+      "advance": "Advance",
+      "stay": "Stay Here",
+      "progress": "Progress",
+      "loadingStage": "Loading {0}...",
+      "initializingEntities": "Initializing entities...",
+      "complete": "Complete!",
+      "creatingField": "Creating field for {0}...",
+      "fieldReady": "Field ready!",
+      "unknown": "Unknown"
     }
   }
 }

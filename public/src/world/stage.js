@@ -421,6 +421,13 @@ export class Stage {
   onStageCleared() {
     console.log(`Stage "${this.name}" cleared!`);
     this.showExitPoints();
+
+    // Auto-advance to next stage after a delay (except for final stage)
+    if (this.game.stageManager && !this.game.stageManager.isOnFinalStage()) {
+      setTimeout(() => {
+        this.game.stageManager.showStageTransitionPrompt();
+      }, 2000);
+    }
   }
 
   showExitPoints() {

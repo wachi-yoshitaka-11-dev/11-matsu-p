@@ -906,4 +906,228 @@ test.describe('Mofu Mofu Adventure - UI & Interactions', () => {
     }
     await expect(page.locator('#level-up-menu')).not.toBeVisible();
   });
+
+  test('should transition between stages correctly', async ({ page }) => {
+    await navigateAndStartGame(page);
+
+    // Wait for stage manager to be ready
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage,
+      null,
+      { timeout: 10000 }
+    );
+
+    // Get initial stage
+    const initialStage = await page.evaluate(
+      () => window.game?.stageManager?.currentStage?.id
+    );
+    expect(initialStage).toBe('tutorial-plains');
+
+    // Simulate stage clear
+    await page.evaluate(() => {
+      if (window.game?.stageManager?.currentStage) {
+        window.game.stageManager.currentStage.isCleared = true;
+        window.game.stageManager.currentStage.onStageCleared();
+      }
+    });
+
+    // Wait for transition prompt to appear
+    await page.waitForSelector('#stage-transition-prompt', { timeout: 5000 });
+
+    // Click advance button
+    await page.click('#advance-stage-btn');
+
+    // Wait for stage to change
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage?.id !== 'tutorial-plains',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Verify new stage
+    const newStage = await page.evaluate(
+      () => window.game?.stageManager?.currentStage?.id
+    );
+    expect(newStage).toBe('cursed-forest');
+  });
+
+  test('should display stage loading animation', async ({ page }) => {
+    await navigateAndStartGame(page);
+
+    // Manually trigger stage transition to see loading screen
+    await page.evaluate(() => {
+      window.game?.stageManager?.goToNextStage();
+    });
+
+    // Check if loading screen appears
+    await page.waitForSelector('#stage-loading', { timeout: 3000 });
+
+    // Verify loading elements
+    await expect(page.locator('#stage-loading .loading-text')).toBeVisible();
+    await expect(
+      page.locator('#stage-loading .loading-progress')
+    ).toBeVisible();
+    await expect(page.locator('#stage-loading .loading-bar')).toBeVisible();
+
+    // Wait for loading to complete
+    await page.waitForSelector('#stage-loading', {
+      state: 'hidden',
+      timeout: 10000,
+    });
+  });
+
+  test('should load stage-specific enemies and terrain objects', async ({
+    page,
+  }) => {
+    await navigateAndStartGame(page);
+
+    // Wait for stage manager to be ready
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage,
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check if tutorial-plains has the correct enemies
+    const stageEnemies = await page.evaluate(() => {
+      const stage = window.game?.stageManager?.currentStage;
+      return stage?.enemies?.map((enemy) => enemy.enemyType) || [];
+    });
+
+    // Tutorial plains should have mouse and crow enemies
+    expect(stageEnemies).toEqual(expect.arrayContaining(['mouse', 'crow']));
+
+    // Check terrain objects are present
+    const terrainObjects = await page.evaluate(() => {
+      const stage = window.game?.stageManager?.currentStage;
+      return stage?.terrainObjects?.length || 0;
+    });
+
+    expect(terrainObjects).toBeGreaterThan(0);
+  });
+
+  test('should handle stage-specific environmental effects', async ({
+    page,
+  }) => {
+    await navigateAndStartGame(page);
+
+    // Move to snowy mountain stage to test cold damage
+    await page.evaluate(() => {
+      window.game?.stageManager?.goToStage('snowy-mountain');
+    });
+
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage?.id === 'snowy-mountain',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check if cold damage is enabled for snowy mountain
+    const coldDamageEnabled = await page.evaluate(() => {
+      const stage = window.game?.stageManager?.currentStage;
+      return stage?.config?.environmentalEffects?.coldDamage?.enabled || false;
+    });
+
+    expect(coldDamageEnabled).toBe(true);
+
+    // Test particles for snowy mountain
+    const snowParticles = await page.evaluate(() => {
+      const stage = window.game?.stageManager?.currentStage;
+      const particles = stage?.config?.particles?.effects || [];
+      return particles.some((effect) => effect.type === 'snow');
+    });
+
+    expect(snowParticles).toBe(true);
+  });
+
+  test('should display correct stage information in HUD', async ({ page }) => {
+    await navigateAndStartGame(page);
+
+    // Wait for HUD to be ready
+    await page.waitForSelector('#stage-info', { timeout: 5000 });
+
+    // Check stage name is displayed
+    const stageName = await page.locator('#current-stage-name').textContent();
+    expect(stageName).toContain('始まりの地'); // Tutorial plains name
+
+    // Check stage progress is displayed
+    const stageProgress = await page.locator('#stage-progress').textContent();
+    expect(stageProgress).toMatch(/1\/5/); // Should show 1 out of 5 stages
+
+    // Check clear status is displayed
+    await expect(page.locator('#stage-clear-status')).toBeVisible();
+  });
+
+  test('should switch BGM based on stage progress', async ({ page }) => {
+    await navigateAndStartGame(page);
+
+    // Wait for stage manager to be ready
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage,
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test normal BGM state
+    const normalBgmState = await page.evaluate(() => {
+      return window.game?.stageManager?.currentStage?.currentBgmState;
+    });
+    expect(normalBgmState).toBe('normal');
+
+    // Simulate approaching boss to trigger BGM switch
+    await page.evaluate(() => {
+      const stage = window.game?.stageManager?.currentStage;
+      if (stage) {
+        stage.switchBgmToNearClear();
+      }
+    });
+
+    // Check BGM switched to near clear
+    const nearClearBgmState = await page.evaluate(() => {
+      return window.game?.stageManager?.currentStage?.currentBgmState;
+    });
+    expect(nearClearBgmState).toBe('nearClear');
+  });
+
+  test('should maintain reasonable performance during stage transitions', async ({
+    page,
+  }) => {
+    await navigateAndStartGame(page);
+
+    // Measure performance during stage transition
+    const startTime = Date.now();
+
+    await page.evaluate(() => {
+      window.game?.stageManager?.goToNextStage();
+    });
+
+    // Wait for transition to complete
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage?.id === 'cursed-forest',
+      null,
+      { timeout: 15000 }
+    );
+
+    const endTime = Date.now();
+    const transitionTime = endTime - startTime;
+
+    // Stage transition should complete within 15 seconds
+    expect(transitionTime).toBeLessThan(15000);
+
+    // Check memory usage is reasonable
+    const memoryUsage = await page.evaluate(() => {
+      if (performance.memory) {
+        return {
+          usedJSHeapSize: performance.memory.usedJSHeapSize,
+          totalJSHeapSize: performance.memory.totalJSHeapSize,
+        };
+      }
+      return null;
+    });
+
+    if (memoryUsage) {
+      // Memory usage should be reasonable (less than 100MB)
+      expect(memoryUsage.usedJSHeapSize).toBeLessThan(100 * 1024 * 1024);
+    }
+  });
 });

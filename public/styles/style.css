@@ -18,202 +18,15 @@ canvas {
 }
 
 /* =============================================================
-   ポーズメニュー
+   表示制御ユーティリティクラス
 ============================================================= */
-#pause-menu {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0.9) 100%
-  );
-  backdrop-filter: blur(15px);
-  @supports not (backdrop-filter: blur(15px)) {
-    background: rgba(0, 0, 0, 0.85);
-  }
-  color: white;
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  z-index: 101;
-  animation: pause-fade-in 0.3s ease-out;
+/* Utility classes for controlling visibility - !important ensures these override inline styles */
+.show {
+  display: flex !important;
 }
 
-@keyframes pause-fade-in {
-  0% {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-  100% {
-    opacity: 1;
-    backdrop-filter: blur(15px);
-    @supports not (backdrop-filter: blur(15px)) {
-      background: rgba(0, 0, 0, 0.85);
-    }
-  }
-}
-
-/* Removed pause menu frame */
-
-#pause-menu > * {
-  position: relative;
-  z-index: 1;
-}
-
-#pause-menu h1 {
-  font-size: 2.5em;
-  margin-bottom: 30px;
-  text-align: center;
-  color: white;
-  text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    0 0 10px rgba(0, 0, 0, 0.8);
-  font-weight: bold;
-  font-family: 'Arial', 'Hiragino Sans', 'Yu Gothic', sans-serif;
-}
-
-#pause-menu button {
-  padding: 15px 30px;
-  font-size: 1.2em;
-  font-weight: 500;
-  cursor: pointer;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.05) 100%
-  );
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  font-family: inherit;
-  min-width: 200px;
-  position: relative;
-  overflow: hidden;
-}
-
-#pause-menu button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  transition: left 0.5s;
-}
-
-#pause-menu button:hover {
-  transform: translateY(-3px);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-#pause-menu button:hover::before {
-  left: 100%;
-}
-
-#pause-menu button:active {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-}
-
-/* =============================================================
-   ダイアログボックス
-============================================================= */
-#dialog-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(20, 20, 30, 0.95) 100%
-  );
-  backdrop-filter: blur(20px);
-  color: white;
-  padding: 30px 40px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  min-width: 400px;
-  max-width: 600px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  animation: dialog-appear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes dialog-appear {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-#dialog-box p {
-  margin-bottom: 25px;
-  font-size: 1.1em;
-  line-height: 1.8;
-  text-align: left;
-  margin-top: 0;
-  color: rgba(255, 255, 255, 0.95);
-  max-width: 500px;
-  word-wrap: break-word;
-}
-
-#dialog-box button {
-  padding: 12px 24px;
-  font-size: 0.95em;
-  font-weight: 500;
-  cursor: pointer;
-  background: linear-gradient(135deg, #666666 0%, #444444 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
-  font-family: inherit;
-}
-
-#dialog-box button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 102, 102, 0.6);
-  background: linear-gradient(135deg, #555555 0%, #777777 100%);
-}
-
-#dialog-box button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
+.hide {
+  display: none !important;
 }
 
 /* =============================================================
@@ -284,16 +97,6 @@ canvas {
   animation: shimmer 2s infinite;
 }
 
-@keyframes shimmer {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
 .status-bar-fill {
   height: 100%;
   border-radius: 6px;
@@ -316,15 +119,6 @@ canvas {
     transparent
   );
   animation: fill-shine 1.5s infinite;
-}
-
-@keyframes fill-shine {
-  0% {
-    left: -100%;
-  }
-  100% {
-    left: 100%;
-  }
 }
 
 #hp-bar .status-bar-fill {
@@ -362,89 +156,6 @@ canvas {
   opacity: 0;
   transition: opacity 1s;
   z-index: 100;
-}
-
-#level-up-menu {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(20, 20, 30, 0.95) 100%
-  );
-  backdrop-filter: blur(20px);
-  color: white;
-  padding: 30px 40px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  min-width: 400px;
-  max-width: 600px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  animation: dialog-appear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  display: none;
-  pointer-events: auto;
-}
-
-#level-up-menu h2 {
-  text-align: center;
-  margin: 0 0 25px 0;
-  font-size: 1.8em;
-  font-weight: 600;
-  color: white;
-  text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    0 0 10px rgba(0, 0, 0, 0.8);
-}
-
-#level-up-menu p {
-  margin-bottom: 25px;
-  font-size: 1.1em;
-  line-height: 1.8;
-  text-align: center;
-  margin-top: 0;
-  color: rgba(255, 255, 255, 0.95);
-  max-width: 500px;
-  word-wrap: break-word;
-}
-
-#level-up-menu button {
-  padding: 12px 24px;
-  font-size: 0.95em;
-  font-weight: 500;
-  cursor: pointer;
-  background: linear-gradient(135deg, #666666 0%, #444444 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
-  font-family: inherit;
-  margin-bottom: 15px;
-  display: block;
-  width: 100%;
-}
-
-#level-up-menu button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 102, 102, 0.6);
-  background: linear-gradient(135deg, #555555 0%, #777777 100%);
-}
-
-#level-up-menu button:active {
-  transform: translateY(0);
-  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
 }
 
 /* 経験値表示 */
@@ -646,257 +357,217 @@ canvas {
   animation: pulse 1s infinite;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(1.2);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
 /* =============================================================
-   シーケンス関連スタイル
+   UIコンポーネント - メニュー・ダイアログ
 ============================================================= */
-#sequence-overlay {
+
+/* ポーズメニュー */
+#pause-menu {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: transparent;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+  backdrop-filter: blur(15px);
+  @supports not (backdrop-filter: blur(15px)) {
+    background: rgba(0, 0, 0, 0.85);
+  }
   color: white;
   display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: sans-serif;
-  font-size: 2em;
-  text-align: center;
-  z-index: 10000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 101;
+  animation: pause-fade-in 0.3s ease-out;
 }
 
-.sequence-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: transparent;
-  color: white;
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-family: sans-serif;
-  font-size: 2em;
-  text-align: center;
-  z-index: 10000;
-}
+/* Removed pause menu frame */
 
-/* オーバーレイ内の背景画像 */
-.sequence-background-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.8s ease-in-out;
-  pointer-events: none;
-  z-index: -1; /* 背景に配置（負の値で確実に背景） */
-}
-
-.sequence-background-image.active {
-  opacity: 0.7; /* 背景画像を少し透過させてテキストを読みやすく */
-}
-
-/* オーバーレイ内のテキスト要素 */
-#sequence-overlay > div {
+#pause-menu > * {
   position: relative;
-  z-index: 1; /* 背景画像（z-index: -1）より前面に配置 */
-  text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    0 0 10px rgba(0, 0, 0, 0.8);
+  z-index: 1;
 }
 
-#sequence-overlay img:not(.sequence-background-image) {
-  max-width: 80%;
-  max-height: 80%;
-  object-fit: contain;
-}
-
-/* =============================================================
-   シーケンステキストアニメーション
-============================================================= */
-.sequence-text-large {
-  animation: sequenceTextLarge 5s ease-in-out forwards;
-  transform-origin: center;
-  opacity: 0;
-}
-
-.sequence-text-small {
-  animation: sequenceTextSmall 5s ease-in-out forwards;
-  transform-origin: center;
-  opacity: 0;
-}
-
-/* シーケンスオーバーレイのフェード */
-.sequence-overlay-fade-in {
-  animation: overlayFadeIn 1s ease-in-out forwards;
-}
-
-.sequence-overlay-fade-out {
-  animation: overlayFadeOut 1.5s ease-in-out forwards;
-}
-
-/* =============================================================
-   タイトル画面・ロゴアニメーション
-============================================================= */
-.title-fade-in {
-  animation: fadeIn 1s ease-in-out forwards;
-  opacity: 0;
-}
-
-.title-fade-out {
-  animation: fadeOut 1s ease-in-out forwards;
-  opacity: 1;
-}
-
-.logo-fade-out {
-  animation: fadeOut 1s ease-in-out forwards;
-  opacity: 1;
-}
-
-/* =============================================================
-   キーフレームアニメーション定義
-============================================================= */
-
-/* 基本フェード */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-/* オーバーレイフェード */
-@keyframes overlayFadeIn {
-  from {
-    opacity: 0;
-    background-color: black;
-  }
-  to {
-    opacity: 1;
-    background-color: transparent;
-  }
-}
-
-@keyframes overlayFadeOut {
-  from {
-    opacity: 1;
-    background-color: transparent;
-  }
-  to {
-    opacity: 0;
-    background-color: black;
-  }
-}
-
-/* シーケンステキストアニメーション */
-@keyframes sequenceTextLarge {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes sequenceTextSmall {
-  0% {
-    opacity: 0;
-    transform: scale(1.1);
-  }
-  20% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-/* Fin専用アニメーション */
-.sequence-text-fin {
-  animation: sequenceTextFin 15s ease-in-out forwards;
-  transform-origin: center;
-  opacity: 0;
-  text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000,
-    0 0 10px rgba(0, 0, 0, 0.8);
-}
-
-@keyframes sequenceTextFin {
-  0% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.2);
-  }
-}
-
-/* スタッフロール */
-.staff-roll {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
+#pause-menu h1 {
+  font-size: 2.5em;
+  margin-bottom: 30px;
   text-align: center;
-  font-size: 1.5em;
+  color: white;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+  font-family: 'Arial', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+#pause-menu button {
+  padding: 15px 30px;
+  font-size: 1.2em;
+  font-weight: 500;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  font-family: inherit;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+#pause-menu button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+#pause-menu button:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+#pause-menu button:hover::before {
+  left: 100%;
+}
+
+#pause-menu button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* ダイアログボックス */
+#dialog-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(20, 20, 30, 0.95) 100%
+  );
+  backdrop-filter: blur(20px);
+  color: white;
+  padding: 30px 40px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  min-width: 400px;
+  max-width: 600px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: dialog-appear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#dialog-box p {
+  margin-bottom: 25px;
+  font-size: 1.1em;
+  line-height: 1.8;
+  text-align: left;
+  margin-top: 0;
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 500px;
+  word-wrap: break-word;
+}
+
+#dialog-box button {
+  padding: 12px 24px;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  background: linear-gradient(135deg, #666666 0%, #444444 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
+  font-family: inherit;
+}
+
+#dialog-box button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 102, 102, 0.6);
+  background: linear-gradient(135deg, #555555 0%, #777777 100%);
+}
+
+#dialog-box button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
+}
+
+/* レベルアップメニュー */
+#level-up-menu {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(20, 20, 30, 0.95) 100%
+  );
+  backdrop-filter: blur(20px);
+  color: white;
+  padding: 30px 40px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  min-width: 400px;
+  max-width: 600px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  animation: dialog-appear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: none;
+  pointer-events: auto;
+}
+
+#level-up-menu h2 {
+  text-align: center;
+  margin: 0 0 25px 0;
+  font-size: 1.8em;
+  font-weight: 600;
+  color: white;
   text-shadow:
     -2px -2px 0 #000,
     2px -2px 0 #000,
@@ -905,30 +576,50 @@ canvas {
     0 0 10px rgba(0, 0, 0, 0.8);
 }
 
-@keyframes scroll-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(-140%);
-  }
+#level-up-menu p {
+  margin-bottom: 25px;
+  font-size: 1.1em;
+  line-height: 1.8;
+  text-align: center;
+  margin-top: 0;
+  color: rgba(255, 255, 255, 0.95);
+  max-width: 500px;
+  word-wrap: break-word;
+}
+
+#level-up-menu button {
+  padding: 12px 24px;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  background: linear-gradient(135deg, #666666 0%, #444444 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
+  font-family: inherit;
+  margin-bottom: 15px;
+  display: block;
+  width: 100%;
+}
+
+#level-up-menu button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 102, 102, 0.6);
+  background: linear-gradient(135deg, #555555 0%, #777777 100%);
+}
+
+#level-up-menu button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
 }
 
 /* =============================================================
-   表示制御ユーティリティクラス
+   画面遷移・スプラッシュ・タイトル
 ============================================================= */
-/* Utility classes for controlling visibility - !important ensures these override inline styles */
-.show {
-  display: flex !important;
-}
 
-.hide {
-  display: none !important;
-}
-
-/* =============================================================
-   タイトル画面
-============================================================= */
+/* スプラッシュ画面 */
 #splash-screen {
   position: fixed;
   top: 0;
@@ -954,6 +645,7 @@ canvas {
   margin-bottom: 50px;
 }
 
+/* タイトル画面 */
 #title-screen {
   position: fixed;
   top: 0;
@@ -1044,9 +736,7 @@ canvas {
   opacity: 0.7;
 }
 
-/* =============================================================
-   Click to Start Screen
-============================================================= */
+/* Click to Start Screen */
 #click-to-start-screen {
   position: fixed;
   top: 0;
@@ -1074,22 +764,151 @@ canvas {
   animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
 /* =============================================================
-   ステージシステム
+   ゲーム固有UI - シーケンス・ステージ
 ============================================================= */
 
+/* シーケンス関連スタイル */
+#sequence-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  color: white;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+  font-size: 2em;
+  text-align: center;
+  z-index: 10000;
+}
+
+.sequence-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  color: white;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: sans-serif;
+  font-size: 2em;
+  text-align: center;
+  z-index: 10000;
+}
+
+/* オーバーレイ内の背景画像 */
+.sequence-background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  pointer-events: none;
+  z-index: -1; /* 背景に配置（負の値で確実に背景） */
+}
+
+.sequence-background-image.active {
+  opacity: 0.7; /* 背景画像を少し透過させてテキストを読みやすく */
+}
+
+/* オーバーレイ内のテキスト要素 */
+#sequence-overlay > div {
+  position: relative;
+  z-index: 1; /* 背景画像（z-index: -1）より前面に配置 */
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+#sequence-overlay img:not(.sequence-background-image) {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+}
+
+/* シーケンステキストアニメーション */
+.sequence-text-large {
+  animation: sequenceTextLarge 5s ease-in-out forwards;
+  transform-origin: center;
+  opacity: 0;
+}
+
+.sequence-text-small {
+  animation: sequenceTextSmall 5s ease-in-out forwards;
+  transform-origin: center;
+  opacity: 0;
+}
+
+/* シーケンスオーバーレイのフェード */
+.sequence-overlay-fade-in {
+  animation: overlayFadeIn 1s ease-in-out forwards;
+}
+
+.sequence-overlay-fade-out {
+  animation: overlayFadeOut 1.5s ease-in-out forwards;
+}
+
+/* タイトル画面・ロゴアニメーション */
+.title-fade-in {
+  animation: fadeIn 1s ease-in-out forwards;
+  opacity: 0;
+}
+
+.title-fade-out {
+  animation: fadeOut 1s ease-in-out forwards;
+  opacity: 1;
+}
+
+.logo-fade-out {
+  animation: fadeOut 1s ease-in-out forwards;
+  opacity: 1;
+}
+
+/* Fin専用アニメーション */
+.sequence-text-fin {
+  animation: sequenceTextFin 15s ease-in-out forwards;
+  transform-origin: center;
+  opacity: 0;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* スタッフロール */
+.staff-roll {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 1.5em;
+  display: none;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* ステージシステム */
 /* ステージ情報表示 */
 #stage-info {
   position: absolute;
@@ -1120,23 +939,6 @@ canvas {
   margin-top: 5px;
 }
 
-/* ステージローディング画面 */
-#stage-loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-size: 24px;
-  z-index: 1000;
-  font-family: 'Arial', sans-serif;
-}
-
 /* ステージ出口プロンプト */
 #exit-prompt {
   position: fixed;
@@ -1150,4 +952,323 @@ canvas {
   text-align: center;
   font-family: 'Arial', sans-serif;
   z-index: 500;
+}
+
+/* Stage Loading Screen */
+#stage-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.9),
+    rgba(20, 20, 40, 0.95)
+  );
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.3s ease;
+}
+
+#stage-loading .loading-content {
+  text-align: center;
+  color: white;
+  max-width: 400px;
+  width: 90%;
+}
+
+#stage-loading .loading-text {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#stage-loading .loading-progress {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+#stage-loading .loading-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+#stage-loading .loading-stage-info {
+  font-size: 16px;
+  opacity: 0.8;
+  min-height: 20px;
+  color: #ccc;
+}
+
+/* Stage Transition Prompt */
+#stage-transition-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+
+#stage-transition-prompt .transition-content {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  border-radius: 15px;
+  padding: 40px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-width: 400px;
+  width: 90%;
+}
+
+#stage-transition-prompt h3 {
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #f39c12;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#stage-transition-prompt p {
+  font-size: 18px;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+#stage-transition-prompt .transition-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+#stage-transition-prompt button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+#advance-stage-btn {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+}
+
+#advance-stage-btn:hover {
+  background: linear-gradient(135deg, #229954, #27ae60);
+  transform: translateY(-2px);
+}
+
+#stay-stage-btn {
+  background: linear-gradient(135deg, #7f8c8d, #95a5a6);
+  color: white;
+}
+
+#stay-stage-btn:hover {
+  background: linear-gradient(135deg, #6c7b7d, #7f8c8d);
+  transform: translateY(-2px);
+}
+
+/* =============================================================
+   キーフレームアニメーション定義
+============================================================= */
+
+/* 基本フェード */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* パルス効果 */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* ロックオン用パルス */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* シマー効果 */
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* フィル シャイン効果 */
+@keyframes fill-shine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* ポーズメニュー フェードイン */
+@keyframes pause-fade-in {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(15px);
+    @supports not (backdrop-filter: blur(15px)) {
+      background: rgba(0, 0, 0, 0.85);
+    }
+  }
+}
+
+/* ダイアログ アピア */
+@keyframes dialog-appear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* オーバーレイフェード */
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    background-color: black;
+  }
+  to {
+    opacity: 1;
+    background-color: transparent;
+  }
+}
+
+@keyframes overlayFadeOut {
+  from {
+    opacity: 1;
+    background-color: transparent;
+  }
+  to {
+    opacity: 0;
+    background-color: black;
+  }
+}
+
+/* シーケンステキストアニメーション */
+@keyframes sequenceTextLarge {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes sequenceTextSmall {
+  0% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Fin専用アニメーション */
+@keyframes sequenceTextFin {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+
+/* スタッフロールスクロール */
+@keyframes scroll-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(-140%);
+  }
 }
