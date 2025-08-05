@@ -26,26 +26,34 @@ export class Npc extends Character {
   }
 
   constructor(
-    npcType = 'default',
+    npcType,
     position = new THREE.Vector3(-5, 0.5, -5),
     game,
     options = {}
   ) {
-    const model = game.assetLoader.getAsset(AssetNames.NPC_MODEL);
-    if (model) {
-      super(game, model.clone(), null, {
-        modelName: AssetNames.NPC_MODEL,
-        textureName: AssetNames.NPC_TEXTURE,
-      });
-    } else {
+    this.npcType = npcType;
+    this.data = game.data.npcs[npcType];
+    
+    if (!this.data) {
+      console.error(`NPC type '${npcType}' not found in npcs data`);
       const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
       const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
       super(game, geometry, material, {});
+    } else {
+      const modelName = this.data.model ? this.data.model.replace('.glb', '') : null;
+      const model = modelName ? game.assetLoader.getAsset(modelName) : null;
+      
+      if (model) {
+        super(game, model.clone(), null, {
+          modelName: modelName,
+        });
+      } else {
+        const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
+        const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+        super(game, geometry, material, {});
+      }
     }
-
-    this.npcType = npcType;
-    this.data = game.data.npcs[npcType] || game.data.npcs.default;
-    this.dialogue = this.data.dialogue || ['...'];
+    this.dialogue = this.data ? this.data.dialogue || ['...'] : ['...'];
     this.currentDialogueIndex = 0;
 
     this.placeOnGround(position.x, position.z);

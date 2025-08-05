@@ -202,10 +202,6 @@ export class Game {
   async loadModels() {
     const assetsToLoad = [
       { model: AssetNames.PLAYER_MODEL, texture: AssetNames.PLAYER_TEXTURE },
-      { model: AssetNames.ENEMY_MODEL, texture: AssetNames.ENEMY_TEXTURE },
-      { model: AssetNames.BOSS_MODEL, texture: AssetNames.BOSS_TEXTURE },
-      { model: AssetNames.NPC_MODEL, texture: AssetNames.NPC_TEXTURE },
-      { model: AssetNames.ITEM_MODEL, texture: AssetNames.ITEM_TEXTURE },
       { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
       { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
       { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },

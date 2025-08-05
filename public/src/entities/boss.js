@@ -3,28 +3,39 @@ import { Character } from './character.js';
 import { AssetNames, AnimationNames } from '../utils/constants.js';
 
 export class Boss extends Character {
-  constructor(game, player, options = {}) {
-    const model = game.assetLoader.getAsset(AssetNames.BOSS_MODEL);
+  constructor(game, player, bossType, options = {}) {
+    this.bossType = bossType;
+    const bossData = game.data.enemies[bossType];
+    
+    if (!bossData) {
+      console.error(`Boss type '${bossType}' not found in enemies data`);
+      const geometry = new THREE.BoxGeometry(2, 2, 2);
+      const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
+      super(game, geometry, material, { hp: 200, speed: 1.5 });
+      this.player = player;
+      return;
+    }
+
+    const model = game.assetLoader.getAsset(bossData.model.replace('.glb', ''));
     if (model) {
       super(game, model.clone(), null, {
-        hp: game.data.enemies.boss.hp,
-        speed: game.data.enemies.boss.speed,
-        modelName: AssetNames.BOSS_MODEL,
-        textureName: AssetNames.BOSS_TEXTURE,
+        hp: bossData.hp,
+        speed: bossData.speed,
+        modelName: bossData.model.replace('.glb', ''),
       });
     } else {
       const geometry = new THREE.BoxGeometry(2, 2, 2);
       const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
       super(game, geometry, material, {
-        hp: game.data.enemies.boss.hp,
-        speed: game.data.enemies.boss.speed,
+        hp: bossData.hp,
+        speed: bossData.speed,
       });
     }
 
     this.player = player;
 
-    this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
-    this.experience = this.game.data.enemies.boss.experience;
+    this.attackCooldown = bossData.attackCooldown || 3;
+    this.experience = bossData.experience || 100;
     this.isAttacking = false;
 
     if (this.mixer) {

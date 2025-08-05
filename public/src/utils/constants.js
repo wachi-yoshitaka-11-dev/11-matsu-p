@@ -45,10 +45,6 @@ export const EffectColors = {
 
 export const AssetNames = {
   PLAYER_MODEL: 'player',
-  ENEMY_MODEL: 'enemy',
-  BOSS_MODEL: 'boss',
-  NPC_MODEL: 'npc',
-  ITEM_MODEL: 'item',
   TREE_MODEL: 'tree',
   ROCK_MODEL: 'rock',
   GRASS_MODEL: 'grass',
@@ -94,10 +90,6 @@ export const AssetNames = {
   SFX_WALK: 'walk',
 
   PLAYER_TEXTURE: 'player-texture',
-  ENEMY_TEXTURE: 'enemy-texture',
-  BOSS_TEXTURE: 'boss-texture',
-  NPC_TEXTURE: 'npc-texture',
-  ITEM_TEXTURE: 'item-texture',
   TREE_TEXTURE: 'tree-texture',
   ROCK_TEXTURE: 'rock-texture',
   GRASS_TEXTURE: 'grass-texture',
