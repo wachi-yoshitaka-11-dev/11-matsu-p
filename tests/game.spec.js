@@ -34,10 +34,60 @@ async function setupNetworkRoutes(page) {
       route.fulfill({ path: localPath });
     }
   );
-  // Sequences.json route
+  // Data files routes
   await page.route('**/data/sequences.json', (route) => {
     route.fulfill({
       path: require('path').join(__dirname, '../public/data/sequences.json'),
+    });
+  });
+  await page.route('**/data/stages.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/stages.json'),
+    });
+  });
+  await page.route('**/data/terrain-objects.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/terrain-objects.json'),
+    });
+  });
+  await page.route('**/data/enemies.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/enemies.json'),
+    });
+  });
+  await page.route('**/data/items.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/items.json'),
+    });
+  });
+  await page.route('**/data/npcs.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/npcs.json'),
+    });
+  });
+  await page.route('**/data/player.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/player.json'),
+    });
+  });
+  await page.route('**/data/weapons.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/weapons.json'),
+    });
+  });
+  await page.route('**/data/shields.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/shields.json'),
+    });
+  });
+  await page.route('**/data/skills.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/skills.json'),
+    });
+  });
+  await page.route('**/data/localization.json', (route) => {
+    route.fulfill({
+      path: require('path').join(__dirname, '../public/data/localization.json'),
     });
   });
 }
@@ -1111,5 +1161,168 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     );
     await expect(newGameButton).toBeVisible();
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
+  });
+});
+
+test.describe('Mofu Mofu Adventure - Stage System Tests', () => {
+  test('should initialize stage system and display stage info', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+    await page.goto('/');
+
+    // Start the game
+    await page.locator('#click-to-start-screen').click();
+    
+    // Wait for opening sequence to complete
+    await page.waitForFunction(
+      (titleState) => window.game?.gameState === titleState,
+      GameState.TITLE,
+      { timeout: 30000 }
+    );
+
+    // Start the game
+    await page.locator("#title-screen #title-menu button:has-text('はじめから')").click();
+    
+    // Wait for game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check if stage manager is initialized
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check if stage info is displayed
+    await expect(page.locator('#stage-info')).toBeVisible();
+    await expect(page.locator('#current-stage-name')).toBeVisible();
+    await expect(page.locator('#stage-progress')).toBeVisible();
+    await expect(page.locator('#stage-clear-status')).toBeVisible();
+
+    // Verify stage progress shows correct format (X/Y)
+    const progressText = await page.locator('#stage-progress').textContent();
+    expect(progressText).toMatch(/\d+\/\d+/);
+  });
+
+  test('should load tutorial plains stage initially', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+    await page.goto('/');
+
+    // Start the game
+    await page.locator('#click-to-start-screen').click();
+    
+    // Wait for opening sequence to complete
+    await page.waitForFunction(
+      (titleState) => window.game?.gameState === titleState,
+      GameState.TITLE,
+      { timeout: 30000 }
+    );
+
+    // Start the game
+    await page.locator("#title-screen #title-menu button:has-text('はじめから')").click();
+    
+    // Wait for game to start and stage to load
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage?.id === 'tutorial-plains',
+      null,
+      { timeout: 15000 }
+    );
+
+    // Verify current stage is tutorial plains
+    const currentStageId = await page.evaluate(() => 
+      window.game?.stageManager?.currentStage?.id
+    );
+    expect(currentStageId).toBe('tutorial-plains');
+
+    // Verify stage has enemies
+    const hasEnemies = await page.evaluate(() => 
+      window.game?.stageManager?.currentStage?.enemies?.length > 0
+    );
+    expect(hasEnemies).toBe(true);
+  });
+
+  test('should display stage-specific information', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+    await page.goto('/');
+
+    // Start the game
+    await page.locator('#click-to-start-screen').click();
+    
+    // Wait for opening sequence to complete
+    await page.waitForFunction(
+      (titleState) => window.game?.gameState === titleState,
+      GameState.TITLE,
+      { timeout: 30000 }
+    );
+
+    // Start the game
+    await page.locator("#title-screen #title-menu button:has-text('はじめから')").click();
+    
+    // Wait for game to start and stage info to be updated
+    await page.waitForFunction(
+      () => {
+        const progressElement = document.getElementById('stage-progress');
+        return progressElement && progressElement.textContent.includes('/');
+      },
+      null,
+      { timeout: 15000 }
+    );
+
+    // Check stage progress format
+    const progressText = await page.locator('#stage-progress').textContent();
+    expect(progressText).toMatch(/1\/\d+ \(\d+%\)/);
+
+    // Check if stage name is displayed (not empty)
+    const stageNameText = await page.locator('#current-stage-name').textContent();
+    expect(stageNameText.length).toBeGreaterThan(0);
+  });
+
+  test('should handle stage BGM system', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+    await page.goto('/');
+
+    // Start the game
+    await page.locator('#click-to-start-screen').click();
+    
+    // Wait for opening sequence to complete
+    await page.waitForFunction(
+      (titleState) => window.game?.gameState === titleState,
+      GameState.TITLE,
+      { timeout: 30000 }
+    );
+
+    // Start the game
+    await page.locator("#title-screen #title-menu button:has-text('はじめから')").click();
+    
+    // Wait for game to start and stage to load
+    await page.waitForFunction(
+      () => window.game?.stageManager?.currentStage !== null,
+      null,
+      { timeout: 15000 }
+    );
+
+    // Check if stage has BGM configuration
+    const hasBgmConfig = await page.evaluate(() => {
+      const stage = window.game?.stageManager?.currentStage;
+      return stage?.environment?.bgm !== null;
+    });
+    expect(hasBgmConfig).toBe(true);
+
+    // Check if audio manager exists
+    const hasAudioManager = await page.evaluate(() => 
+      window.game?.audioManager !== null
+    );
+    expect(hasAudioManager).toBe(true);
   });
 });

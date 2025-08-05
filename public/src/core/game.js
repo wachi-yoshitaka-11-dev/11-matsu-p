@@ -79,13 +79,9 @@ export class Game {
       this.playOpeningSequence();
     }, remainingTime);
 
-    this.field = new Field(this);
-    this.sceneManager.add(this.field.mesh);
+    // Field will be initialized by StageManager
 
-    this.player = new Player(this, {
-      modelName: AssetNames.PLAYER_MODEL,
-      textureName: AssetNames.PLAYER_TEXTURE,
-    });
+    this.player = new Player(this);
     this.sceneManager.add(this.player.mesh);
 
     this.hud = new Hud(this, this.player);
@@ -102,7 +98,8 @@ export class Game {
       this.sceneManager.renderer.domElement
     );
 
-    this.loadEntities();
+    // Initialize first stage instead of loading entities directly
+    await this.initializeFirstStage();
   }
 
   async loadGameData() {
@@ -132,6 +129,10 @@ export class Game {
     this.pauseMenu = new PauseMenu(this);
     this.dialogBox = new DialogBox(this);
     this.sequenceManager = new SequenceManager(this);
+
+    // Initialize stage manager
+    this.stageManager = new StageManager(this);
+    await this.stageManager.initialize();
 
     // Update UI texts after localization is loaded
     if (this.titleScreen) {
@@ -192,35 +193,10 @@ export class Game {
     }
   }
 
-  loadEntities() {
-    const item = new Item(ItemTypes.POTION, new THREE.Vector3(0, 2, -5), this);
-    this.items.push(item);
-    this.sceneManager.add(item.mesh);
-
-    const enemy = new Enemy(this, this.player, new THREE.Vector3(5, 0, 0), {
-      modelName: AssetNames.ENEMY_MODEL,
-      textureName: AssetNames.ENEMY_TEXTURE,
-    });
-
-    this.enemies.push(enemy);
-    this.sceneManager.add(enemy.mesh);
-
-    const boss = new Boss(this, this.player, {
-      modelName: AssetNames.BOSS_MODEL,
-      textureName: AssetNames.BOSS_TEXTURE,
-    });
-    this.boss = boss;
-    this.enemies.push(boss);
-    this.sceneManager.add(boss.mesh);
-
-    const npc = new Npc(
-      'guide', // NPCタイプ
-      new THREE.Vector3(-5, 0.5, -5),
-      this,
-      { modelName: AssetNames.NPC_MODEL, textureName: AssetNames.NPC_TEXTURE }
-    );
-    this.npcs.push(npc);
-    this.sceneManager.add(npc.mesh);
+  async initializeFirstStage() {
+    if (this.stageManager) {
+      await this.stageManager.loadStage('tutorial-plains');
+    }
   }
 
   async loadModels() {
@@ -287,11 +263,11 @@ export class Game {
       this.bgmAudios[AssetNames.BGM_TITLE].stop();
     }
 
-    // Initialize and start stage system
+    // Start stage system (already initialized in loadGameData)
     try {
-      this.stageManager = new StageManager(this);
-      await this.stageManager.initialize();
-      await this.stageManager.startFirstStage();
+      if (this.stageManager) {
+        await this.stageManager.startFirstStage();
+      }
     } catch (error) {
       console.error('Failed to initialize stage system:', error);
       // Fallback to old field system
@@ -586,6 +562,17 @@ export class Game {
     this.gameState = GameState.OPENING;
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
+    
+    if (!this.sequenceManager) {
+      console.error('SequenceManager not initialized');
+      // Fallback directly to title screen
+      setTimeout(() => {
+        this.gameState = GameState.TITLE;
+        this.titleScreen.showMenu();
+      }, 1000);
+      return;
+    }
+    
     this.sequenceManager.startOpeningSequence(() => {
       setTimeout(() => {
         this.gameState = GameState.TITLE;
