@@ -973,6 +973,10 @@ canvas {
   transition: opacity 0.3s ease;
 }
 
+#stage-loading.show {
+  display: flex !important;
+}
+
 #stage-loading .loading-content {
   text-align: center;
   color: white;

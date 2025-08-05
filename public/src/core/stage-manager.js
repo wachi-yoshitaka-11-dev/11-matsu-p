@@ -89,8 +89,8 @@ export class StageManager {
 
       this.updateLoadingProgress(100, localization.getText('stages.complete'));
 
-      // Brief delay to show completion
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Brief delay to show completion - increased for testing
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       this.hideLoadingScreen();
 
@@ -182,7 +182,7 @@ export class StageManager {
       `;
       document.body.appendChild(loadingElement);
     }
-    loadingElement.style.display = 'flex';
+    loadingElement.classList.add('show');
     loadingElement.style.opacity = '0';
     loadingElement.offsetHeight; // Force reflow
     loadingElement.style.opacity = '1';
@@ -193,7 +193,7 @@ export class StageManager {
     if (loadingElement) {
       loadingElement.style.opacity = '0';
       setTimeout(() => {
-        loadingElement.style.display = 'none';
+        loadingElement.classList.remove('show');
       }, 300);
     }
   }

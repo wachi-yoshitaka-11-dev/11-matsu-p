@@ -8,7 +8,7 @@ export class TerrainObject {
     this.mesh = null;
     this.isLoaded = false;
 
-    this.data = this.game.data.terrainObjects[type];
+    this.data = this.game.data['terrain-objects'][type];
     if (!this.data) {
       console.warn(`Terrain object type "${type}" not found in data`);
       return;
@@ -22,8 +22,11 @@ export class TerrainObject {
 
     try {
       // Load 3D model
-      const model = await this.game.assetLoader.loadModel(this.data.model);
-      this.mesh = model.scene.clone();
+      const model = await this.game.assetLoader.loadGLTF(
+        this.data.model,
+        `assets/models/${this.data.model}`
+      );
+      this.mesh = model.clone();
 
       // Apply scale
       if (this.data.scale) {
@@ -85,7 +88,6 @@ export class TerrainObject {
       this.mesh.rotation.y = Math.random() * Math.PI * 2;
 
       this.isLoaded = true;
-      console.log(`Terrain object "${this.type}" loaded successfully`);
     } catch (error) {
       console.error(`Failed to load terrain object "${this.type}":`, error);
     }

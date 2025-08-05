@@ -22,6 +22,9 @@ export class Stage {
     this.type = stageData.type;
     this.clearCondition = stageData.clearCondition;
     this.config = stageData.config;
+    this.environmentalEffects = stageData.environmentalEffects;
+    this.particles = stageData.particles;
+    this.terrain = stageData.terrain;
 
     this.field = null;
     this.enemies = [];
@@ -285,9 +288,9 @@ export class Stage {
   }
 
   spawnTerrainObjects() {
-    if (!this.config.terrain) return;
+    if (!this.terrain) return;
 
-    this.config.terrain.forEach((terrainConfig) => {
+    this.terrain.forEach((terrainConfig) => {
       for (let i = 0; i < terrainConfig.count; i++) {
         const terrainObject = this.createTerrainObject(terrainConfig);
         if (terrainObject) {
