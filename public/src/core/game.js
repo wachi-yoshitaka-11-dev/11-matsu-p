@@ -70,7 +70,7 @@ export class Game {
     await this.loadModels();
 
     const elapsedTime = Date.now() - loadStartTime;
-    const minDisplayTime = 2000;
+    const minDisplayTime = 10000;
     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
     setTimeout(() => {
