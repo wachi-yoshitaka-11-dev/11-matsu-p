@@ -79,7 +79,8 @@ export class Game {
       this.playOpeningSequence();
     }, remainingTime);
 
-    // Field will be initialized by StageManager
+    // Initialize first stage field only (without entities)
+    await this.initializeFirstStageField();
 
     this.player = new Player(this);
     this.sceneManager.add(this.player.mesh);
@@ -98,8 +99,8 @@ export class Game {
       this.sceneManager.renderer.domElement
     );
 
-    // Initialize first stage instead of loading entities directly
-    await this.initializeFirstStage();
+    // Now spawn entities after player is created
+    await this.initializeFirstStageEntities();
   }
 
   async loadGameData() {
@@ -193,9 +194,15 @@ export class Game {
     }
   }
 
-  async initializeFirstStage() {
+  async initializeFirstStageField() {
     if (this.stageManager) {
-      await this.stageManager.loadStage('tutorial-plains');
+      await this.stageManager.loadStageField('tutorial-plains');
+    }
+  }
+
+  async initializeFirstStageEntities() {
+    if (this.stageManager && this.stageManager.currentStage) {
+      await this.stageManager.currentStage.spawnEntities();
     }
   }
 
@@ -558,7 +565,7 @@ export class Game {
     this.gameState = GameState.OPENING;
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
-    
+
     if (!this.sequenceManager) {
       console.error('SequenceManager not initialized');
       // Fallback directly to title screen
@@ -568,7 +575,7 @@ export class Game {
       }, 1000);
       return;
     }
-    
+
     this.sequenceManager.startOpeningSequence(() => {
       setTimeout(() => {
         this.gameState = GameState.TITLE;

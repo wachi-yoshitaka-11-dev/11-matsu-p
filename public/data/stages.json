@@ -14,7 +14,7 @@
       "environment": {
         "lighting": {
           "intensity": 1.0,
-          "color": 16777215
+          "color": "0xffffff"
         },
         "fog": {
           "density": 0.0
@@ -32,7 +32,7 @@
         "heightFrequency": 0.08,
         "texture": "ground-texture",
         "textureRepeat": { "x": 12, "y": 12 },
-        "color": 0x4a7d2c
+        "color": "0x4a7d2c"
       },
       "environmentalEffects": {
         "coldDamage": { "enabled": false },
@@ -50,8 +50,8 @@
       "particles": {
         "enabled": true,
         "effects": [
-          { "type": "dust", "intensity": 0.3, "color": 0xd2b48c },
-          { "type": "pollen", "intensity": 0.5, "color": 0xffff99 }
+          { "type": "dust", "intensity": 0.3, "color": "0xd2b48c" },
+          { "type": "pollen", "intensity": 0.5, "color": "0xffff99" }
         ]
       },
       "audio": {
@@ -149,11 +149,11 @@
       "environment": {
         "lighting": {
           "intensity": 0.6,
-          "color": 13421772
+          "color": "0xccffcc"
         },
         "fog": {
           "density": 0.003,
-          "color": 8947848
+          "color": "0x888888"
         },
         "weather": "foggy",
         "bgm": {
@@ -168,7 +168,7 @@
         "heightFrequency": 0.12,
         "texture": "ground-texture",
         "textureRepeat": { "x": 10, "y": 10 },
-        "color": 0x2d4a2d
+        "color": "0x2d4a2d"
       },
       "environmentalEffects": {
         "coldDamage": { "enabled": false },
@@ -182,7 +182,7 @@
             }
           ],
           "damagePerSecond": 1,
-          "warningColor": 0x90ee90
+          "warningColor": "0x90ee90"
         },
         "slippery": { "enabled": false },
         "movementSpeedModifier": 0.9,
@@ -199,9 +199,9 @@
       "particles": {
         "enabled": true,
         "effects": [
-          { "type": "mist", "intensity": 0.8, "color": 0x708090 },
-          { "type": "spores", "intensity": 0.6, "color": 0x90ee90 },
-          { "type": "fireflies", "intensity": 0.4, "color": 0xffff00 }
+          { "type": "mist", "intensity": 0.8, "color": "0x708090" },
+          { "type": "spores", "intensity": 0.6, "color": "0x90ee90" },
+          { "type": "fireflies", "intensity": 0.4, "color": "0xffff00" }
         ]
       },
       "audio": {
@@ -305,11 +305,11 @@
       "environment": {
         "lighting": {
           "intensity": 0.8,
-          "color": 16764108
+          "color": "0xfff0cc"
         },
         "fog": {
           "density": 0.001,
-          "color": 11184810
+          "color": "0xaaaaaa"
         },
         "weather": "clear",
         "bgm": {
@@ -324,7 +324,7 @@
         "heightFrequency": 0.06,
         "texture": "ground-texture",
         "textureRepeat": { "x": 14, "y": 14 },
-        "color": 0x8b7d6b
+        "color": "0x8b7d6b"
       },
       "environmentalEffects": {
         "coldDamage": { "enabled": false },
@@ -345,8 +345,8 @@
       "particles": {
         "enabled": true,
         "effects": [
-          { "type": "dust", "intensity": 0.4, "color": 0x8b7d6b },
-          { "type": "debris", "intensity": 0.3, "color": 0x696969 }
+          { "type": "dust", "intensity": 0.4, "color": "0x8b7d6b" },
+          { "type": "debris", "intensity": 0.3, "color": "0x696969" }
         ]
       },
       "audio": {
@@ -459,11 +459,11 @@
       "environment": {
         "lighting": {
           "intensity": 0.8,
-          "color": 9215743
+          "color": "0x8cffff"
         },
         "fog": {
           "density": 0.002,
-          "color": 15658734
+          "color": "0xeeeeee"
         },
         "weather": "snowy",
         "bgm": {
@@ -478,7 +478,7 @@
         "heightFrequency": 0.05,
         "texture": "ground-texture",
         "textureRepeat": { "x": 13, "y": 13 },
-        "color": 0xf0f8ff
+        "color": "0xf0f8ff"
       },
       "environmentalEffects": {
         "coldDamage": {
@@ -513,10 +513,10 @@
           {
             "type": "snow",
             "intensity": 1.0,
-            "color": 0xffffff,
+            "color": "0xffffff",
             "windStrength": 0.5
           },
-          { "type": "ice_crystals", "intensity": 0.3, "color": 0x87ceeb }
+          { "type": "ice_crystals", "intensity": 0.3, "color": "0x87ceeb" }
         ]
       },
       "audio": {
@@ -612,11 +612,11 @@
       "environment": {
         "lighting": {
           "intensity": 0.3,
-          "color": 8947848
+          "color": "0x888888"
         },
         "fog": {
           "density": 0.005,
-          "color": 5592405
+          "color": "0x555555"
         },
         "weather": "clear",
         "bgm": {
@@ -631,7 +631,7 @@
         "heightFrequency": 0.1,
         "texture": "ground-texture",
         "textureRepeat": { "x": 11, "y": 11 },
-        "color": 0x4a3c2a
+        "color": "0x4a3c2a"
       },
       "environmentalEffects": {
         "coldDamage": { "enabled": false },
@@ -664,9 +664,9 @@
       "particles": {
         "enabled": true,
         "effects": [
-          { "type": "embers", "intensity": 0.7, "color": 0xff4500 },
-          { "type": "smoke", "intensity": 0.4, "color": 0x2f4f4f },
-          { "type": "crystal_sparkles", "intensity": 0.8, "color": 0x00ced1 }
+          { "type": "embers", "intensity": 0.7, "color": "0xff4500" },
+          { "type": "smoke", "intensity": 0.4, "color": "0x2f4f4f" },
+          { "type": "crystal_sparkles", "intensity": 0.8, "color": "0x00ced1" }
         ]
       },
       "audio": {

@@ -87,6 +87,42 @@ export class StageManager {
     }
   }
 
+  async loadStageField(stageId) {
+    if (this.isTransitioning) {
+      console.warn('Stage transition in progress. Please wait.');
+      return false;
+    }
+
+    const stage = this.stages.get(stageId);
+    if (!stage) {
+      console.error(`Stage not found: ${stageId}`);
+      return false;
+    }
+
+    this.isTransitioning = true;
+
+    try {
+      if (this.currentStage) {
+        await this.unloadCurrentStage();
+      }
+
+      this.showLoadingScreen();
+      await stage.loadField();
+      this.currentStage = stage;
+      this.currentStageIndex = this.stageOrder.indexOf(stageId);
+      this.hideLoadingScreen();
+
+      console.log(`Stage field "${stage.name}" loaded successfully`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to load stage field "${stage.name}":`, error);
+      this.hideLoadingScreen();
+      return false;
+    } finally {
+      this.isTransitioning = false;
+    }
+  }
+
   async unloadCurrentStage() {
     if (!this.currentStage) return;
 

@@ -4,17 +4,16 @@ import { AssetNames, AnimationNames } from '../utils/constants.js';
 
 export class Boss extends Character {
   constructor(game, player, bossType, options = {}) {
-    this.bossType = bossType;
-    const bossData = game.data.enemies[bossType];
-    
-    if (!bossData) {
-      console.error(`Boss type '${bossType}' not found in enemies data`);
-      const geometry = new THREE.BoxGeometry(2, 2, 2);
-      const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
-      super(game, geometry, material, { hp: 200, speed: 1.5 });
-      this.player = player;
-      return;
+    if (!bossType) {
+      throw new Error('Boss type is required');
     }
+
+    const bossData = game.data.enemies[bossType];
+    if (!bossData) {
+      throw new Error(`Boss type '${bossType}' not found in enemies data`);
+    }
+
+    this.bossType = bossType;
 
     const model = game.assetLoader.getAsset(bossData.model.replace('.glb', ''));
     if (model) {

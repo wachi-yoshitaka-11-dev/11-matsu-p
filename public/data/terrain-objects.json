@@ -75,7 +75,7 @@
     "castShadow": true,
     "receiveShadow": true,
     "variants": ["tree"],
-    "tint": 0x8b7d6b
+    "tint": "0x8b7d6b"
   },
   "crystal-formation": {
     "name": "水晶の群生",
@@ -87,8 +87,8 @@
     "castShadow": true,
     "receiveShadow": true,
     "variants": ["rock"],
-    "tint": 0x87ceeb,
-    "emissive": 0x1a4d6b
+    "tint": "0x87ceeb",
+    "emissive": "0x1a4d6b"
   },
   "ice-rock": {
     "name": "氷の岩",
@@ -100,7 +100,7 @@
     "castShadow": true,
     "receiveShadow": true,
     "variants": ["rock"],
-    "tint": 0xb0e0e6
+    "tint": "0xb0e0e6"
   },
   "ruins-pillar": {
     "name": "遺跡の柱",
@@ -112,6 +112,6 @@
     "castShadow": true,
     "receiveShadow": true,
     "variants": ["rock"],
-    "tint": 0x8b7d6b
+    "tint": "0x8b7d6b"
   }
 }

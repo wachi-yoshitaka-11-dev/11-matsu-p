@@ -33,6 +33,8 @@ export class Stage {
 
     this.isCleared = false;
     this.isLoaded = false;
+    this.isFieldLoaded = false;
+    this.entitiesSpawned = false;
     this.isNearClear = false;
     this.currentBgmState = 'normal';
 
@@ -66,6 +68,41 @@ export class Stage {
     }
   }
 
+  async loadField() {
+    if (this.isFieldLoaded) return;
+
+    try {
+      this.createField();
+      this.setupEnvironment();
+      this.spawnTerrainObjects();
+      this.setupExitPoints();
+      this.playBGM();
+
+      this.isFieldLoaded = true;
+      console.log(`Stage field "${this.name}" loaded successfully`);
+    } catch (error) {
+      console.error(`Failed to load stage field "${this.name}":`, error);
+      throw error;
+    }
+  }
+
+  async spawnEntities() {
+    if (this.entitiesSpawned) return;
+
+    try {
+      this.spawnEnemies();
+      this.spawnNpcs();
+      this.spawnItems();
+
+      this.entitiesSpawned = true;
+      this.isLoaded = true;
+      console.log(`Stage entities "${this.name}" spawned successfully`);
+    } catch (error) {
+      console.error(`Failed to spawn stage entities "${this.name}":`, error);
+      throw error;
+    }
+  }
+
   unload() {
     if (!this.isLoaded) return;
 
@@ -85,6 +122,7 @@ export class Stage {
     // Pass stage-specific field configuration from stages.json
     const fieldConfig = this.config.fieldConfig || null;
     this.field = new Field(this.game, fieldConfig);
+    this.game.field = this.field; // Set reference in game object
     this.customizeField();
     this.game.sceneManager.add(this.field.mesh);
   }
@@ -184,9 +222,11 @@ export class Stage {
 
     let enemy;
     if (enemyConfig.type === 'boss') {
-      enemy = new Boss(this.game, enemyConfig.enemyType);
+      enemy = new Boss(this.game, this.game.player, enemyConfig.enemyType);
     } else {
-      enemy = new Enemy(this.game, enemyConfig.enemyType);
+      enemy = new Enemy(this.game, this.game.player, position, {
+        enemyType: enemyConfig.enemyType,
+      });
     }
 
     enemy.mesh.position.copy(position);
@@ -214,7 +254,7 @@ export class Stage {
       npcConfig.position.z
     );
 
-    const npc = new Npc(this.game, npcConfig.type);
+    const npc = new Npc(npcConfig.type, position, this.game);
     npc.mesh.position.copy(position);
     this.game.sceneManager.add(npc.mesh);
 
@@ -237,7 +277,7 @@ export class Stage {
 
   createItem(itemConfig) {
     const position = this.getRandomSpawnPosition(itemConfig.spawnArea);
-    const item = new Item(this.game, itemConfig.type);
+    const item = new Item(itemConfig.type, position, this.game);
     item.mesh.position.copy(position);
     this.game.sceneManager.add(item.mesh);
 
@@ -348,10 +388,12 @@ export class Stage {
         const boss = this.enemies.find((enemy) => enemy instanceof Boss);
         if (boss) {
           this.isCleared = boss.isDead;
-          
+
           // Check if player is near boss (within 15 units)
           if (this.game.player && boss.mesh) {
-            const distanceToBoss = this.game.player.mesh.position.distanceTo(boss.mesh.position);
+            const distanceToBoss = this.game.player.mesh.position.distanceTo(
+              boss.mesh.position
+            );
             isNearClear = distanceToBoss <= 15;
           }
         }

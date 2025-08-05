@@ -24,6 +24,7 @@ export class TitleScreen {
     this.menuContainer.appendChild(this.titleText);
 
     this.newGameButton = document.createElement('button');
+    this.newGameButton.id = 'new-game-button';
     this.newGameButton.addEventListener('click', this.onStart);
     this.menuContainer.appendChild(this.newGameButton);
 

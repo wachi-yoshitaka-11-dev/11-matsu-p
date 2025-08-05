@@ -11,29 +11,44 @@ export class Enemy extends Character {
       throw new Error('Valid position with x and z coordinates is required');
     }
 
-    const model = game.assetLoader.getAsset(AssetNames.ENEMY_MODEL);
+    const enemyType = options.enemyType;
+    if (!enemyType) {
+      throw new Error('Enemy type is required');
+    }
+
+    const enemyData = game.data.enemies[enemyType];
+    if (!enemyData) {
+      throw new Error(`Enemy type '${enemyType}' not found in enemies data`);
+    }
+
+    const modelName = enemyData.model
+      ? enemyData.model.replace('.glb', '')
+      : null;
+    const model = modelName ? game.assetLoader.getAsset(modelName) : null;
+
     if (model) {
       super(game, model.clone(), null, {
-        hp: game.data.enemies.grunt.hp,
-        speed: game.data.enemies.grunt.speed,
-        modelName: AssetNames.ENEMY_MODEL,
-        textureName: AssetNames.ENEMY_TEXTURE,
+        hp: enemyData.hp,
+        speed: enemyData.speed,
+        modelName: modelName,
       });
     } else {
       const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
       const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
       super(game, geometry, material, {
-        hp: game.data.enemies.grunt.hp,
-        speed: game.data.enemies.grunt.speed,
+        hp: enemyData.hp,
+        speed: enemyData.speed,
       });
     }
 
+    this.enemyType = enemyType;
+    this.enemyData = enemyData;
     this.player = player;
 
     this.placeOnGround(position.x, position.z);
 
-    this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
-    this.experience = this.game.data.enemies.grunt.experience;
+    this.attackCooldown = enemyData ? enemyData.attackCooldown : 3;
+    this.experience = enemyData ? enemyData.experience : 10;
     this.isAttacking = false;
 
     // Initialize death animation properties
@@ -62,8 +77,11 @@ export class Enemy extends Character {
     this.updateAnimation();
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const attackRange = this.enemyData
+      ? this.enemyData.attackRange || this.enemyData.normalAttackRange
+      : 2;
 
-    if (distance > this.game.data.enemies.grunt.attackRange) {
+    if (distance > attackRange) {
       const direction = new THREE.Vector3()
         .subVectors(this.player.mesh.position, this.mesh.position)
         .normalize();
@@ -74,12 +92,9 @@ export class Enemy extends Character {
     this.mesh.lookAt(this.player.mesh.position);
 
     this.attackCooldown -= deltaTime;
-    if (
-      distance <= this.game.data.enemies.grunt.attackRange &&
-      this.attackCooldown <= 0
-    ) {
+    if (distance <= attackRange && this.attackCooldown <= 0) {
       this.attack();
-      this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
+      this.attackCooldown = this.enemyData ? this.enemyData.attackCooldown : 3;
     }
   }
 
@@ -89,8 +104,11 @@ export class Enemy extends Character {
     }
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const attackRange = this.enemyData
+      ? this.enemyData.attackRange || this.enemyData.normalAttackRange
+      : 2;
 
-    if (distance > this.game.data.enemies.grunt.attackRange) {
+    if (distance > attackRange) {
       this.playAnimation(AnimationNames.WALK);
     } else {
       this.playAnimation(AnimationNames.IDLE);
@@ -113,7 +131,10 @@ export class Enemy extends Character {
       this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
       this.game.playSound(AssetNames.SFX_GUARD);
     } else {
-      this.player.takeDamage(this.game.data.enemies.grunt.damage);
+      const damage = this.enemyData
+        ? this.enemyData.damage || this.enemyData.normalAttackDamage
+        : 10;
+      this.player.takeDamage(damage);
       this.game.playSound(AssetNames.SFX_DAMAGE);
     }
   }

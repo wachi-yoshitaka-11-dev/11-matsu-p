@@ -31,18 +31,19 @@ export class Npc extends Character {
     game,
     options = {}
   ) {
-    this.npcType = npcType;
-    this.data = game.data.npcs[npcType];
-    
-    if (!this.data) {
+    const npcData = game.data.npcs[npcType];
+
+    if (!npcData) {
       console.error(`NPC type '${npcType}' not found in npcs data`);
       const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
       const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
       super(game, geometry, material, {});
     } else {
-      const modelName = this.data.model ? this.data.model.replace('.glb', '') : null;
+      const modelName = npcData.model
+        ? npcData.model.replace('.glb', '')
+        : null;
       const model = modelName ? game.assetLoader.getAsset(modelName) : null;
-      
+
       if (model) {
         super(game, model.clone(), null, {
           modelName: modelName,
@@ -53,6 +54,9 @@ export class Npc extends Character {
         super(game, geometry, material, {});
       }
     }
+
+    this.npcType = npcType;
+    this.data = npcData;
     this.dialogue = this.data ? this.data.dialogue || ['...'] : ['...'];
     this.currentDialogueIndex = 0;
 
