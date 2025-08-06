@@ -67,16 +67,18 @@ export class TitleScreen {
       this.hideVideo();
     });
 
+    const videoClickHandler = () => {
+      this.hideVideo();
+    };
+
     const hideVideoHandler = () => {
       this.hideVideo();
       this.video.removeEventListener('ended', hideVideoHandler);
+      this.video.removeEventListener('click', videoClickHandler);
     };
 
     this.video.addEventListener('ended', hideVideoHandler);
-
-    this.video.addEventListener('click', () => {
-      this.hideVideo();
-    });
+    this.video.addEventListener('click', videoClickHandler);
   }
 
   hideVideo() {
