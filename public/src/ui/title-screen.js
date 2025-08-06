@@ -1,8 +1,9 @@
 import { localization } from '../utils/localization.js';
 
 export class TitleScreen {
-  constructor(onStart) {
+  constructor(onStart, skipSplashScreenDelay) {
     this.onStart = onStart;
+    this.skipSplashScreenDelay = skipSplashScreenDelay;
     this.container = document.createElement('div');
     this.container.id = 'title-screen';
 
@@ -24,6 +25,12 @@ export class TitleScreen {
 
     this.videoContainer.appendChild(this.video);
     this.splashContainer.appendChild(this.videoContainer);
+
+    this.splashContainer.addEventListener('click', () => {
+      if (this.skipSplashScreenDelay) {
+        this.skipSplashScreenDelay();
+      }
+    });
 
     document.body.appendChild(this.splashContainer);
 
@@ -55,8 +62,8 @@ export class TitleScreen {
 
   playIntroVideo() {
     this.videoContainer.style.display = 'flex';
-    this.video.play().catch(error => {
-      console.error("Video play failed:", error);
+    this.video.play().catch((error) => {
+      console.error('Video play failed:', error);
       this.hideVideo();
     });
 
@@ -66,6 +73,10 @@ export class TitleScreen {
     };
 
     this.video.addEventListener('ended', hideVideoHandler);
+
+    this.video.addEventListener('click', () => {
+      this.hideVideo();
+    });
   }
 
   hideVideo() {
@@ -83,6 +94,11 @@ export class TitleScreen {
   }
 
   hideSplash() {
+    if (this.video && !this.video.paused) {
+      this.video.pause();
+      this.video.currentTime = 0;
+    }
+
     this.splashContainer.className = 'logo-fade-out';
     setTimeout(() => {
       this.splashContainer.style.display = 'none';

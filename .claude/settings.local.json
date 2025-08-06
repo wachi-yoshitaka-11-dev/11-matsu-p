@@ -5,10 +5,19 @@
       "Bash(npm test)",
       "Bash(gh pr view:*)",
       "Bash(npm run format:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "mcp__sequential-thinking__sequentialthinking"
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["filesystem", "git", "web-search"],
-  "disabledMcpjsonServers": ["filesystem", "git", "web-search"]
+  "enabledMcpjsonServers": [
+    "filesystem",
+    "git",
+    "web-search"
+  ],
+  "disabledMcpjsonServers": [
+    "filesystem",
+    "git",
+    "web-search"
+  ]
 }
