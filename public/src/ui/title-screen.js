@@ -1,8 +1,9 @@
 import { localization } from '../utils/localization.js';
 
 export class TitleScreen {
-  constructor(onStart) {
+  constructor(onStart, skipSplashScreenDelay) {
     this.onStart = onStart;
+    this.skipSplashScreenDelay = skipSplashScreenDelay;
     this.container = document.createElement('div');
     this.container.id = 'title-screen';
 
@@ -11,8 +12,25 @@ export class TitleScreen {
 
     this.logoImage = document.createElement('img');
     this.logoImage.src = './assets/images/logo.png';
-    this.logoImage.id = 'splash-logo';
+    this.logoImage.id = 'splash-logo-image';
     this.splashContainer.appendChild(this.logoImage);
+
+    this.videoContainer = document.createElement('div');
+    this.videoContainer.id = 'splash-video-container';
+
+    this.video = document.createElement('video');
+    this.video.src = './assets/videos/logo.mp4';
+    this.video.id = 'splash-logo-video';
+    this.video.playsInline = true;
+
+    this.videoContainer.appendChild(this.video);
+    this.splashContainer.appendChild(this.videoContainer);
+
+    this.splashContainer.addEventListener('click', () => {
+      if (this.skipSplashScreenDelay) {
+        this.skipSplashScreenDelay();
+      }
+    });
 
     document.body.appendChild(this.splashContainer);
 
@@ -42,12 +60,47 @@ export class TitleScreen {
     this.showSplash();
   }
 
+  playIntroVideo() {
+    this.videoContainer.style.display = 'flex';
+    this.video.play().catch((error) => {
+      console.error('Video play failed:', error);
+      this.hideVideo();
+    });
+
+    const videoClickHandler = () => {
+      this.hideVideo();
+    };
+
+    const hideVideoHandler = () => {
+      this.hideVideo();
+      this.video.removeEventListener('ended', hideVideoHandler);
+      this.video.removeEventListener('click', videoClickHandler);
+    };
+
+    this.video.addEventListener('ended', hideVideoHandler);
+    this.video.addEventListener('click', videoClickHandler);
+  }
+
+  hideVideo() {
+    this.videoContainer.className = 'logo-fade-out';
+    setTimeout(() => {
+      this.videoContainer.style.display = 'none';
+      this.videoContainer.className = '';
+    }, 1000);
+  }
+
   showSplash() {
     this.splashContainer.style.display = 'flex';
     this.container.style.display = 'none';
+    this.playIntroVideo();
   }
 
   hideSplash() {
+    if (this.video && !this.video.paused) {
+      this.video.pause();
+      this.video.currentTime = 0;
+    }
+
     this.splashContainer.className = 'logo-fade-out';
     setTimeout(() => {
       this.splashContainer.style.display = 'none';

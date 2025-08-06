@@ -38,10 +38,16 @@ export class Game {
     this.npcs = [];
     this.data = {};
 
+    this.minDisplayTimeTimeoutId = null;
+    this.splashSkipped = false;
+
     this.initAudio();
 
     this.gameState = GameState.OPENING;
-    this.titleScreen = new TitleScreen(() => this.startGame());
+    this.titleScreen = new TitleScreen(
+      () => this.startGame(),
+      () => this.skipSplashScreenDelay()
+    );
 
     // UI components will be initialized after localization is loaded
     this.pauseMenu = null;
@@ -70,12 +76,17 @@ export class Game {
     await this.loadModels();
 
     const elapsedTime = Date.now() - loadStartTime;
-    const minDisplayTime = 2000;
+    const minDisplayTime = 10000;
     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
-    setTimeout(() => {
+    if (this.splashSkipped) {
       this.playOpeningSequence();
-    }, remainingTime);
+    } else {
+      this.minDisplayTimeTimeoutId = setTimeout(() => {
+        this.minDisplayTimeTimeoutId = null;
+        this.playOpeningSequence();
+      }, remainingTime);
+    }
 
     this.field = new Field(this);
     this.sceneManager.add(this.field.mesh);
@@ -562,6 +573,15 @@ export class Game {
     const deltaTime = this.clock.getDelta();
     this._updateLoop(deltaTime);
   };
+
+  skipSplashScreenDelay() {
+    this.splashSkipped = true;
+    if (this.minDisplayTimeTimeoutId) {
+      clearTimeout(this.minDisplayTimeTimeoutId);
+      this.minDisplayTimeTimeoutId = null;
+      this.playOpeningSequence();
+    }
+  }
 
   playOpeningSequence() {
     this.gameState = GameState.OPENING;

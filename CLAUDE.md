@@ -162,6 +162,7 @@ await page.waitForFunction(() => window.game?.gameState === 'playing', null, {
    - `git diff`で変更内容を詳細に確認してからコミット
    - コミットメッセージは英語で記述し、変更内容を正確に記述
    - ブランチ名は`feature/{Issue番号}`の形式で命名
+   - **重要**: プルリクエストは必ず`develop`ブランチあてに作成する（`main`ではない）
 
 3. **コミュニケーション:**
    - 指示は一言一句正確に理解し、曖昧な点は必ず確認
