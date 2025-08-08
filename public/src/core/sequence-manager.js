@@ -261,6 +261,11 @@ export class SequenceManager {
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = 'showingText';
 
+    // プレイヤーの歩行音を停止
+    if (this.game.player && this.game.player.stopFootsteps) {
+      this.game.player.stopFootsteps();
+    }
+
     this.overlayDiv.classList.remove('hidden');
     this.overlayDiv.classList.add('visible-flex');
     this.overlayDiv.classList.add('sequence-overlay-fade-in');
@@ -343,6 +348,11 @@ export class SequenceManager {
   startEndingSequence(onComplete) {
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = 'showingText';
+
+    // プレイヤーの歩行音を停止
+    if (this.game.player && this.game.player.stopFootsteps) {
+      this.game.player.stopFootsteps();
+    }
 
     this.overlayDiv.classList.remove('hidden');
     this.overlayDiv.classList.add('visible-flex');

@@ -57,7 +57,26 @@ export class InputController {
 
   setupEventListeners() {
     document.addEventListener('keydown', (e) => {
+      // ゲーム関連のキーの組み合わせでブラウザのデフォルト動作を防ぐ（ゲーム状態に関係なく）
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        [
+          'KeyW',
+          'KeyD',
+          'KeyA',
+          'KeyS',
+          'KeyQ',
+          'KeyE',
+          'KeyR',
+          'KeyF',
+        ].includes(e.code)
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
       if (e.code === 'Escape') {
+        e.preventDefault();
         if (this.game.gameState === GameState.PLAYING) {
           this.game.togglePause();
           this.game.setPauseMenuVisibility(true);
