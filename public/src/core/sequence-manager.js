@@ -273,7 +273,7 @@ export class SequenceManager {
     this.currentTextIndex = 0;
     this.textTimer = 0;
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
-    this.textElement.classList.remove('hidden');
+    this.textElement.classList.remove('hidden', 'transparent');
     this.textElement.classList.add('visible');
 
     this.textElement.classList.remove(
@@ -363,7 +363,7 @@ export class SequenceManager {
     this.currentTextIndex = 0;
     this.textTimer = 0;
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
-    this.textElement.classList.remove('hidden');
+    this.textElement.classList.remove('hidden', 'transparent');
     this.textElement.classList.add('visible');
 
     this.textElement.classList.remove(
