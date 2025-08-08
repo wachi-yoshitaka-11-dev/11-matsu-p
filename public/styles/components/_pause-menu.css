@@ -1,0 +1,117 @@
+/* =============================================================
+   ポーズメニュー
+============================================================= */
+#pause-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.9) 100%
+  );
+  backdrop-filter: blur(15px);
+  @supports not (backdrop-filter: blur(15px)) {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  color: white;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  z-index: 101;
+  animation: pause-fade-in 0.3s ease-out;
+}
+
+@keyframes pause-fade-in {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(15px);
+  }
+}
+
+/* Removed pause menu frame */
+
+#pause-menu > * {
+  position: relative;
+  z-index: 1;
+}
+
+#pause-menu h1 {
+  font-size: 2.5em;
+  margin-bottom: 30px;
+  text-align: center;
+  color: white;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+  font-family: 'Arial', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+}
+
+#pause-menu button {
+  padding: 15px 30px;
+  font-size: 1.2em;
+  font-weight: 500;
+  cursor: pointer;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  font-family: inherit;
+  min-width: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+#pause-menu button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+#pause-menu button:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+#pause-menu button:hover::before {
+  left: 100%;
+}
+
+#pause-menu button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}

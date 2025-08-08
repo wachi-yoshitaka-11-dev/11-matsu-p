@@ -3,7 +3,7 @@ function createClickToStartScreen() {
   clickContainer.id = 'click-to-start-screen';
 
   const clickText = document.createElement('div');
-  clickText.className = 'click-text';
+  clickText.classList.add('click-text');
   clickText.textContent = 'タッチしてはじめる';
 
   clickContainer.appendChild(clickText);
@@ -20,7 +20,7 @@ function createClickToStartScreen() {
       console.warn('AudioContext initialization failed:', error);
     }
 
-    clickContainer.style.display = 'none';
+    clickContainer.classList.add('hidden');
     clickContainer.remove();
 
     startGame();

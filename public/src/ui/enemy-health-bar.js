@@ -8,14 +8,14 @@ export class EnemyHealthBar {
 
   createHealthBarElement(enemy) {
     const container = document.createElement('div');
-    container.className = 'enemy-health-bar';
+    container.classList.add('enemy-health-bar');
 
     const background = document.createElement('div');
-    background.className = 'enemy-health-bar-background';
+    background.classList.add('enemy-health-bar-background');
     container.appendChild(background);
 
     const fill = document.createElement('div');
-    fill.className = 'enemy-health-bar-fill';
+    fill.classList.add('enemy-health-bar-fill');
     fill.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
     container.appendChild(fill);
 
@@ -29,12 +29,13 @@ export class EnemyHealthBar {
     fill.style.width = `${healthPercent}%`;
 
     // Change color based on health percentage
+    fill.classList.remove('health-high', 'health-medium', 'health-low');
     if (healthPercent > 60) {
-      fill.style.background = '#44ff44';
+      fill.classList.add('health-high');
     } else if (healthPercent > 30) {
-      fill.style.background = '#ffaa44';
+      fill.classList.add('health-medium');
     } else {
-      fill.style.background = '#ff4444';
+      fill.classList.add('health-low');
     }
   }
 
@@ -82,17 +83,20 @@ export class EnemyHealthBar {
 
         if (screenPos) {
           // Show and update health bar
-          element.style.display = 'block';
+          element.classList.remove('hidden');
+          element.classList.add('visible');
           this.updateHealthBar(enemy, element);
           element.style.left = `${screenPos.x - 30}px`; // Center the 60px wide bar
           element.style.top = `${screenPos.y - 15}px`;
         } else {
           // Hide if behind camera
-          element.style.display = 'none';
+          element.classList.add('hidden');
+          element.classList.remove('visible');
         }
       } else {
         // Hide health bar when too far
-        element.style.display = 'none';
+        element.classList.add('hidden');
+        element.classList.remove('visible');
       }
     }
 

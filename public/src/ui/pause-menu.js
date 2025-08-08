@@ -29,7 +29,13 @@ export class PauseMenu {
   }
 
   toggle(show) {
-    this.container.style.display = show ? 'flex' : 'none';
+    if (show) {
+      this.container.classList.remove('hidden');
+      this.container.classList.add('visible-flex');
+    } else {
+      this.container.classList.add('hidden');
+      this.container.classList.remove('visible-flex');
+    }
 
     // Keys will naturally stop having effect during pause display
   }
