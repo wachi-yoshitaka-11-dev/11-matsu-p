@@ -45,6 +45,7 @@ export class SequenceManager {
     for (let i = 0; i < 2; i++) {
       const bgImage = document.createElement('img');
       bgImage.classList.add('sequence-background-image');
+      bgImage.alt = '';
       this.overlayDiv.appendChild(bgImage);
       this.backgroundImages.push(bgImage);
     }
@@ -155,8 +156,15 @@ export class SequenceManager {
 
     this.currentStep = 'textComplete';
 
-    this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
-    this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
+    this.textElement.classList.remove(
+      'sequence-text-large',
+      'sequence-text-small',
+      'sequence-text-fin'
+    );
+    this.overlayDiv.classList.remove(
+      'sequence-overlay-fade-in',
+      'sequence-overlay-fade-out'
+    );
 
     if (this.game.bgmAudios[AssetNames.BGM_OPENING]?.isPlaying) {
       this.game.bgmAudios[AssetNames.BGM_OPENING].stop();
@@ -170,10 +178,17 @@ export class SequenceManager {
     if (this.onSequenceCompleteCallback) {
       this.overlayDiv.classList.add('hidden');
       this.overlayDiv.classList.remove('visible-flex');
-      this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
+      this.overlayDiv.classList.remove(
+        'sequence-overlay-fade-in',
+        'sequence-overlay-fade-out'
+      );
       this.textElement.classList.add('hidden');
       this.textElement.classList.remove('visible');
-      this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
+      this.textElement.classList.remove(
+        'sequence-text-large',
+        'sequence-text-small',
+        'sequence-text-fin'
+      );
       this.staffRollElement.classList.add('hidden');
       this.staffRollElement.classList.remove('visible');
 
@@ -261,7 +276,10 @@ export class SequenceManager {
     this.textElement.classList.remove('hidden');
     this.textElement.classList.add('visible');
 
-    this.textElement.classList.remove('sequence-text-small', 'sequence-text-fin');
+    this.textElement.classList.remove(
+      'sequence-text-small',
+      'sequence-text-fin'
+    );
     this.textElement.classList.add('sequence-text-large');
     this.staffRollElement.classList.add('hidden');
     this.staffRollElement.classList.remove('visible');
@@ -296,16 +314,23 @@ export class SequenceManager {
 
       setTimeout(() => {
         this.overlayDiv.classList.add('hidden');
-      this.overlayDiv.classList.remove('visible-flex');
-        this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
+        this.overlayDiv.classList.remove('visible-flex');
+        this.overlayDiv.classList.remove(
+          'sequence-overlay-fade-in',
+          'sequence-overlay-fade-out'
+        );
         this.textElement.classList.add('hidden');
-      this.textElement.classList.remove('visible');
-        this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
+        this.textElement.classList.remove('visible');
+        this.textElement.classList.remove(
+          'sequence-text-large',
+          'sequence-text-small',
+          'sequence-text-fin'
+        );
 
         this.backgroundImages.forEach((img) => {
           img.src = '';
           img.classList.add('hidden');
-        img.classList.remove('visible');
+          img.classList.remove('visible');
         });
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
@@ -341,7 +366,10 @@ export class SequenceManager {
     this.textElement.classList.remove('hidden');
     this.textElement.classList.add('visible');
 
-    this.textElement.classList.remove('sequence-text-small', 'sequence-text-fin');
+    this.textElement.classList.remove(
+      'sequence-text-small',
+      'sequence-text-fin'
+    );
     this.textElement.classList.add('sequence-text-large');
     this.staffRollElement.classList.add('hidden');
     this.staffRollElement.classList.remove('visible');
@@ -363,7 +391,11 @@ export class SequenceManager {
 
       this.textElement.classList.add('hidden');
       this.textElement.classList.remove('visible');
-      this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
+      this.textElement.classList.remove(
+        'sequence-text-large',
+        'sequence-text-small',
+        'sequence-text-fin'
+      );
 
       this.backgroundImages.forEach((img) => {
         if (img.classList.contains('active')) {
@@ -382,11 +414,14 @@ export class SequenceManager {
 
         setTimeout(() => {
           this.staffRollElement.classList.add('hidden');
-      this.staffRollElement.classList.remove('visible');
+          this.staffRollElement.classList.remove('visible');
           this.textElement.classList.remove('hidden');
-    this.textElement.classList.add('visible');
+          this.textElement.classList.add('visible');
           this.textElement.textContent = this.sequencesData.ending.finText;
-          this.textElement.classList.remove('sequence-text-large', 'sequence-text-small');
+          this.textElement.classList.remove(
+            'sequence-text-large',
+            'sequence-text-small'
+          );
           this.textElement.classList.add('sequence-text-fin');
           this.currentStep = 'showingFin';
 
@@ -396,15 +431,22 @@ export class SequenceManager {
             this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_ENDING], 1500);
             setTimeout(() => {
               this.overlayDiv.classList.add('hidden');
-      this.overlayDiv.classList.remove('visible-flex');
-              this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
-              this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
+              this.overlayDiv.classList.remove('visible-flex');
+              this.overlayDiv.classList.remove(
+                'sequence-overlay-fade-in',
+                'sequence-overlay-fade-out'
+              );
+              this.textElement.classList.remove(
+                'sequence-text-large',
+                'sequence-text-small',
+                'sequence-text-fin'
+              );
 
               this.backgroundImages.forEach((img) => {
                 img.classList.remove('active');
                 img.src = '';
                 img.classList.add('hidden');
-        img.classList.remove('visible');
+                img.classList.remove('visible');
               });
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();

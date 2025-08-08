@@ -202,7 +202,7 @@ export class Hud {
     element.classList.add('equipment-slot', type);
 
     element.innerHTML = `
-      <img class="item-image" src="" alt="" style="display: none;">
+      <img class="item-image hidden" src="" alt="">
       <span class="placeholder">-</span>
       <span class="item-name"></span>
     `;

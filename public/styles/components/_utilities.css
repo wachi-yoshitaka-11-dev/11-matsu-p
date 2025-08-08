@@ -2,15 +2,6 @@
    表示制御ユーティリティクラス
 ============================================================= */
 /* Utility classes for controlling visibility - !important ensures these override inline styles */
-.show {
-  display: flex !important;
-}
-
-.hide {
-  display: none !important;
-}
-
-/* Additional display utility classes */
 .visible {
   display: block !important;
 }

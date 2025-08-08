@@ -12,14 +12,6 @@
     ]
   },
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "filesystem",
-    "git",
-    "web-search"
-  ],
-  "disabledMcpjsonServers": [
-    "filesystem",
-    "git",
-    "web-search"
-  ]
+  "enabledMcpjsonServers": ["filesystem", "git", "web-search"],
+  "disabledMcpjsonServers": ["filesystem", "git", "web-search"]
 }

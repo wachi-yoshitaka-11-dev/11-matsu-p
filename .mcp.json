@@ -15,7 +15,8 @@
     "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "env": {}
     },
     "serena": {
       "type": "stdio",

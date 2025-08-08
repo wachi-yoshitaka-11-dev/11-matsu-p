@@ -11,6 +11,10 @@
     rgba(0, 0, 0, 0.9) 0%,
     rgba(20, 20, 30, 0.95) 100%
   );
+  /* Fallback for unsupported browsers */
+  background-color: rgba(0, 0, 0, 0.85);
+  /* Enable backdrop blur */
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   color: white;
   padding: 30px 40px;
