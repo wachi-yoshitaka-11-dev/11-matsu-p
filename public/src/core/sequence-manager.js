@@ -196,7 +196,7 @@ export class SequenceManager {
         img.classList.remove('active');
         img.src = '';
         img.classList.add('hidden');
-        img.classList.remove('visible');
+        img.classList.remove('visible-image');
       });
       this.game.sceneManager.restoreGameElements();
       this.game.sceneManager.resetCamera();
@@ -239,7 +239,7 @@ export class SequenceManager {
       : `./assets/images/${imagePath}`;
     nextImage.src = fullImagePath;
     nextImage.classList.remove('hidden');
-    nextImage.classList.add('visible');
+    nextImage.classList.add('visible-image');
     nextImage.style.zIndex = '-1';
 
     nextImage.onload = () => {
@@ -330,7 +330,7 @@ export class SequenceManager {
         this.backgroundImages.forEach((img) => {
           img.src = '';
           img.classList.add('hidden');
-          img.classList.remove('visible');
+          img.classList.remove('visible-image');
         });
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
@@ -446,7 +446,7 @@ export class SequenceManager {
                 img.classList.remove('active');
                 img.src = '';
                 img.classList.add('hidden');
-                img.classList.remove('visible');
+                img.classList.remove('visible-image');
               });
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();
@@ -454,7 +454,7 @@ export class SequenceManager {
               this.currentStep = 'idle';
             }, 1500);
           }, 3500);
-        }, 30000);
+        }, 25000);
       }, 500);
     };
   }
