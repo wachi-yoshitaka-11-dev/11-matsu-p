@@ -13,6 +13,7 @@
       "env": {}
     },
     "sequential-thinking": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
     },

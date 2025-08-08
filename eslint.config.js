@@ -1,9 +1,11 @@
 import globals from 'globals';
+import js from '@eslint/js';
 
 export default [
+  js.configs.recommended,
   {
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: 'latest',
       sourceType: 'module',
       globals: {
         ...globals.browser,
@@ -21,5 +23,6 @@ export default [
       'no-trailing-spaces': 'error',
       'eol-last': 'error',
     },
+    ignores: ['node_modules/', 'public/assets/', 'tests/', 'dist/', 'build/'],
   },
 ];
