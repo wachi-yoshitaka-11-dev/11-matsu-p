@@ -97,3 +97,8 @@
     transform: translateY(-140%);
   }
 }
+
+/* Staff roll animation class */
+.staff-roll-animation {
+  animation: scroll-up 30s linear forwards;
+}

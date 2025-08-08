@@ -61,7 +61,8 @@ export class TitleScreen {
   }
 
   playIntroVideo() {
-    this.videoContainer.style.display = 'flex';
+    this.videoContainer.classList.remove('hidden');
+    this.videoContainer.classList.add('visible-flex');
     this.video.play().catch((error) => {
       console.error('Video play failed:', error);
       this.hideVideo();
@@ -82,16 +83,17 @@ export class TitleScreen {
   }
 
   hideVideo() {
-    this.videoContainer.className = 'logo-fade-out';
+    this.videoContainer.classList.add('logo-fade-out');
     setTimeout(() => {
-      this.videoContainer.style.display = 'none';
-      this.videoContainer.className = '';
+      this.videoContainer.classList.add('hidden');
+      this.videoContainer.classList.remove('logo-fade-out');
     }, 1000);
   }
 
   showSplash() {
-    this.splashContainer.style.display = 'flex';
-    this.container.style.display = 'none';
+    this.splashContainer.classList.remove('hidden');
+    this.splashContainer.classList.add('visible-flex');
+    this.container.classList.add('hidden');
     this.playIntroVideo();
   }
 
@@ -101,30 +103,30 @@ export class TitleScreen {
       this.video.currentTime = 0;
     }
 
-    this.splashContainer.className = 'logo-fade-out';
+    this.splashContainer.classList.add('logo-fade-out');
     setTimeout(() => {
-      this.splashContainer.style.display = 'none';
-      this.splashContainer.className = '';
+      this.splashContainer.classList.add('hidden');
+      this.splashContainer.classList.remove('logo-fade-out');
     }, 1000);
   }
 
   showMenu() {
-    this.splashContainer.style.display = 'none';
-    this.container.style.display = 'flex';
-    this.container.className = 'title-fade-in';
+    this.splashContainer.classList.add('hidden');
+    this.container.classList.remove('hidden');
+    this.container.classList.add('visible-flex', 'title-fade-in');
   }
 
   hideMenu() {
-    this.container.className = 'title-fade-out';
+    this.container.classList.add('title-fade-out');
     setTimeout(() => {
-      this.container.style.display = 'none';
-      this.container.className = '';
+      this.container.classList.add('hidden');
+      this.container.classList.remove('title-fade-out');
     }, 1000);
   }
 
   hideAll() {
-    this.splashContainer.style.display = 'none';
-    this.container.style.display = 'none';
+    this.splashContainer.classList.add('hidden');
+    this.container.classList.add('hidden');
   }
 
   updateTexts() {

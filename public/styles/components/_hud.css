@@ -395,6 +395,19 @@
   border-radius: 3px;
 }
 
+/* 敵ヘルスバー - ヘルス状態別の色クラス */
+.enemy-health-bar-fill.health-high {
+  background: #44ff44 !important;
+}
+
+.enemy-health-bar-fill.health-medium {
+  background: #ffaa44 !important;
+}
+
+.enemy-health-bar-fill.health-low {
+  background: #ff4444 !important;
+}
+
 .enemy-health-bar-background {
   position: absolute;
   top: 0;

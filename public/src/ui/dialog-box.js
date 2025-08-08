@@ -6,7 +6,7 @@ export class DialogBox {
     this.game = game;
     this.container = document.createElement('div');
     this.container.id = 'dialog-box';
-    this.container.style.display = 'none';
+    this.container.classList.add('hidden');
 
     this.messageElement = document.createElement('p');
     this.container.appendChild(this.messageElement);
@@ -34,7 +34,8 @@ export class DialogBox {
 
     const formattedMessage = message.replace(/\n/g, '<br>');
 
-    this.container.style.display = 'flex';
+    this.container.classList.remove('hidden');
+    this.container.classList.add('visible-flex');
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);
 
@@ -43,7 +44,8 @@ export class DialogBox {
 
   hide() {
     this.stopTypewriter();
-    this.container.style.display = 'none';
+    this.container.classList.add('hidden');
+    this.container.classList.remove('visible-flex');
 
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);

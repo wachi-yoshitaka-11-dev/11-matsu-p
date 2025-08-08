@@ -36,25 +36,25 @@ export class SequenceManager {
 
     this.overlayDiv = document.createElement('div');
     this.overlayDiv.id = 'sequence-overlay';
-    this.overlayDiv.className = 'sequence-overlay';
-    this.overlayDiv.style.display = 'none';
+    this.overlayDiv.classList.add('sequence-overlay');
+    this.overlayDiv.classList.add('hidden');
     document.body.appendChild(this.overlayDiv);
 
     this.backgroundImages = [];
     this.currentBackgroundIndex = 0;
     for (let i = 0; i < 2; i++) {
       const bgImage = document.createElement('img');
-      bgImage.className = 'sequence-background-image';
+      bgImage.classList.add('sequence-background-image');
       this.overlayDiv.appendChild(bgImage);
       this.backgroundImages.push(bgImage);
     }
 
     this.textElement = document.createElement('div');
-    this.textElement.style.opacity = '0';
+    this.textElement.classList.add('transparent');
     this.overlayDiv.appendChild(this.textElement);
 
     this.staffRollElement = document.createElement('div');
-    this.staffRollElement.className = 'staff-roll';
+    this.staffRollElement.classList.add('staff-roll');
     this.overlayDiv.appendChild(this.staffRollElement);
 
     this.currentTextIndex = 0;
@@ -118,9 +118,13 @@ export class SequenceManager {
     if (this.currentTextIndex < this.textSequence.length) {
       this.textElement.textContent = this.textSequence[this.currentTextIndex];
       const isLarge = this.currentTextIndex % 2 === 0;
-      this.textElement.className = isLarge
-        ? 'sequence-text-large'
-        : 'sequence-text-small';
+      if (isLarge) {
+        this.textElement.classList.remove('sequence-text-small');
+        this.textElement.classList.add('sequence-text-large');
+      } else {
+        this.textElement.classList.remove('sequence-text-large');
+        this.textElement.classList.add('sequence-text-small');
+      }
 
       if (
         this.backgroundImagePaths &&
@@ -151,8 +155,8 @@ export class SequenceManager {
 
     this.currentStep = 'textComplete';
 
-    this.textElement.className = '';
-    this.overlayDiv.className = '';
+    this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
+    this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
 
     if (this.game.bgmAudios[AssetNames.BGM_OPENING]?.isPlaying) {
       this.game.bgmAudios[AssetNames.BGM_OPENING].stop();
@@ -164,16 +168,20 @@ export class SequenceManager {
     this.disableSkip();
 
     if (this.onSequenceCompleteCallback) {
-      this.overlayDiv.style.display = 'none';
-      this.overlayDiv.className = '';
-      this.textElement.style.display = 'none';
-      this.textElement.className = '';
-      this.staffRollElement.style.display = 'none';
+      this.overlayDiv.classList.add('hidden');
+      this.overlayDiv.classList.remove('visible-flex');
+      this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
+      this.textElement.classList.add('hidden');
+      this.textElement.classList.remove('visible');
+      this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
+      this.staffRollElement.classList.add('hidden');
+      this.staffRollElement.classList.remove('visible');
 
       this.backgroundImages.forEach((img) => {
         img.classList.remove('active');
         img.src = '';
-        img.style.display = 'none';
+        img.classList.add('hidden');
+        img.classList.remove('visible');
       });
       this.game.sceneManager.restoreGameElements();
       this.game.sceneManager.resetCamera();
@@ -215,7 +223,8 @@ export class SequenceManager {
       ? imagePath
       : `./assets/images/${imagePath}`;
     nextImage.src = fullImagePath;
-    nextImage.style.display = 'block';
+    nextImage.classList.remove('hidden');
+    nextImage.classList.add('visible');
     nextImage.style.zIndex = '-1';
 
     nextImage.onload = () => {
@@ -237,8 +246,9 @@ export class SequenceManager {
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = 'showingText';
 
-    this.overlayDiv.style.display = 'flex';
-    this.overlayDiv.className = 'sequence-overlay-fade-in';
+    this.overlayDiv.classList.remove('hidden');
+    this.overlayDiv.classList.add('visible-flex');
+    this.overlayDiv.classList.add('sequence-overlay-fade-in');
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
@@ -248,10 +258,13 @@ export class SequenceManager {
     this.currentTextIndex = 0;
     this.textTimer = 0;
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
-    this.textElement.style.display = 'block';
+    this.textElement.classList.remove('hidden');
+    this.textElement.classList.add('visible');
 
-    this.textElement.className = 'sequence-text-large';
-    this.staffRollElement.style.display = 'none';
+    this.textElement.classList.remove('sequence-text-small', 'sequence-text-fin');
+    this.textElement.classList.add('sequence-text-large');
+    this.staffRollElement.classList.add('hidden');
+    this.staffRollElement.classList.remove('visible');
 
     setTimeout(() => {
       this.changeBackgroundImage(this.backgroundImagePaths[0]);
@@ -272,7 +285,7 @@ export class SequenceManager {
 
       this.disableSkip();
 
-      this.overlayDiv.className = 'sequence-overlay-fade-out';
+      this.overlayDiv.classList.add('sequence-overlay-fade-out');
       this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_OPENING], 3000);
 
       this.backgroundImages.forEach((img) => {
@@ -282,14 +295,17 @@ export class SequenceManager {
       });
 
       setTimeout(() => {
-        this.overlayDiv.style.display = 'none';
-        this.overlayDiv.className = '';
-        this.textElement.style.display = 'none';
-        this.textElement.className = '';
+        this.overlayDiv.classList.add('hidden');
+      this.overlayDiv.classList.remove('visible-flex');
+        this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
+        this.textElement.classList.add('hidden');
+      this.textElement.classList.remove('visible');
+        this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
 
         this.backgroundImages.forEach((img) => {
           img.src = '';
-          img.style.display = 'none';
+          img.classList.add('hidden');
+        img.classList.remove('visible');
         });
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
@@ -303,12 +319,14 @@ export class SequenceManager {
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = 'showingText';
 
-    this.overlayDiv.style.display = 'flex';
-    this.overlayDiv.className = 'sequence-overlay-fade-in';
+    this.overlayDiv.classList.remove('hidden');
+    this.overlayDiv.classList.add('visible-flex');
+    this.overlayDiv.classList.add('sequence-overlay-fade-in');
 
-    this.overlayDiv.style.backgroundColor = 'black';
+    this.overlayDiv.classList.add('bg-black');
     setTimeout(() => {
-      this.overlayDiv.style.backgroundColor = 'transparent';
+      this.overlayDiv.classList.remove('bg-black');
+      this.overlayDiv.classList.add('bg-transparent');
     }, 1000);
 
     this.game.sceneManager.setCamera(this.sequenceCamera);
@@ -320,10 +338,13 @@ export class SequenceManager {
     this.currentTextIndex = 0;
     this.textTimer = 0;
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
-    this.textElement.style.display = 'block';
+    this.textElement.classList.remove('hidden');
+    this.textElement.classList.add('visible');
 
-    this.textElement.className = 'sequence-text-large';
-    this.staffRollElement.style.display = 'none';
+    this.textElement.classList.remove('sequence-text-small', 'sequence-text-fin');
+    this.textElement.classList.add('sequence-text-large');
+    this.staffRollElement.classList.add('hidden');
+    this.staffRollElement.classList.remove('visible');
 
     this.changeBackgroundImage(this.backgroundImagePaths[0]);
 
@@ -340,8 +361,9 @@ export class SequenceManager {
     this.endingSequenceCallback = () => {
       this.currentStep = 'showingStaffRoll';
 
-      this.textElement.style.display = 'none';
-      this.textElement.className = '';
+      this.textElement.classList.add('hidden');
+      this.textElement.classList.remove('visible');
+      this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
 
       this.backgroundImages.forEach((img) => {
         if (img.classList.contains('active')) {
@@ -350,33 +372,39 @@ export class SequenceManager {
       });
 
       setTimeout(() => {
-        this.staffRollElement.style.display = 'block';
+        this.staffRollElement.classList.remove('hidden');
+        this.staffRollElement.classList.add('visible');
         const staffRollHtml = this.sequencesData.ending.staffRoll
           .map((credit) => `<p>${credit}</p>`)
           .join('');
         this.staffRollElement.innerHTML = staffRollHtml;
-        this.staffRollElement.style.animation = 'scroll-up 30s linear forwards';
+        this.staffRollElement.classList.add('staff-roll-animation');
 
         setTimeout(() => {
-          this.staffRollElement.style.display = 'none';
-          this.textElement.style.display = 'block';
+          this.staffRollElement.classList.add('hidden');
+      this.staffRollElement.classList.remove('visible');
+          this.textElement.classList.remove('hidden');
+    this.textElement.classList.add('visible');
           this.textElement.textContent = this.sequencesData.ending.finText;
-          this.textElement.className = 'sequence-text-fin';
+          this.textElement.classList.remove('sequence-text-large', 'sequence-text-small');
+          this.textElement.classList.add('sequence-text-fin');
           this.currentStep = 'showingFin';
 
           setTimeout(() => {
             this.disableSkip();
-            this.overlayDiv.className = 'sequence-overlay-fade-out';
+            this.overlayDiv.classList.add('sequence-overlay-fade-out');
             this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_ENDING], 1500);
             setTimeout(() => {
-              this.overlayDiv.style.display = 'none';
-              this.overlayDiv.className = '';
-              this.textElement.className = '';
+              this.overlayDiv.classList.add('hidden');
+      this.overlayDiv.classList.remove('visible-flex');
+              this.overlayDiv.classList.remove('sequence-overlay-fade-in', 'sequence-overlay-fade-out');
+              this.textElement.classList.remove('sequence-text-large', 'sequence-text-small', 'sequence-text-fin');
 
               this.backgroundImages.forEach((img) => {
                 img.classList.remove('active');
                 img.src = '';
-                img.style.display = 'none';
+                img.classList.add('hidden');
+        img.classList.remove('visible');
               });
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();

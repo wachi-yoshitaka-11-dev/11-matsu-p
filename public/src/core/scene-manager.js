@@ -23,7 +23,7 @@ export class SceneManager {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.domElement.setAttribute('tabindex', '0');
-    this.renderer.domElement.style.display = 'none';
+    this.renderer.domElement.classList.add('hidden');
     document.body.appendChild(this.renderer.domElement);
 
     this.scene.background = new THREE.Color(0x87ceeb);
@@ -51,21 +51,24 @@ export class SceneManager {
   }
 
   showCanvas() {
-    this.renderer.domElement.style.display = 'block';
+    this.renderer.domElement.classList.remove('hidden');
+    this.renderer.domElement.classList.add('visible');
   }
 
   hideCanvas() {
-    this.renderer.domElement.style.display = 'none';
+    this.renderer.domElement.classList.add('hidden');
   }
 
   fadeOutCanvas(duration = 1000, callback) {
     this.renderer.domElement.style.transition = `opacity ${duration}ms ease-out`;
-    this.renderer.domElement.style.opacity = '0';
+    this.renderer.domElement.classList.add('transparent');
+    this.renderer.domElement.classList.remove('opaque');
 
     setTimeout(() => {
-      this.renderer.domElement.style.display = 'none';
+      this.renderer.domElement.classList.add('hidden');
       this.renderer.domElement.style.transition = '';
-      this.renderer.domElement.style.opacity = '1';
+      this.renderer.domElement.classList.remove('transparent');
+      this.renderer.domElement.classList.add('opaque');
       if (callback) callback();
     }, duration);
   }

@@ -9,3 +9,39 @@
 .hide {
   display: none !important;
 }
+
+/* Additional display utility classes */
+.visible {
+  display: block !important;
+}
+
+.visible-flex {
+  display: flex !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Opacity utility classes */
+.transparent {
+  opacity: 0 !important;
+}
+
+.opaque {
+  opacity: 1 !important;
+}
+
+/* Dynamic position utility classes */
+.positioned {
+  position: absolute;
+}
+
+/* Background utility classes */
+.bg-black {
+  background-color: black !important;
+}
+
+.bg-transparent {
+  background-color: transparent !important;
+}
