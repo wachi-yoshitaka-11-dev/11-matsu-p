@@ -1,0 +1,166 @@
+/* =============================================================
+   キーフレームアニメーション定義
+============================================================= */
+
+/* 基本フェード */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* オーバーレイフェード */
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    background-color: black;
+  }
+  to {
+    opacity: 1;
+    background-color: transparent;
+  }
+}
+
+@keyframes overlayFadeOut {
+  from {
+    opacity: 1;
+    background-color: transparent;
+  }
+  to {
+    opacity: 0;
+    background-color: black;
+  }
+}
+
+/* シーケンステキストアニメーション */
+@keyframes sequenceTextLarge {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes sequenceTextSmall {
+  0% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Fin専用アニメーション */
+@keyframes sequenceTextFin {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+}
+
+/* パルスアニメーション（重複回避のためここに統合） */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* =============================================================
+   アニメーションクラス
+============================================================= */
+
+/* シーケンステキストアニメーション */
+.sequence-text-large {
+  animation: sequenceTextLarge 5s ease-in-out forwards;
+  transform-origin: center;
+  opacity: 0;
+}
+
+.sequence-text-small {
+  animation: sequenceTextSmall 5s ease-in-out forwards;
+  transform-origin: center;
+  opacity: 0;
+}
+
+/* Fin専用テキスト */
+.sequence-text-fin {
+  animation: sequenceTextFin 15s ease-in-out forwards;
+  transform-origin: center;
+  opacity: 0;
+  text-shadow:
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000,
+    2px 2px 0 #000,
+    0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* シーケンスオーバーレイのフェード */
+.sequence-overlay-fade-in {
+  animation: overlayFadeIn 1s ease-in-out forwards;
+}
+
+.sequence-overlay-fade-out {
+  animation: overlayFadeOut 1.5s ease-in-out forwards;
+}
+
+/* タイトル画面・ロゴアニメーション */
+.title-fade-in {
+  animation: fadeIn 1s ease-in-out forwards;
+  opacity: 0;
+}
+
+.title-fade-out {
+  animation: fadeOut 1s ease-in-out forwards;
+  opacity: 1;
+}
+
+.logo-fade-out {
+  animation: fadeOut 1s ease-in-out forwards;
+  opacity: 1;
+}
