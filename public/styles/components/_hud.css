@@ -437,5 +437,5 @@
   background-color: transparent;
   pointer-events: none;
   transform: translate(-50%, -50%);
-  animation: pulse 1s infinite;
+  animation: pulse-lock-on 1s infinite;
 }
