@@ -78,6 +78,7 @@
   min-width: 200px;
   position: relative;
   overflow: hidden;
+  margin-top: 15px;
 }
 
 #pause-menu button::before {
@@ -114,4 +115,87 @@
 #pause-menu button:active {
   transform: translateY(-1px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+#controls-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 102;
+}
+
+.controls-modal-content {
+  background: #333;
+  padding: 20px;
+  border-radius: 5px;
+  width: 80%;
+  max-width: 600px;
+  max-height: 80%;
+  overflow-y: auto;
+  position: relative;
+}
+
+.controls-modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: white;
+}
+
+#controls-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#controls-list th,
+#controls-list td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#controls-list th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #444;
+  color: white;
+}
+
+#controls-modal .controls-modal-content button {
+  position: sticky;
+  bottom: 0;
+  float: right;
+  margin-top: 20px;
+  background: #555;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  min-width: auto;
+  font-size: 1em;
+  font-weight: normal;
+  transition: background-color 0.3s ease;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+#controls-modal .controls-modal-content button::before {
+  display: none;
+}
+
+#controls-modal .controls-modal-content button:hover {
+  background: #666;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+#controls-modal .controls-modal-content button:active {
+  background: #444;
+  box-shadow: none;
 }

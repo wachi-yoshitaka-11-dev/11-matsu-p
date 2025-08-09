@@ -81,9 +81,13 @@ export class InputController {
           this.game.togglePause();
           this.game.setPauseMenuVisibility(true);
         } else if (this.game.gameState === GameState.PAUSED) {
-          this.game.togglePause();
-          this.game.setPauseMenuVisibility(false);
-          this.reevaluateKeyStates();
+          if (this.game.pauseMenu && this.game.pauseMenu.hasActiveModal()) {
+            this.game.pauseMenu.closeCurrentModal();
+          } else {
+            this.game.togglePause();
+            this.game.setPauseMenuVisibility(false);
+            this.reevaluateKeyStates();
+          }
         }
         this.keys[e.code] = false;
         return;
@@ -136,10 +140,10 @@ export class InputController {
     );
 
     this.canvas.addEventListener('click', () => {
+      if (!this._canProcessInput()) return;
       if (typeof window.playwright === 'undefined') {
         this.canvas.requestPointerLock();
       }
-      if (!this._canProcessInput()) return;
     });
 
     this.canvas.addEventListener('contextmenu', (e) => {
@@ -419,20 +423,18 @@ export class InputController {
       playerForward.y = 0;
       playerForward.normalize();
 
-      // Move backward relative to player's facing direction (negate for backward)
       const direction = playerForward.clone().negate();
 
       const backStepSpeed = this.game.data.player.backStepSpeed || 6;
       this.player.physics.velocity.x = direction.x * backStepSpeed;
       this.player.physics.velocity.z = direction.z * backStepSpeed;
 
-      // Set timer to stop backStep movement after a set duration
       setTimeout(() => {
         if (this.player.isBackStepping) {
           this.player.physics.velocity.x = 0;
           this.player.physics.velocity.z = 0;
         }
-      }, this.game.data.player.rollDuration || 500); // Use same duration as rolling
+      }, this.game.data.player.backStepDuration || this.game.data.player.rollDuration || 500);
     }
   }
 
@@ -444,7 +446,6 @@ export class InputController {
     if (this.keys['KeyA']) direction.x -= 1;
     if (this.keys['KeyD']) direction.x += 1;
 
-    // Apply camera rotation to movement direction
     if (direction.length() > 0) {
       direction.applyQuaternion(
         new THREE.Quaternion().setFromEuler(
@@ -458,13 +459,11 @@ export class InputController {
 
   handleLockOnToggle() {
     if (this.player.lockedTarget) {
-      // Release lock-on
       this.player.lockedTarget = null;
       if (this.game.lockOnUI) {
         this.game.lockOnUI.hideLockOnTarget();
       }
     } else {
-      // Find nearest enemy to lock onto
       const nearestEnemy = this.findNearestEnemy();
       if (nearestEnemy) {
         this.player.lockedTarget = nearestEnemy;
@@ -520,7 +519,6 @@ export class InputController {
       if (this.player.mesh.position.distanceTo(enemy.mesh.position) < range) {
         const finalDamage = damage * this.player.attackBuffMultiplier;
 
-        // Check if enemy is guarding and reduce damage
         if (enemy.isGuarding && typeof enemy.getShieldDefense === 'function') {
           const shieldDefense = enemy.getShieldDefense();
           const reducedDamage = Math.max(1, finalDamage - shieldDefense);
@@ -532,17 +530,13 @@ export class InputController {
     });
   }
 
-  // Clear all key states (useful when pausing/unpausing)
   clearKeyStates() {
     this.keys = {};
   }
 
-  // Re-evaluate current key states based on actual keyboard state
   reevaluateKeyStates() {
-    // Create a temporary event listener to detect currently pressed keys
     const currentlyPressed = new Set();
 
-    // Listen for keydown events briefly to capture currently pressed keys
     const keydownHandler = (e) => {
       currentlyPressed.add(e.code);
     };
@@ -551,26 +545,21 @@ export class InputController {
       currentlyPressed.delete(e.code);
     };
 
-    // Add listeners temporarily
     document.addEventListener('keydown', keydownHandler);
     document.addEventListener('keyup', keyupHandler);
 
-    // After a brief delay, update our key states to match actual pressed keys
-    setTimeout(() => {
-      // Remove temporary listeners
+    requestAnimationFrame(() => {
       document.removeEventListener('keydown', keydownHandler);
       document.removeEventListener('keyup', keyupHandler);
 
-      // Update our key states to match currently pressed keys
       const allKeys = Object.keys(this.keys);
       for (const key of allKeys) {
         this.keys[key] = currentlyPressed.has(key);
       }
 
-      // Also add any newly detected pressed keys
       for (const key of currentlyPressed) {
         this.keys[key] = true;
       }
-    }, 16); // One frame delay at 60fps
+    });
   }
 }

@@ -15,20 +15,17 @@ export class Hud {
     this.initialMaxStamina = this.game.data.player.maxStamina;
     this.baseBarWidth = 200;
 
-    // Create all UI components
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
 
-    // Add components to main HUD container
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
     this.container.appendChild(this.experienceDisplay);
     this.container.appendChild(this.levelUpMenu.element);
 
-    // Add death overlay to body
     document.body.appendChild(this.deathOverlay.element);
   }
 
@@ -40,15 +37,48 @@ export class Hud {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
+    this.playerPortrait = this.createPlayerPortrait();
+    container.appendChild(this.playerPortrait);
+
+    const barsContainer = document.createElement('div');
+    barsContainer.classList.add('bars-container');
+
     this.hpBar = this.createStatusBar('hp-bar', 'HP');
     this.fpBar = this.createStatusBar('fp-bar', 'FP');
-    this.staminaBar = this.createStatusBar('stamina-bar', 'Stamina');
+    this.staminaBar = this.createStatusBar('stamina-bar', 'ST');
 
-    container.appendChild(this.hpBar.element);
-    container.appendChild(this.fpBar.element);
-    container.appendChild(this.staminaBar.element);
+    barsContainer.appendChild(this.hpBar.element);
+    barsContainer.appendChild(this.fpBar.element);
+    barsContainer.appendChild(this.staminaBar.element);
+
+    container.appendChild(barsContainer);
 
     return container;
+  }
+
+  createPlayerPortrait() {
+    const portraitContainer = document.createElement('div');
+    portraitContainer.classList.add('player-portrait');
+
+    const portraitImage = document.createElement('img');
+    portraitImage.src = `./assets/images/${this.game.data.player.image}`;
+    portraitImage.alt = 'Player Portrait';
+    portraitImage.classList.add('portrait-image');
+
+    portraitImage.onerror = () => {
+      portraitImage.classList.add('hidden');
+      portraitImage.classList.remove('visible');
+      let placeholder = portraitContainer.querySelector('.portrait-placeholder');
+      if (!placeholder) {
+        placeholder = document.createElement('div');
+        placeholder.classList.add('portrait-placeholder');
+        placeholder.textContent = '?';
+        portraitContainer.appendChild(placeholder);
+      }
+    };
+
+    portraitContainer.appendChild(portraitImage);
+    return portraitContainer;
   }
 
   createStatusBar(id, label) {
@@ -155,22 +185,10 @@ export class Hud {
     container.id = 'equipment-container';
 
     // Create equipment slots
-    this.equipmentWeapon = this.createEquipmentSlot(
-      localization.getText('controls.weapon'),
-      'weapon'
-    );
-    this.equipmentShield = this.createEquipmentSlot(
-      localization.getText('controls.shield'),
-      'shield'
-    );
-    this.equipmentItem = this.createEquipmentSlot(
-      localization.getText('controls.item'),
-      'item'
-    );
-    this.equipmentSkill = this.createEquipmentSlot(
-      localization.getText('controls.skill'),
-      'skill'
-    );
+    this.equipmentWeapon = this.createEquipmentSlot('weapon');
+    this.equipmentShield = this.createEquipmentSlot('shield');
+    this.equipmentItem = this.createEquipmentSlot('item');
+    this.equipmentSkill = this.createEquipmentSlot('skill');
 
     container.appendChild(this.equipmentWeapon);
     container.appendChild(this.equipmentShield);
@@ -197,7 +215,7 @@ export class Hud {
     return container;
   }
 
-  createEquipmentSlot(keyHint, type) {
+  createEquipmentSlot(type) {
     const element = document.createElement('div');
     element.classList.add('equipment-slot', type);
 
