@@ -76,6 +76,24 @@ src/
   - 関数・変数名: `camelCase` (例: `handleClick`)
 - **モジュール:** ES Modules (`import`/`export`) を使用する。
 
+### UI表示制御規約
+
+- **重要:** UI要素の表示/非表示制御は、`style.display`を直接操作するのではなく、CSSクラスを使用する
+- **使用するクラス:**
+  - `hidden`: 要素を非表示にする
+  - `visible`: 要素を表示する（通常のblock/inline要素用）
+  - `visible-flex`: 要素を表示する（flex要素用）
+- **例:**
+
+  ```javascript
+  // 正しい方法
+  element.classList.remove('hidden');
+  element.classList.add('visible-flex');
+
+  // 間違った方法（使用禁止）
+  element.style.display = 'flex';
+  ```
+
 ## 7. アニメーションシステム
 
 本プロジェクトのアニメーションは、状態ベースとイベント駆動を組み合わせたハイブリッドなアプローチを採用している。

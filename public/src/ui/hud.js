@@ -155,22 +155,10 @@ export class Hud {
     container.id = 'equipment-container';
 
     // Create equipment slots
-    this.equipmentWeapon = this.createEquipmentSlot(
-      localization.getText('controls.weapon'),
-      'weapon'
-    );
-    this.equipmentShield = this.createEquipmentSlot(
-      localization.getText('controls.shield'),
-      'shield'
-    );
-    this.equipmentItem = this.createEquipmentSlot(
-      localization.getText('controls.item'),
-      'item'
-    );
-    this.equipmentSkill = this.createEquipmentSlot(
-      localization.getText('controls.skill'),
-      'skill'
-    );
+    this.equipmentWeapon = this.createEquipmentSlot('weapon');
+    this.equipmentShield = this.createEquipmentSlot('shield');
+    this.equipmentItem = this.createEquipmentSlot('item');
+    this.equipmentSkill = this.createEquipmentSlot('skill');
 
     container.appendChild(this.equipmentWeapon);
     container.appendChild(this.equipmentShield);
@@ -197,7 +185,7 @@ export class Hud {
     return container;
   }
 
-  createEquipmentSlot(keyHint, type) {
+  createEquipmentSlot(type) {
     const element = document.createElement('div');
     element.classList.add('equipment-slot', type);
 
