@@ -15,20 +15,17 @@ export class Hud {
     this.initialMaxStamina = this.game.data.player.maxStamina;
     this.baseBarWidth = 200;
 
-    // Create all UI components
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
 
-    // Add components to main HUD container
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
     this.container.appendChild(this.experienceDisplay);
     this.container.appendChild(this.levelUpMenu.element);
 
-    // Add death overlay to body
     document.body.appendChild(this.deathOverlay.element);
   }
 
@@ -40,15 +37,44 @@ export class Hud {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
-    this.hpBar = this.createStatusBar('hp-bar', 'HP');
-    this.fpBar = this.createStatusBar('fp-bar', 'FP');
-    this.staminaBar = this.createStatusBar('stamina-bar', 'Stamina');
+    this.playerPortrait = this.createPlayerPortrait();
+    container.appendChild(this.playerPortrait);
 
-    container.appendChild(this.hpBar.element);
-    container.appendChild(this.fpBar.element);
-    container.appendChild(this.staminaBar.element);
+    const barsContainer = document.createElement('div');
+    barsContainer.classList.add('bars-container');
+
+    this.hpBar = this.createStatusBar('hp-bar', 'HP');
+    this.fpBar = this.createStatusBar('fp-bar', 'SP');
+    this.staminaBar = this.createStatusBar('stamina-bar', 'ST');
+
+    barsContainer.appendChild(this.hpBar.element);
+    barsContainer.appendChild(this.fpBar.element);
+    barsContainer.appendChild(this.staminaBar.element);
+
+    container.appendChild(barsContainer);
 
     return container;
+  }
+
+  createPlayerPortrait() {
+    const portraitContainer = document.createElement('div');
+    portraitContainer.classList.add('player-portrait');
+
+    const portraitImage = document.createElement('img');
+    portraitImage.src = `assets/images/${this.game.data.player.image}`;
+    portraitImage.alt = 'Player Portrait';
+    portraitImage.classList.add('portrait-image');
+
+    portraitImage.onerror = () => {
+      portraitImage.style.display = 'none';
+      const placeholder = document.createElement('div');
+      placeholder.classList.add('portrait-placeholder');
+      placeholder.textContent = '?';
+      portraitContainer.appendChild(placeholder);
+    };
+
+    portraitContainer.appendChild(portraitImage);
+    return portraitContainer;
   }
 
   createStatusBar(id, label) {

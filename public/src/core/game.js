@@ -399,7 +399,10 @@ export class Game {
 
   resumeBGM() {
     if (this.currentBGM && this.bgmAudios[this.currentBGM]) {
-      this.bgmAudios[this.currentBGM].play();
+      const audio = this.bgmAudios[this.currentBGM];
+      if (!audio.isPlaying) {
+        audio.play();
+      }
     }
   }
 

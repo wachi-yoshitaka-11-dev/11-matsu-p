@@ -1,4 +1,5 @@
 {
+  "image": "player.png",
   "maxHp": 100,
   "maxFp": 50,
   "maxStamina": 100,
