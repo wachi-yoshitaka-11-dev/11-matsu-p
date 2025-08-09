@@ -44,7 +44,7 @@ export class Hud {
     barsContainer.classList.add('bars-container');
 
     this.hpBar = this.createStatusBar('hp-bar', 'HP');
-    this.fpBar = this.createStatusBar('fp-bar', 'SP');
+    this.fpBar = this.createStatusBar('fp-bar', 'FP');
     this.staminaBar = this.createStatusBar('stamina-bar', 'ST');
 
     barsContainer.appendChild(this.hpBar.element);
@@ -61,16 +61,20 @@ export class Hud {
     portraitContainer.classList.add('player-portrait');
 
     const portraitImage = document.createElement('img');
-    portraitImage.src = `assets/images/${this.game.data.player.image}`;
+    portraitImage.src = `./assets/images/${this.game.data.player.image}`;
     portraitImage.alt = 'Player Portrait';
     portraitImage.classList.add('portrait-image');
 
     portraitImage.onerror = () => {
-      portraitImage.style.display = 'none';
-      const placeholder = document.createElement('div');
-      placeholder.classList.add('portrait-placeholder');
-      placeholder.textContent = '?';
-      portraitContainer.appendChild(placeholder);
+      portraitImage.classList.add('hidden');
+      portraitImage.classList.remove('visible');
+      let placeholder = portraitContainer.querySelector('.portrait-placeholder');
+      if (!placeholder) {
+        placeholder = document.createElement('div');
+        placeholder.classList.add('portrait-placeholder');
+        placeholder.textContent = '?';
+        portraitContainer.appendChild(placeholder);
+      }
     };
 
     portraitContainer.appendChild(portraitImage);

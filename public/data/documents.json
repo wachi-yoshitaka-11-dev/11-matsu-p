@@ -1,6 +1,7 @@
 {
+  "version": 1,
   "controls": {
-    "title": "controlsTitle",
+    "title": "title",
     "categories": [
       {
         "name": "basicControls",

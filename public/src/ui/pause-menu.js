@@ -27,6 +27,8 @@ export class PauseMenu {
     this.container.appendChild(this.resumeButton);
 
     this.controlsButton = document.createElement('button');
+    this.controlsButton.type = 'button';
+    this.controlsButton.setAttribute('aria-haspopup', 'dialog');
     this.controlsButton.textContent = localization.getText('ui.controls');
     this.controlsButton.addEventListener('click', () => {
       this.game.playSound(AssetNames.SFX_CLICK);
@@ -44,6 +46,8 @@ export class PauseMenu {
     const modal = document.createElement('div');
     modal.id = 'controls-modal';
     modal.classList.add('hidden');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
 
     const modalContent = document.createElement('div');
     modalContent.className = 'controls-modal-content';
@@ -52,9 +56,9 @@ export class PauseMenu {
     title.textContent = localization.getText('controls.title');
     modalContent.appendChild(title);
 
-    const controlsList = document.createElement('div');
-    controlsList.id = 'controls-list';
-    modalContent.appendChild(controlsList);
+    this.controlsList = document.createElement('div');
+    this.controlsList.id = 'controls-list';
+    modalContent.appendChild(this.controlsList);
 
     const closeButton = document.createElement('button');
     closeButton.textContent = localization.getText('dialog.close');
@@ -73,7 +77,9 @@ export class PauseMenu {
       case MODAL_TYPES.CONTROLS:
         this.controlsModal.classList.remove('hidden');
         this.controlsModal.classList.add('visible-flex');
-        this.fetchAndDisplayControls();
+        if (!this.controlsData) {
+          this.fetchAndDisplayControls();
+        }
         break;
     }
     this.currentActiveModal = modalType;
@@ -103,20 +109,47 @@ export class PauseMenu {
     try {
       const response = await fetch('data/documents.json');
       const documents = await response.json();
-      const controls = documents.controls;
-      const controlsList = document.getElementById('controls-list');
-      let html = '<table>';
-      for (const category of controls.categories) {
-        html += `<tr><th colspan="2">${localization.getText(`controls.${category.name}`)}</th></tr>`;
-        for (const action of category.actions) {
-          html += `<tr><td>${localization.getText(`controls.${action.action}`)}</td><td>${localization.getText(`controls.${action.key}`)}</td></tr>`;
-        }
-      }
-      html += '</table>';
-      controlsList.innerHTML = html;
+      this.controlsData = documents.controls;
+      this.renderControls();
     } catch (error) {
       console.error('Error fetching controls:', error);
     }
+  }
+
+  renderControls() {
+    if (!this.controlsData || !this.controlsList) return;
+
+    // Clear existing content
+    this.controlsList.innerHTML = '';
+    
+    const table = document.createElement('table');
+    
+    for (const category of this.controlsData.categories) {
+      // Create category header row
+      const categoryRow = document.createElement('tr');
+      const categoryHeader = document.createElement('th');
+      categoryHeader.colSpan = 2;
+      categoryHeader.textContent = localization.getText(`controls.${category.name}`);
+      categoryRow.appendChild(categoryHeader);
+      table.appendChild(categoryRow);
+      
+      // Create action rows
+      for (const action of category.actions) {
+        const actionRow = document.createElement('tr');
+        
+        const actionCell = document.createElement('td');
+        actionCell.textContent = localization.getText(`controls.${action.action}`);
+        actionRow.appendChild(actionCell);
+        
+        const keyCell = document.createElement('td');
+        keyCell.textContent = localization.getText(`controls.${action.key}`);
+        actionRow.appendChild(keyCell);
+        
+        table.appendChild(actionRow);
+      }
+    }
+    
+    this.controlsList.appendChild(table);
   }
 
   updateTexts() {

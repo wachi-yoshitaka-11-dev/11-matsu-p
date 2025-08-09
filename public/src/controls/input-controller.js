@@ -434,7 +434,7 @@ export class InputController {
           this.player.physics.velocity.x = 0;
           this.player.physics.velocity.z = 0;
         }
-      }, this.game.data.player.rollDuration || 500);
+      }, this.game.data.player.backStepDuration || this.game.data.player.rollDuration || 500);
     }
   }
 
@@ -548,7 +548,7 @@ export class InputController {
     document.addEventListener('keydown', keydownHandler);
     document.addEventListener('keyup', keyupHandler);
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       document.removeEventListener('keydown', keydownHandler);
       document.removeEventListener('keyup', keyupHandler);
 
@@ -560,6 +560,6 @@ export class InputController {
       for (const key of currentlyPressed) {
         this.keys[key] = true;
       }
-    }, 16);
+    });
   }
 }

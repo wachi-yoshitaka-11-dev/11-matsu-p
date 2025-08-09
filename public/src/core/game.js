@@ -400,6 +400,14 @@ export class Game {
   resumeBGM() {
     if (this.currentBGM && this.bgmAudios[this.currentBGM]) {
       const audio = this.bgmAudios[this.currentBGM];
+      try {
+        const ctx = this.listener?.context;
+        if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+          ctx.resume();
+        }
+      } catch (e) {
+        console.warn('AudioContext resume attempt failed', e);
+      }
       if (!audio.isPlaying) {
         audio.play();
       }
