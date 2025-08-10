@@ -1,5 +1,7 @@
 {
-  "image": "player.png",
+  "image": "players/player.png",
+  "model": "players/player.glb",
+  "texture": "players/player.png",
   "maxHp": 100,
   "maxFp": 50,
   "maxStamina": 100,

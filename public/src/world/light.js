@@ -1,20 +1,17 @@
 import * as THREE from 'three';
-import { Field as FieldConst } from '../utils/constants.js';
 
 export class Light {
-  constructor(scene) {
+  constructor(scene, field = null) {
     this.scene = scene;
+    this.field = field;
     this.initLights();
   }
 
   initLights() {
+    const terrainSize = this.field?.TERRAIN_SIZE || 100;
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
     light.position
-      .set(
-        FieldConst.TERRAIN_SIZE / 2,
-        FieldConst.TERRAIN_SIZE / 2 + 10,
-        -FieldConst.TERRAIN_SIZE / 2
-      )
+      .set(terrainSize / 2, terrainSize / 2 + 10, -terrainSize / 2)
       .normalize();
     this.scene.add(light);
 

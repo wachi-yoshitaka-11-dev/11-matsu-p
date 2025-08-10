@@ -1,8 +1,9 @@
 {
   "sword": {
     "name": "剣",
-    "model": "sword.glb",
-    "image": "sword.png",
+    "model": "weapons/sword.glb",
+    "texture": "weapons/sword.png",
+    "image": "weapons/sword.png",
     "description": "バランスの良い基本的な剣",
     "attackRange": 1.5,
     "attackSpeed": 300,
@@ -13,8 +14,9 @@
   },
   "claws": {
     "name": "爪",
-    "model": "claws.glb",
-    "image": "claws.png",
+    "model": "weapons/claws.glb",
+    "texture": "weapons/claws.png",
+    "image": "weapons/claws.png",
     "description": "高速攻撃が可能な爪",
     "attackRange": 1.2,
     "attackSpeed": 200,

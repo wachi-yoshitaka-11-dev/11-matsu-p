@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AssetNames } from '../utils/constants.js';
+import { AssetPaths } from '../utils/constants.js';
 
 const SEQUENCE_CAMERA_CONFIG = {
   FOV: 75,
@@ -166,11 +166,11 @@ export class SequenceManager {
       'sequence-overlay-fade-out'
     );
 
-    if (this.game.bgmAudios[AssetNames.BGM_OPENING]?.isPlaying) {
-      this.game.bgmAudios[AssetNames.BGM_OPENING].stop();
+    if (this.game.bgmAudios[AssetPaths.BGM_OPENING]?.isPlaying) {
+      this.game.bgmAudios[AssetPaths.BGM_OPENING].stop();
     }
-    if (this.game.bgmAudios[AssetNames.BGM_ENDING]?.isPlaying) {
-      this.game.bgmAudios[AssetNames.BGM_ENDING].stop();
+    if (this.game.bgmAudios[AssetPaths.BGM_ENDING]?.isPlaying) {
+      this.game.bgmAudios[AssetPaths.BGM_ENDING].stop();
     }
 
     this.disableSkip();
@@ -293,7 +293,7 @@ export class SequenceManager {
       this.changeBackgroundImage(this.backgroundImagePaths[0]);
     }, 500);
 
-    this.game.bgmAudios[AssetNames.BGM_OPENING]?.play();
+    this.game.bgmAudios[AssetPaths.BGM_OPENING]?.play();
 
     this.enableSkip();
 
@@ -309,7 +309,7 @@ export class SequenceManager {
       this.disableSkip();
 
       this.overlayDiv.classList.add('sequence-overlay-fade-out');
-      this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_OPENING], 3000);
+      this.fadeOutAudio(this.game.bgmAudios[AssetPaths.BGM_OPENING], 3000);
 
       this.backgroundImages.forEach((img) => {
         if (img.classList.contains('active')) {
@@ -386,7 +386,7 @@ export class SequenceManager {
 
     this.changeBackgroundImage(this.backgroundImagePaths[0]);
 
-    this.game.bgmAudios[AssetNames.BGM_ENDING]?.play();
+    this.game.bgmAudios[AssetPaths.BGM_ENDING]?.play();
 
     this.enableSkip();
 
@@ -438,7 +438,7 @@ export class SequenceManager {
           setTimeout(() => {
             this.disableSkip();
             this.overlayDiv.classList.add('sequence-overlay-fade-out');
-            this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_ENDING], 1500);
+            this.fadeOutAudio(this.game.bgmAudios[AssetPaths.BGM_ENDING], 1500);
             setTimeout(() => {
               this.overlayDiv.classList.add('hidden');
               this.overlayDiv.classList.remove('visible-flex');

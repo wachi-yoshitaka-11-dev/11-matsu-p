@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AnimationNames, AssetNames, GameState } from '../utils/constants.js';
+import { AnimationNames, AssetPaths, GameState } from '../utils/constants.js';
 
 export class InputController {
   constructor(player, camera, game, canvas) {
@@ -23,8 +23,8 @@ export class InputController {
   }
 
   _getWeaponParams() {
-    const weaponName = this.player.weapons[this.player.currentWeaponIndex];
-    const weaponData = this.game.data.weapons[weaponName];
+    const weaponType = this.player.weapons[this.player.currentWeaponIndex];
+    const weaponData = this.game.data.weapons[weaponType];
     if (weaponData) {
       return {
         attackRange: weaponData.attackRange,
@@ -174,14 +174,14 @@ export class InputController {
             this.player.isAttackingWeak = false;
             this.player.showAttackEffect();
             this.player.playAnimation(AnimationNames.ATTACK_STRONG);
-            this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
+            this.game.playSound(AssetPaths.SFX_ATTACK_STRONG);
             this.performAttack(params.damageStrong, params.attackRangeStrong);
           } else {
             this.player.isAttackingWeak = true;
             this.player.isAttackingStrong = false;
             this.player.showAttackEffect();
             this.player.playAnimation(AnimationNames.ATTACK_WEAK);
-            this.game.playSound(AssetNames.SFX_ATTACK_WEAK);
+            this.game.playSound(AssetPaths.SFX_ATTACK_WEAK);
             this.performAttack(params.damage, params.attackRange);
           }
         }
@@ -365,7 +365,7 @@ export class InputController {
       this.player.physics.velocity.y = this.game.data.player.jumpPower;
       this.player.stamina -= this.game.data.player.staminaCostJump;
       this.player.playAnimation(AnimationNames.JUMP);
-      this.game.playSound(AssetNames.SFX_JUMP);
+      this.game.playSound(AssetPaths.SFX_JUMP);
 
       setTimeout(() => {
         this.player.isJumping = false;
@@ -395,7 +395,7 @@ export class InputController {
       this.player.isRolling = true;
       this.player.stamina -= this.game.data.player.staminaCostRolling;
       this.player.playAnimation(AnimationNames.ROLLING);
-      this.game.playSound(AssetNames.SFX_ROLLING);
+      this.game.playSound(AssetPaths.SFX_ROLLING);
 
       const direction = this.getMovementDirection();
       if (direction.length() > 0) {
@@ -416,7 +416,7 @@ export class InputController {
       this.player.isBackStepping = true;
       this.player.stamina -= this.game.data.player.staminaCostBackStep;
       this.player.playAnimation(AnimationNames.BACK_STEP);
-      this.game.playSound(AssetNames.SFX_BACK_STEP);
+      this.game.playSound(AssetPaths.SFX_BACK_STEP);
 
       const playerForward = new THREE.Vector3(0, 0, 1);
       playerForward.applyQuaternion(this.player.mesh.quaternion);
@@ -470,7 +470,7 @@ export class InputController {
         if (this.game.lockOnUI) {
           this.game.lockOnUI.showLockOnTarget(nearestEnemy);
         }
-        this.game.playSound(AssetNames.SFX_LOCK_ON);
+        this.game.playSound(AssetPaths.SFX_LOCK_ON);
       }
     }
   }
@@ -491,7 +491,7 @@ export class InputController {
     if (this.game.lockOnUI) {
       this.game.lockOnUI.showLockOnTarget(nextTarget);
     }
-    this.game.playSound(AssetNames.SFX_LOCK_ON);
+    this.game.playSound(AssetPaths.SFX_LOCK_ON);
   }
 
   findNearestEnemy() {

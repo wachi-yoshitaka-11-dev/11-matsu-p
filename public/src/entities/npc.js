@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { AssetNames } from '../utils/constants.js';
 
 export class Npc extends Character {
   static PROMPT_SCALE_FACTOR = 0.01;
@@ -25,27 +24,25 @@ export class Npc extends Character {
     return { texture: new THREE.CanvasTexture(canvas), canvas: canvas };
   }
 
-  constructor(
-    npcType = 'default',
-    position = new THREE.Vector3(-5, 0.5, -5),
-    game,
-    options = {}
-  ) {
-    const model = game.assetLoader.getAsset(AssetNames.NPC_MODEL);
+  constructor(game, npcType, position, options = {}) {
+    const npcData = game.data.npcs[npcType];
+    if (!npcData) {
+      throw new Error(`NPC type "${npcType}" not found in npcs data`);
+    }
+    const modelName = npcData.model.replace('.glb', '');
+    const model = game.assetLoader.getModel(modelName);
     if (model) {
-      super(game, model.clone(), null, {
-        modelName: AssetNames.NPC_MODEL,
-        textureName: AssetNames.NPC_TEXTURE,
+      super(game, npcType, npcData, model.clone(), null, {
+        modelName: modelName,
+        textureName: npcData.texture.replace('.png', ''),
       });
     } else {
       const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
       const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-      super(game, geometry, material, {});
+      super(game, npcType, npcData, geometry, material, {});
     }
 
-    this.npcType = npcType;
-    this.data = game.data.npcs[npcType] || game.data.npcs.default;
-    this.dialogue = this.data.dialogue || ['...'];
+    this.dialogue = npcData.dialogue || ['...'];
     this.currentDialogueIndex = 0;
 
     this.placeOnGround(position.x, position.z);
@@ -84,11 +81,9 @@ export class Npc extends Character {
 
   interact() {
     if (!this.game.dialogBox || !this.data || !this.dialogue) return;
-    // Show current dialogue line
     const currentLine = this.dialogue[this.currentDialogueIndex];
     this.game.dialogBox.show(currentLine);
 
-    // Move to next dialogue line, loop back to start if at end
     this.currentDialogueIndex =
       (this.currentDialogueIndex + 1) % this.dialogue.length;
   }
@@ -105,7 +100,6 @@ export class Npc extends Character {
       sprite?.material?.map?.dispose();
       sprite?.material?.dispose();
     }
-    // Reset dialogue state
     this.currentDialogueIndex = 0;
     this.dialogue = null;
     this.data = null;

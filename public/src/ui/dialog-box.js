@@ -1,5 +1,5 @@
 import { localization } from '../utils/localization.js';
-import { AssetNames } from '../utils/constants.js';
+import { AssetPaths } from '../utils/constants.js';
 
 export class DialogBox {
   constructor(game) {
@@ -118,7 +118,7 @@ export class DialogBox {
   }
 
   startTalkSound() {
-    this.talkSound = this.game.createAudio(AssetNames.SFX_TALK, {
+    this.talkSound = this.game.createAudio(AssetPaths.SFX_TALK, {
       volume: 0.7,
       loop: true,
     });

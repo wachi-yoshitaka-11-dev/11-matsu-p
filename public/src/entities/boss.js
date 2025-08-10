@@ -1,33 +1,15 @@
 import * as THREE from 'three';
-import { Character } from './character.js';
-import { AssetNames, AnimationNames } from '../utils/constants.js';
+import { Enemy } from './enemy.js';
+import { AssetPaths, AnimationNames } from '../utils/constants.js';
 
-export class Boss extends Character {
-  constructor(game, player, options = {}) {
-    const model = game.assetLoader.getAsset(AssetNames.BOSS_MODEL);
-    if (model) {
-      super(game, model.clone(), null, {
-        hp: game.data.enemies.boss.hp,
-        speed: game.data.enemies.boss.speed,
-        modelName: AssetNames.BOSS_MODEL,
-        textureName: AssetNames.BOSS_TEXTURE,
-      });
-    } else {
-      const geometry = new THREE.BoxGeometry(2, 2, 2);
-      const material = new THREE.MeshStandardMaterial({ color: 0x880000 });
-      super(game, geometry, material, {
-        hp: game.data.enemies.boss.hp,
-        speed: game.data.enemies.boss.speed,
-      });
-    }
+export class Boss extends Enemy {
+  constructor(game, bossType, position, options = {}) {
+    super(game, bossType, position, options);
 
-    this.player = player;
+    this.placeOnGround(position.x, position.z);
 
-    const initialPosition = this.game.data.enemies.boss.initialPosition;
-    this.placeOnGround(initialPosition.x, initialPosition.z);
-
-    this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
-    this.experience = this.game.data.enemies.boss.experience;
+    this.attackCooldown = this.data.attackCooldown;
+    this.experience = this.data.experience;
     this.isAttacking = false;
 
     if (this.mixer) {
@@ -49,7 +31,7 @@ export class Boss extends Character {
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
 
-    if (distance > this.game.data.enemies.boss.normalAttackRange) {
+    if (distance > this.data.normalAttackRange) {
       const direction = new THREE.Vector3()
         .subVectors(this.player.mesh.position, this.mesh.position)
         .normalize();
@@ -59,12 +41,9 @@ export class Boss extends Character {
     this.mesh.lookAt(this.player.mesh.position);
 
     this.attackCooldown -= deltaTime;
-    if (
-      distance <= this.game.data.enemies.boss.normalAttackRange &&
-      this.attackCooldown <= 0
-    ) {
+    if (distance <= this.data.normalAttackRange && this.attackCooldown <= 0) {
       this.attack();
-      this.attackCooldown = this.game.data.enemies.boss.attackCooldown;
+      this.attackCooldown = this.data.attackCooldown;
     }
   }
 
@@ -75,7 +54,7 @@ export class Boss extends Character {
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
 
-    if (distance > this.game.data.enemies.boss.normalAttackRange) {
+    if (distance > this.data.normalAttackRange) {
       this.playAnimation(AnimationNames.WALK);
     } else {
       this.playAnimation(AnimationNames.IDLE);
@@ -84,10 +63,10 @@ export class Boss extends Character {
 
   attack() {
     this.playAnimation(AnimationNames.ATTACK_STRONG);
-    this.player.takeDamage(this.game.data.enemies.boss.normalAttackDamage);
+    this.player.takeDamage(this.data.normalAttackDamage);
   }
 
   onDeath() {
-    this.game.playSound(AssetNames.SFX_KILL);
+    this.game.playSound(AssetPaths.SFX_KILL);
   }
 }

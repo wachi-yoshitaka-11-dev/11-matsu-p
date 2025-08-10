@@ -1,4 +1,4 @@
-import { GameState, AssetNames } from '../utils/constants.js';
+import { GameState, AssetPaths } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
@@ -160,7 +160,7 @@ export class Hud {
       if (this.player.statusPoints > 0) {
         onClick();
         this.player.statusPoints--;
-        this.game.playSound(AssetNames.SFX_CLICK);
+        this.game.playSound(AssetPaths.SFX_CLICK);
 
         if (this.player.statusPoints === 0) {
           this.player.hp = this.player.maxHp;
@@ -220,8 +220,10 @@ export class Hud {
     element.classList.add('equipment-slot', type);
 
     element.innerHTML = `
-      <img class="item-image hidden" src="" alt="">
-      <span class="placeholder">-</span>
+      <div class="item-icon-container">
+        <img class="item-image" src="" alt="" style="display: none;">
+        <span class="placeholder">-</span>
+      </div>
       <span class="item-name"></span>
     `;
 
