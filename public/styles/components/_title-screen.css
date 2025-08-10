@@ -146,10 +146,16 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('../../assets/images/sequences/start-screen.png');
-  background-size: cover;
-  background-position: center;
-  background-color: #0a0a0a;
+  background: linear-gradient(
+    135deg,
+    #8b5fbf 0%,
+    #d896b3 25%,
+    #ff9eb5 50%,
+    #87ceeb 75%,
+    #98d8e8 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease-in-out infinite;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -157,15 +163,204 @@
   z-index: 1000;
   cursor: pointer;
   font-family: sans-serif;
+  overflow: hidden;
+}
+
+/* 背景画像レイヤー */
+#click-to-start-screen::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../../assets/images/sequences/start-screen.png');
+  background-size: cover;
+  background-position: center;
+  animation: backgroundPulse 12s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 大規模流れるライン効果 - 既存のbeforeに統合 */
+
+/* グラデーションアニメーション */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* 背景画像の透明度アニメーション */
+@keyframes backgroundPulse {
+  0% {
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* SVGパスによる自然な曲線ライン */
+#click-to-start-screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600"><defs><linearGradient id="wave1" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" style="stop-color:rgba(255,255,255,0);stop-opacity:0"/><stop offset="20%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1"><animate attributeName="stop-opacity" values="0.1;0.3;0.05;0.2;0.1" dur="15s" repeatCount="indefinite"/></stop><stop offset="50%" style="stop-color:rgba(255,255,255,0.25);stop-opacity:1"><animate attributeName="stop-opacity" values="0.25;0.5;0.12;0.35;0.25" dur="18s" repeatCount="indefinite"/></stop><stop offset="80%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1"><animate attributeName="stop-opacity" values="0.1;0.3;0.05;0.2;0.1" dur="12s" repeatCount="indefinite"/></stop><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0"/></linearGradient><linearGradient id="wave2" x1="100%" y1="50%" x2="0%" y2="50%"><stop offset="0%" style="stop-color:rgba(255,255,255,0);stop-opacity:0"/><stop offset="20%" style="stop-color:rgba(255,255,255,0.08);stop-opacity:1"><animate attributeName="stop-opacity" values="0.08;0.25;0.04;0.15;0.08" dur="17s" repeatCount="indefinite"/></stop><stop offset="50%" style="stop-color:rgba(255,255,255,0.22);stop-opacity:1"><animate attributeName="stop-opacity" values="0.22;0.4;0.11;0.28;0.22" dur="16s" repeatCount="indefinite"/></stop><stop offset="80%" style="stop-color:rgba(255,255,255,0.08);stop-opacity:1"><animate attributeName="stop-opacity" values="0.08;0.25;0.04;0.15;0.08" dur="14s" repeatCount="indefinite"/></stop><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0"/></linearGradient><filter id="blur"><feGaussianBlur stdDeviation="4"/></filter></defs><path d="M0,80 Q250,60 500,100 Q750,140 1000,80 L1000,140 Q750,120 500,160 Q250,200 0,140 Z" fill="url(%23wave1)" filter="url(%23blur)"/><path d="M1000,380 Q750,360 500,400 Q250,440 0,380 L0,440 Q250,420 500,460 Q750,500 1000,440 Z" fill="url(%23wave2)" filter="url(%23blur)"/></svg>');
+  background-size: 120% 100%;
+  background-position: -10% 0;
+  background-repeat: no-repeat;
+  animation: flowingCurves 25s ease-in-out infinite;
+  pointer-events: none;
+  opacity: 0.7;
+  mask: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 8%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0.3) 92%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 8%,
+    rgba(0, 0, 0, 1) 20%,
+    rgba(0, 0, 0, 1) 80%,
+    rgba(0, 0, 0, 0.3) 92%,
+    transparent 100%
+  );
+  z-index: 3;
+}
+
+@keyframes flowingCurves {
+  0% {
+    transform: translateX(-120px) translateY(-80px) scale(1) rotate(0deg);
+    opacity: 0.6;
+  }
+  15% {
+    transform: translateX(-20px) translateY(120px) scale(1.08) rotate(2deg);
+    opacity: 0.9;
+  }
+  30% {
+    transform: translateX(80px) translateY(-60px) scale(0.92) rotate(-1.5deg);
+    opacity: 0.8;
+  }
+  45% {
+    transform: translateX(150px) translateY(100px) scale(1.05) rotate(1deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(40px) translateY(-90px) scale(0.95) rotate(-2deg);
+    opacity: 0.85;
+  }
+  75% {
+    transform: translateX(-60px) translateY(80px) scale(1.02) rotate(0.5deg);
+    opacity: 0.9;
+  }
+  90% {
+    transform: translateX(-100px) translateY(-40px) scale(0.98) rotate(-0.8deg);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateX(-120px) translateY(-80px) scale(1) rotate(0deg);
+    opacity: 0.6;
+  }
+}
+
+/* キラキラエフェクト用div */
+#sparkles-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, white, transparent),
+    radial-gradient(2px 2px at 40px 70px, white, transparent),
+    radial-gradient(1px 1px at 90px 40px, white, transparent),
+    radial-gradient(1px 1px at 130px 80px, white, transparent),
+    radial-gradient(2px 2px at 160px 30px, white, transparent),
+    radial-gradient(1px 1px at 200px 60px, white, transparent),
+    radial-gradient(2px 2px at 240px 90px, white, transparent),
+    radial-gradient(1px 1px at 280px 20px, white, transparent),
+    radial-gradient(1px 1px at 320px 70px, white, transparent),
+    radial-gradient(2px 2px at 360px 40px, white, transparent);
+  background-repeat: repeat;
+  background-size: 400px 200px;
+  animation: sparkles 6s linear infinite;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 2;
+}
+
+@keyframes sparkles {
+  0% {
+    transform: translateY(0px) translateX(0px) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-10px) translateX(5px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px) translateX(10px) scale(0.8);
+    opacity: 0.6;
+  }
 }
 
 #click-to-start-screen .click-text {
   color: white;
   font-size: 2.5em;
   text-shadow:
-    -2px -2px 0 #000,
-    2px -2px 0 #000,
-    -2px 2px 0 #000,
-    2px 2px 0 #000;
-  animation: pulse-text 2s infinite;
+    0 0 4px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 0, 0, 0.6),
+    0 0 15px rgba(255, 255, 255, 0.6),
+    0 0 25px rgba(255, 255, 255, 0.4),
+    0 0 35px rgba(255, 255, 255, 0.2);
+  animation: textGlow 3s ease-in-out infinite;
+  position: relative;
+  z-index: 10;
+}
+
+@keyframes textGlow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 4px rgba(0, 0, 0, 0.8),
+      0 0 8px rgba(0, 0, 0, 0.6),
+      0 0 15px rgba(255, 255, 255, 0.6),
+      0 0 25px rgba(255, 255, 255, 0.4),
+      0 0 35px rgba(255, 255, 255, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow:
+      0 0 6px rgba(0, 0, 0, 0.9),
+      0 0 12px rgba(0, 0, 0, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.9),
+      0 0 35px rgba(255, 255, 255, 0.7),
+      0 0 50px rgba(255, 255, 255, 0.4),
+      0 0 70px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
 }

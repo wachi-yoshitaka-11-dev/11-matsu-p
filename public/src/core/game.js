@@ -416,7 +416,11 @@ export class Game {
       const audio = this.bgmAudios[this.currentBGM];
       try {
         const ctx = this.listener?.context;
-        if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        if (
+          ctx &&
+          ctx.state === 'suspended' &&
+          typeof ctx.resume === 'function'
+        ) {
           ctx.resume();
         }
       } catch (e) {

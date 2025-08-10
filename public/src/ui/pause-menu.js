@@ -121,34 +121,38 @@ export class PauseMenu {
 
     // Clear existing content
     this.controlsList.innerHTML = '';
-    
+
     const table = document.createElement('table');
-    
+
     for (const category of this.controlsData.categories) {
       // Create category header row
       const categoryRow = document.createElement('tr');
       const categoryHeader = document.createElement('th');
       categoryHeader.colSpan = 2;
-      categoryHeader.textContent = localization.getText(`controls.${category.name}`);
+      categoryHeader.textContent = localization.getText(
+        `controls.${category.name}`
+      );
       categoryRow.appendChild(categoryHeader);
       table.appendChild(categoryRow);
-      
+
       // Create action rows
       for (const action of category.actions) {
         const actionRow = document.createElement('tr');
-        
+
         const actionCell = document.createElement('td');
-        actionCell.textContent = localization.getText(`controls.${action.action}`);
+        actionCell.textContent = localization.getText(
+          `controls.${action.action}`
+        );
         actionRow.appendChild(actionCell);
-        
+
         const keyCell = document.createElement('td');
         keyCell.textContent = localization.getText(`controls.${action.key}`);
         actionRow.appendChild(keyCell);
-        
+
         table.appendChild(actionRow);
       }
     }
-    
+
     this.controlsList.appendChild(table);
   }
 

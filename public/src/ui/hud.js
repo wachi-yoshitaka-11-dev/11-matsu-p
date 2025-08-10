@@ -43,9 +43,9 @@ export class Hud {
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
 
-    this.hpBar = this.createStatusBar('hp-bar', 'HP');
-    this.fpBar = this.createStatusBar('fp-bar', 'FP');
-    this.staminaBar = this.createStatusBar('stamina-bar', 'ST');
+    this.hpBar = this.createStatusBar('hp-bar');
+    this.fpBar = this.createStatusBar('fp-bar');
+    this.staminaBar = this.createStatusBar('stamina-bar');
 
     barsContainer.appendChild(this.hpBar.element);
     barsContainer.appendChild(this.fpBar.element);
@@ -68,7 +68,9 @@ export class Hud {
     portraitImage.onerror = () => {
       portraitImage.classList.add('hidden');
       portraitImage.classList.remove('visible');
-      let placeholder = portraitContainer.querySelector('.portrait-placeholder');
+      let placeholder = portraitContainer.querySelector(
+        '.portrait-placeholder'
+      );
       if (!placeholder) {
         placeholder = document.createElement('div');
         placeholder.classList.add('portrait-placeholder');
@@ -81,14 +83,10 @@ export class Hud {
     return portraitContainer;
   }
 
-  createStatusBar(id, label) {
+  createStatusBar(id) {
     const barContainer = document.createElement('div');
     barContainer.id = id;
     barContainer.classList.add('status-bar-container');
-
-    const barLabel = document.createElement('div');
-    barLabel.classList.add('status-bar-label');
-    barLabel.textContent = label;
 
     const barBackground = document.createElement('div');
     barBackground.classList.add('status-bar-background');
@@ -97,7 +95,6 @@ export class Hud {
     barFill.classList.add('status-bar-fill');
 
     barBackground.appendChild(barFill);
-    barContainer.appendChild(barLabel);
     barContainer.appendChild(barBackground);
 
     return { element: barContainer, fill: barFill };

@@ -429,12 +429,17 @@ export class InputController {
       this.player.physics.velocity.x = direction.x * backStepSpeed;
       this.player.physics.velocity.z = direction.z * backStepSpeed;
 
-      setTimeout(() => {
-        if (this.player.isBackStepping) {
-          this.player.physics.velocity.x = 0;
-          this.player.physics.velocity.z = 0;
-        }
-      }, this.game.data.player.backStepDuration || this.game.data.player.rollDuration || 500);
+      setTimeout(
+        () => {
+          if (this.player.isBackStepping) {
+            this.player.physics.velocity.x = 0;
+            this.player.physics.velocity.z = 0;
+          }
+        },
+        this.game.data.player.backStepDuration ||
+          this.game.data.player.rollDuration ||
+          500
+      );
     }
   }
 
