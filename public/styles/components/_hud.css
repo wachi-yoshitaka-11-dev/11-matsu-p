@@ -382,6 +382,15 @@
   box-shadow: 0 0 8px rgba(150, 206, 180, 0.2);
 }
 
+.item-icon-container {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .equipment-slot .item-image {
   width: 64px;
   height: 64px;
