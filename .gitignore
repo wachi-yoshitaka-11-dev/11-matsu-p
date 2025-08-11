@@ -70,7 +70,7 @@ web_modules/
 .env.*
 !.env.example
 
-# parcel-bundler cache (https://parceljs.dev/)
+# parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
@@ -93,6 +93,7 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
+.cache
 
 # Sveltekit cache directory
 .svelte-kit/
@@ -136,48 +137,3 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-
-# Test results
-test-results/
-playwright-report/
-
-# Temporary files
-issue_body.txt
-commit_message.txt
-pr_body.txt
-tasks.md
-
-# Game development specific
-public/assets/temp/
-public/saves/
-
-# IDE specific files
-.vscode/settings.json
-.idea/
-*.sublime-*
-
-# OS specific files
-.DS_Store
-.DS_Store?
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# Common editor swap/backup files
-*~
-*.swp
-*.swo
-*.bak
-*.tmp
-
-# Debug files
-*.dmp
-*.log
-debug.log
-
-# Temporary scripts and work directories
-temp-scripts/
-scripts/temp/
-
-# Serena
-.serena/
