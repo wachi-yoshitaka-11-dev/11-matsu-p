@@ -4,6 +4,8 @@ function createClickToStartScreen() {
 
   const sparklesEffect = document.createElement('div');
   sparklesEffect.id = 'sparkles-effect';
+  sparklesEffect.setAttribute('aria-hidden', 'true');
+  sparklesEffect.style.pointerEvents = 'none';
 
   const clickText = document.createElement('div');
   clickText.classList.add('click-text');
@@ -41,7 +43,7 @@ async function startGame() {
     await game.init();
     game.start();
   } catch (error) {
-    console.error('Failed to initialize game:', error);
+    console.error('Failed to initialization game:', error);
   }
 }
 

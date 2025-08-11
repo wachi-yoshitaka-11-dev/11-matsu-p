@@ -97,7 +97,7 @@ export class Hud {
     barBackground.appendChild(barFill);
     barContainer.appendChild(barBackground);
 
-    return { element: barContainer, fill: barFill };
+    return { element: barContainer, fill: barFill, background: barBackground };
   }
 
   createDeathOverlay() {
@@ -209,6 +209,8 @@ export class Hud {
     container.appendChild(label);
     container.appendChild(value);
 
+    this.totalExperienceValue = value;
+
     return container;
   }
 
@@ -256,14 +258,9 @@ export class Hud {
     this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
     this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
 
-    this.hpBar.element.querySelector('.status-bar-background').style.width =
-      `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
-    this.fpBar.element.querySelector('.status-bar-background').style.width =
-      `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
-    this.staminaBar.element.querySelector(
-      '.status-bar-background'
-    ).style.width =
-      `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+    this.hpBar.background.style.width = `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.background.style.width = `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.background.style.width = `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
 
     if (this.player.statusPoints > 0) {
       this.levelUpMenu.element.classList.remove('hidden');
@@ -366,10 +363,8 @@ export class Hud {
   }
 
   updateExperienceDisplay() {
-    const totalExpElement = document.getElementById('total-experience');
-    if (totalExpElement) {
-      totalExpElement.textContent = this.player.experience.toLocaleString();
-    }
+    this.totalExperienceValue.textContent =
+      this.player.experience.toLocaleString();
   }
 
   // ================================================================

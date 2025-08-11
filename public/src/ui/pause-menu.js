@@ -48,11 +48,13 @@ export class PauseMenu {
     modal.classList.add('hidden');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'controls-modal-title');
 
     const modalContent = document.createElement('div');
-    modalContent.className = 'controls-modal-content';
+    modalContent.classList.add('controls-modal-content');
 
     const title = document.createElement('h2');
+    title.id = 'controls-modal-title';
     title.textContent = localization.getText('controls.title');
     modalContent.appendChild(title);
 
@@ -108,6 +110,11 @@ export class PauseMenu {
   async fetchAndDisplayControls() {
     try {
       const response = await fetch('data/documents.json');
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch documents.json (HTTP ${response.status})`
+        );
+      }
       const documents = await response.json();
       this.controlsData = documents.controls;
       this.renderControls();

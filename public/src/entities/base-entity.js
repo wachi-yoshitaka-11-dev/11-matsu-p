@@ -7,7 +7,7 @@ export class BaseEntity {
     this.type = type;
     this.data = data;
 
-    if (geometryOrModel instanceof THREE.Group) {
+    if (geometryOrModel instanceof THREE.Object3D) {
       this.mesh = geometryOrModel;
     } else if (geometryOrModel && material) {
       this.mesh = new THREE.Mesh(geometryOrModel, material);
@@ -42,7 +42,11 @@ export class BaseEntity {
   }
 
   placeOnGround(x, z) {
-    const groundY = this.game.field.getHeightAt(x, z);
+    const groundY = this.game?.field?.getHeightAt?.(x, z);
+    if (groundY == null) {
+      this.mesh.position.set(x, this.mesh.position.y, z);
+      return;
+    }
 
     const bbox = new THREE.Box3().setFromObject(this.mesh);
     const offsetToBottom = bbox.min.y - this.mesh.position.y;

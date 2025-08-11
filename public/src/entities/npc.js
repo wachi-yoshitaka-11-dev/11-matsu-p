@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
+import { localization } from '../utils/localization.js';
 
 export class Npc extends Character {
   static PROMPT_SCALE_FACTOR = 0.01;
   static PROMPT_Y_OFFSET = 3.0;
 
-  static createPromptTexture(text = '[E] Talk') {
+  static createPromptTexture() {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     const fontSize = 32;
+    const text = localization.getText('interactions.talkPrompt');
     context.font = `Bold ${fontSize}px Arial`;
     const textWidth = context.measureText(text).width;
 

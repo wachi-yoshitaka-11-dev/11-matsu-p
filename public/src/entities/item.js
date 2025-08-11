@@ -15,7 +15,13 @@ export class Item extends BaseEntity {
       super(game, itemType, itemData, model.clone(), null, {
         textureName: itemData.texture.replace('.png', ''),
       });
-      this.mesh.scale.set(2, 2, 2);
+      const s = options.scale ?? itemData.scale ?? 2;
+      if (typeof s === 'object') {
+        const { x = 1, y = 1, z = 1 } = s;
+        this.mesh.scale.set(x, y, z);
+      } else {
+        this.mesh.scale.set(s, s, s);
+      }
     } else {
       const geometry = new THREE.SphereGeometry(
         itemData.sphereRadius || 0.2,
@@ -25,6 +31,9 @@ export class Item extends BaseEntity {
       const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
       super(game, itemType, itemData, geometry, material);
     }
+
+    this.mesh.castShadow = true;
+    this.mesh.receiveShadow = true;
 
     this.mesh.position.copy(position);
   }

@@ -69,6 +69,7 @@
   width: 120px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
+  box-sizing: border-box;
   border-radius: 6px;
   overflow: hidden;
   position: relative;
@@ -132,6 +133,15 @@
   }
   100% {
     left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-bar-background::before {
+    animation: none !important;
+  }
+  .status-bar-fill::after {
+    animation: none !important;
   }
 }
 
@@ -244,7 +254,6 @@
 }
 
 #level-up-menu button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 102, 102, 0.6);
   background: linear-gradient(135deg, #555555 0%, #777777 100%);
 }
@@ -453,7 +462,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 50;
 }
 
 .lock-on-target {

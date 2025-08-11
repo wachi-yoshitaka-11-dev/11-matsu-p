@@ -21,6 +21,11 @@ export const EnvironmentTypes = {
   GROUND: 'ground',
 };
 
+export const SkillTypes = {
+  PROJECTILE: 'projectile',
+  BUFF: 'buff',
+};
+
 export const AssetPaths = {
   LOGO_IMAGE: 'sequences/logo.png',
   LOGO_VIDEO: 'sequences/logo.mp4',
@@ -96,6 +101,19 @@ export const GameState = {
 export const MovementState = {
   WALK: 'walk',
   DASH: 'dash',
+};
+
+export const SequenceStep = {
+  IDLE: 'idle',
+  TEXT_COMPLETE: 'textComplete',
+  SHOWING_TEXT: 'showingText',
+  FADING_OUT: 'fadingOut',
+  SHOWING_STAFF_ROLL: 'showingStaffRoll',
+  SHOWING_FIN: 'showingFin',
+};
+
+export const HTMLTags = {
+  BR: '<br>',
 };
 
 // BGM Level constants array for easier management

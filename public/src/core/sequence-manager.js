@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AssetPaths } from '../utils/constants.js';
+import { AssetPaths, SequenceStep } from '../utils/constants.js';
 
 const SEQUENCE_CAMERA_CONFIG = {
   FOV: 75,
@@ -62,7 +62,7 @@ export class SequenceManager {
     this.textSequence = [];
     this.animationDuration = 5000;
     this.onSequenceCompleteCallback = null;
-    this.currentStep = 'idle';
+    this.currentStep = SequenceStep.IDLE;
     this.isSkippable = false;
 
     this.skipEventListener = (event) => {
@@ -136,7 +136,7 @@ export class SequenceManager {
         );
       }
     } else {
-      this.currentStep = 'textComplete';
+      this.currentStep = SequenceStep.TEXT_COMPLETE;
       if (this.endingSequenceCallback) {
         this.endingSequenceCallback();
       } else if (this.onSequenceCompleteCallback) {
@@ -152,9 +152,9 @@ export class SequenceManager {
   }
 
   skipSequence() {
-    if (!this.isSkippable || this.currentStep === 'idle') return;
+    if (!this.isSkippable || this.currentStep === SequenceStep.IDLE) return;
 
-    this.currentStep = 'textComplete';
+    this.currentStep = SequenceStep.TEXT_COMPLETE;
 
     this.textElement.classList.remove(
       'sequence-text-large',
@@ -202,7 +202,7 @@ export class SequenceManager {
       this.game.sceneManager.resetCamera();
 
       const callback = this.onSequenceCompleteCallback;
-      this.currentStep = 'idle';
+      this.currentStep = SequenceStep.IDLE;
       this.onSequenceCompleteCallback = null;
 
       setTimeout(() => callback(), 100);
@@ -259,7 +259,7 @@ export class SequenceManager {
 
   startOpeningSequence(onComplete) {
     this.onSequenceCompleteCallback = onComplete;
-    this.currentStep = 'showingText';
+    this.currentStep = SequenceStep.SHOWING_TEXT;
 
     // プレイヤーの歩行音を停止
     if (this.game.player && this.game.player.stopFootsteps) {
@@ -304,7 +304,7 @@ export class SequenceManager {
 
     const originalCallback = onComplete;
     this.onSequenceCompleteCallback = () => {
-      this.currentStep = 'fadingOut';
+      this.currentStep = SequenceStep.FADING_OUT;
 
       this.disableSkip();
 
@@ -340,14 +340,14 @@ export class SequenceManager {
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
         originalCallback();
-        this.currentStep = 'idle';
+        this.currentStep = SequenceStep.IDLE;
       }, 1500);
     };
   }
 
   startEndingSequence(onComplete) {
     this.onSequenceCompleteCallback = onComplete;
-    this.currentStep = 'showingText';
+    this.currentStep = SequenceStep.SHOWING_TEXT;
 
     // プレイヤーの歩行音を停止
     if (this.game.player && this.game.player.stopFootsteps) {
@@ -397,7 +397,7 @@ export class SequenceManager {
 
     const originalCallback = onComplete;
     this.endingSequenceCallback = () => {
-      this.currentStep = 'showingStaffRoll';
+      this.currentStep = SequenceStep.SHOWING_STAFF_ROLL;
 
       this.textElement.classList.add('hidden');
       this.textElement.classList.remove('visible');
@@ -433,7 +433,7 @@ export class SequenceManager {
             'sequence-text-small'
           );
           this.textElement.classList.add('sequence-text-fin');
-          this.currentStep = 'showingFin';
+          this.currentStep = SequenceStep.SHOWING_FIN;
 
           setTimeout(() => {
             this.disableSkip();
@@ -461,7 +461,7 @@ export class SequenceManager {
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();
               originalCallback();
-              this.currentStep = 'idle';
+              this.currentStep = SequenceStep.IDLE;
             }, 1500);
           }, 3500);
         }, 25000);

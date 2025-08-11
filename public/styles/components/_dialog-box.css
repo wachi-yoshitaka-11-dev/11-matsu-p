@@ -70,12 +70,10 @@
 }
 
 #dialog-box button:hover {
-  transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 102, 102, 0.6);
   background: linear-gradient(135deg, #555555 0%, #777777 100%);
 }
 
 #dialog-box button:active {
-  transform: translateY(0);
   box-shadow: 0 4px 15px rgba(102, 102, 102, 0.4);
 }

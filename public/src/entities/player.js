@@ -3,6 +3,7 @@ import { Character } from './character.js';
 import { Projectile } from './projectile.js';
 import {
   AnimationNames,
+  SkillTypes,
   AssetPaths,
   MovementState,
 } from '../utils/constants.js';
@@ -350,8 +351,8 @@ export class Player extends Character {
       itemUsed = true;
     }
 
-    if (currentItem === 'fpPotion' || itemData.fpHealAmount) {
-      this.fp += itemData.fpHealAmount || 30;
+    if (itemData.fpHealAmount) {
+      this.fp += itemData.fpHealAmount;
       if (this.fp > this.maxFp) this.fp = this.maxFp;
       itemUsed = true;
     }
@@ -391,9 +392,9 @@ export class Player extends Character {
 
     const skillType = this.skills[this.currentSkillIndex];
 
-    if (skillType === 'projectile') {
+    if (skillType === SkillTypes.PROJECTILE) {
       return this.useProjectileSkill(currentSkill);
-    } else if (skillType === 'buff') {
+    } else if (skillType === SkillTypes.BUFF) {
       return this.useBuffSkill(currentSkill);
     }
 

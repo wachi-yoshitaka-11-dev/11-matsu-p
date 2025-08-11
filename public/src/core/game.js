@@ -42,6 +42,7 @@ export class Game {
     this.splashSkipped = false;
 
     this.initAudio();
+    this.setupBeforeUnloadHandler();
 
     this.gameState = GameState.OPENING;
     this.titleScreen = new TitleScreen(
@@ -63,6 +64,21 @@ export class Game {
     this.currentBGM = null;
     this.currentLevel = 1;
     this.currentLevelProgress = 1;
+  }
+
+  setupBeforeUnloadHandler() {
+    window.addEventListener('beforeunload', (e) => {
+      // 実際のゲームプレイ中のみ防止
+      if (
+        this.player &&
+        !this.player.isDead &&
+        this.gameState === GameState.PLAYING
+      ) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
   }
 
   async init() {
@@ -505,18 +521,14 @@ export class Game {
           if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
+            // If the removed enemy is the boss, trigger ending flow
+            if (enemy === this.boss) {
+              this.boss = null;
+              this.endingTimer = 1;
+              this.isEndingSequenceReady = false;
+            }
             this.enemies.splice(i, 1);
           }
-        }
-
-        if (this.boss && !this.boss.isDead) {
-          this.boss.update(deltaTime);
-        } else if (this.boss?.isDead) {
-          this.player?.addExperience(this.boss.experience);
-          this.sceneManager.remove(this.boss.mesh);
-          this.boss = null;
-          this.endingTimer = 1;
-          this.isEndingSequenceReady = false;
         }
 
         if (this.endingTimer > 0) {
