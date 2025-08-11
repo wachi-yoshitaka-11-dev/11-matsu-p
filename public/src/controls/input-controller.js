@@ -9,6 +9,8 @@ export class InputController {
     this.canvas = canvas;
     this.keys = {};
     this.mouse = { x: 0, y: 0, wheelDelta: 0 };
+    this.lastWheelTime = 0;
+    this.wheelCooldown = 150;
 
     this.cameraYaw = 0;
     this.cameraPitch = 0;
@@ -57,8 +59,19 @@ export class InputController {
 
   setupEventListeners() {
     document.addEventListener('keydown', (e) => {
-      // ゲーム関連のキーの組み合わせでブラウザのデフォルト動作を防ぐ（ゲーム状態に関係なく）
+      // ゲーム関連のキーの組み合わせでブラウザのデフォルト動作を防ぐ（ゲーム操作時のみ）
+      const isGameTarget =
+        document.pointerLockElement === this.canvas ||
+        e.target === this.canvas ||
+        this.game.gameState === GameState.PLAYING;
+      const isFormField =
+        e.target instanceof HTMLElement &&
+        (e.target.tagName === 'INPUT' ||
+          e.target.tagName === 'TEXTAREA' ||
+          e.target.isContentEditable);
       if (
+        isGameTarget &&
+        !isFormField &&
         (e.ctrlKey || e.metaKey) &&
         ['KeyW', 'KeyD', 'KeyA', 'KeyS', 'KeyE', 'KeyR', 'KeyF'].includes(
           e.code
@@ -484,9 +497,16 @@ export class InputController {
     }
   }
 
-  switchLockOnTarget(direction = 1) {
+  switchLockOnTarget(direction) {
     if (!this.player.lockedTarget) return;
     if (direction === 0) return; // 方向が0の場合は何もしない
+
+    // ホイール操作のクールダウンチェック
+    const now = Date.now();
+    if (now - this.lastWheelTime < this.wheelCooldown) {
+      return;
+    }
+    this.lastWheelTime = now;
 
     const enemies = this.game.enemies.filter((enemy) => !enemy.isDead);
     if (enemies.length <= 1) return;
