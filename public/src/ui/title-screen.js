@@ -5,6 +5,10 @@ export class TitleScreen {
   constructor(onStart, skipSplashScreenDelay) {
     this.onStart = onStart;
     this.skipSplashScreenDelay = skipSplashScreenDelay;
+
+    // Bind video event handlers once
+    this._onVideoClick = this._handleVideoClick.bind(this);
+    this._onVideoEnded = this._handleVideoEnded.bind(this);
     this.container = document.createElement('div');
     this.container.id = 'title-screen';
 
@@ -69,21 +73,26 @@ export class TitleScreen {
       this.hideVideo();
     });
 
-    const videoClickHandler = () => {
-      this.hideVideo();
-    };
+    this.video.addEventListener('ended', this._onVideoEnded);
+    this.video.addEventListener('click', this._onVideoClick);
+  }
 
-    const hideVideoHandler = () => {
-      this.hideVideo();
-      this.video.removeEventListener('ended', hideVideoHandler);
-      this.video.removeEventListener('click', videoClickHandler);
-    };
+  _handleVideoClick() {
+    this.hideVideo();
+  }
 
-    this.video.addEventListener('ended', hideVideoHandler);
-    this.video.addEventListener('click', videoClickHandler);
+  _handleVideoEnded() {
+    this.hideVideo();
+    this._removeVideoListeners();
+  }
+
+  _removeVideoListeners() {
+    this.video.removeEventListener('ended', this._onVideoEnded);
+    this.video.removeEventListener('click', this._onVideoClick);
   }
 
   hideVideo() {
+    this._removeVideoListeners();
     this.videoContainer.classList.add('logo-fade-out');
     setTimeout(() => {
       this.videoContainer.classList.add('hidden');
