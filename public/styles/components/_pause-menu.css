@@ -98,7 +98,6 @@
 }
 
 #pause-menu button:hover {
-  transform: translateY(-3px);
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.2) 0%,
@@ -113,7 +112,6 @@
 }
 
 #pause-menu button:active {
-  transform: translateY(-1px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
 }
 

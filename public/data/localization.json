@@ -4,16 +4,16 @@
       "clickToStart": "タッチしてはじめる",
       "continue": "つづきから（準備中）",
       "experience": "経験値:",
-      "levelUp": "Level Up!",
+      "levelUp": "レベルアップ！",
       "newGame": "はじめから",
       "none": "なし",
       "options": "設定（準備中）",
       "resume": "再開",
-      "shield": "Shield",
-      "skill": "Skill",
+      "shield": "盾",
+      "skill": "スキル",
       "statusPoints": "Status Points",
       "title": "もふもふアドベンチャー",
-      "weapon": "Weapon",
+      "weapon": "武器",
       "youDied": "YOU DIED",
       "controls": "操作方法"
     },
@@ -26,10 +26,10 @@
     "stats": {
       "hp": "HP",
       "fp": "FP",
-      "stamina": "Stamina"
+      "stamina": "ST"
     },
     "interactions": {
-      "talkPrompt": "[E] Talk"
+      "talkPrompt": "話しかける"
     },
     "dialog": {
       "close": "閉じる"
@@ -120,7 +120,7 @@
       "stamina": "Stamina"
     },
     "interactions": {
-      "talkPrompt": "[E] Talk"
+      "talkPrompt": "Talk"
     },
     "dialog": {
       "close": "Close"

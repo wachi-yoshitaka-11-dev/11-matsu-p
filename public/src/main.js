@@ -2,10 +2,16 @@ function createClickToStartScreen() {
   const clickContainer = document.createElement('div');
   clickContainer.id = 'click-to-start-screen';
 
+  const sparklesEffect = document.createElement('div');
+  sparklesEffect.id = 'sparkles-effect';
+  sparklesEffect.setAttribute('aria-hidden', 'true');
+  sparklesEffect.style.pointerEvents = 'none';
+
   const clickText = document.createElement('div');
   clickText.classList.add('click-text');
   clickText.textContent = 'タッチしてはじめる';
 
+  clickContainer.appendChild(sparklesEffect);
   clickContainer.appendChild(clickText);
   document.body.appendChild(clickContainer);
 
@@ -37,7 +43,7 @@ async function startGame() {
     await game.init();
     game.start();
   } catch (error) {
-    console.error('Failed to initialize game:', error);
+    console.error('Failed to initialization game:', error);
   }
 }
 

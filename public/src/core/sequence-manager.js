@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AssetNames } from '../utils/constants.js';
+import { AssetPaths, SequenceStep } from '../utils/constants.js';
 
 const SEQUENCE_CAMERA_CONFIG = {
   FOV: 75,
@@ -62,7 +62,7 @@ export class SequenceManager {
     this.textSequence = [];
     this.animationDuration = 5000;
     this.onSequenceCompleteCallback = null;
-    this.currentStep = 'idle';
+    this.currentStep = SequenceStep.IDLE;
     this.isSkippable = false;
 
     this.skipEventListener = (event) => {
@@ -136,7 +136,7 @@ export class SequenceManager {
         );
       }
     } else {
-      this.currentStep = 'textComplete';
+      this.currentStep = SequenceStep.TEXT_COMPLETE;
       if (this.endingSequenceCallback) {
         this.endingSequenceCallback();
       } else if (this.onSequenceCompleteCallback) {
@@ -152,9 +152,9 @@ export class SequenceManager {
   }
 
   skipSequence() {
-    if (!this.isSkippable || this.currentStep === 'idle') return;
+    if (!this.isSkippable || this.currentStep === SequenceStep.IDLE) return;
 
-    this.currentStep = 'textComplete';
+    this.currentStep = SequenceStep.TEXT_COMPLETE;
 
     this.textElement.classList.remove(
       'sequence-text-large',
@@ -166,11 +166,11 @@ export class SequenceManager {
       'sequence-overlay-fade-out'
     );
 
-    if (this.game.bgmAudios[AssetNames.BGM_OPENING]?.isPlaying) {
-      this.game.bgmAudios[AssetNames.BGM_OPENING].stop();
+    if (this.game.bgmAudios[AssetPaths.BGM_OPENING]?.isPlaying) {
+      this.game.bgmAudios[AssetPaths.BGM_OPENING].stop();
     }
-    if (this.game.bgmAudios[AssetNames.BGM_ENDING]?.isPlaying) {
-      this.game.bgmAudios[AssetNames.BGM_ENDING].stop();
+    if (this.game.bgmAudios[AssetPaths.BGM_ENDING]?.isPlaying) {
+      this.game.bgmAudios[AssetPaths.BGM_ENDING].stop();
     }
 
     this.disableSkip();
@@ -202,7 +202,7 @@ export class SequenceManager {
       this.game.sceneManager.resetCamera();
 
       const callback = this.onSequenceCompleteCallback;
-      this.currentStep = 'idle';
+      this.currentStep = SequenceStep.IDLE;
       this.onSequenceCompleteCallback = null;
 
       setTimeout(() => callback(), 100);
@@ -259,7 +259,7 @@ export class SequenceManager {
 
   startOpeningSequence(onComplete) {
     this.onSequenceCompleteCallback = onComplete;
-    this.currentStep = 'showingText';
+    this.currentStep = SequenceStep.SHOWING_TEXT;
 
     // プレイヤーの歩行音を停止
     if (this.game.player && this.game.player.stopFootsteps) {
@@ -293,7 +293,7 @@ export class SequenceManager {
       this.changeBackgroundImage(this.backgroundImagePaths[0]);
     }, 500);
 
-    this.game.bgmAudios[AssetNames.BGM_OPENING]?.play();
+    this.game.bgmAudios[AssetPaths.BGM_OPENING]?.play();
 
     this.enableSkip();
 
@@ -304,12 +304,12 @@ export class SequenceManager {
 
     const originalCallback = onComplete;
     this.onSequenceCompleteCallback = () => {
-      this.currentStep = 'fadingOut';
+      this.currentStep = SequenceStep.FADING_OUT;
 
       this.disableSkip();
 
       this.overlayDiv.classList.add('sequence-overlay-fade-out');
-      this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_OPENING], 3000);
+      this.fadeOutAudio(this.game.bgmAudios[AssetPaths.BGM_OPENING], 3000);
 
       this.backgroundImages.forEach((img) => {
         if (img.classList.contains('active')) {
@@ -340,14 +340,14 @@ export class SequenceManager {
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
         originalCallback();
-        this.currentStep = 'idle';
+        this.currentStep = SequenceStep.IDLE;
       }, 1500);
     };
   }
 
   startEndingSequence(onComplete) {
     this.onSequenceCompleteCallback = onComplete;
-    this.currentStep = 'showingText';
+    this.currentStep = SequenceStep.SHOWING_TEXT;
 
     // プレイヤーの歩行音を停止
     if (this.game.player && this.game.player.stopFootsteps) {
@@ -386,7 +386,7 @@ export class SequenceManager {
 
     this.changeBackgroundImage(this.backgroundImagePaths[0]);
 
-    this.game.bgmAudios[AssetNames.BGM_ENDING]?.play();
+    this.game.bgmAudios[AssetPaths.BGM_ENDING]?.play();
 
     this.enableSkip();
 
@@ -397,7 +397,7 @@ export class SequenceManager {
 
     const originalCallback = onComplete;
     this.endingSequenceCallback = () => {
-      this.currentStep = 'showingStaffRoll';
+      this.currentStep = SequenceStep.SHOWING_STAFF_ROLL;
 
       this.textElement.classList.add('hidden');
       this.textElement.classList.remove('visible');
@@ -433,12 +433,12 @@ export class SequenceManager {
             'sequence-text-small'
           );
           this.textElement.classList.add('sequence-text-fin');
-          this.currentStep = 'showingFin';
+          this.currentStep = SequenceStep.SHOWING_FIN;
 
           setTimeout(() => {
             this.disableSkip();
             this.overlayDiv.classList.add('sequence-overlay-fade-out');
-            this.fadeOutAudio(this.game.bgmAudios[AssetNames.BGM_ENDING], 1500);
+            this.fadeOutAudio(this.game.bgmAudios[AssetPaths.BGM_ENDING], 1500);
             setTimeout(() => {
               this.overlayDiv.classList.add('hidden');
               this.overlayDiv.classList.remove('visible-flex');
@@ -461,7 +461,7 @@ export class SequenceManager {
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();
               originalCallback();
-              this.currentStep = 'idle';
+              this.currentStep = SequenceStep.IDLE;
             }, 1500);
           }, 3500);
         }, 25000);

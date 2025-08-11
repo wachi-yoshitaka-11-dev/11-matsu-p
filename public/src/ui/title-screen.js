@@ -1,4 +1,5 @@
 import { localization } from '../utils/localization.js';
+import { AssetPaths } from '../utils/constants.js';
 
 export class TitleScreen {
   constructor(onStart, skipSplashScreenDelay) {
@@ -11,7 +12,7 @@ export class TitleScreen {
     this.splashContainer.id = 'splash-screen';
 
     this.logoImage = document.createElement('img');
-    this.logoImage.src = './assets/images/logo.png';
+    this.logoImage.src = `./assets/images/${AssetPaths.LOGO_IMAGE}`;
     this.logoImage.id = 'splash-logo-image';
     this.splashContainer.appendChild(this.logoImage);
 
@@ -19,7 +20,7 @@ export class TitleScreen {
     this.videoContainer.id = 'splash-video-container';
 
     this.video = document.createElement('video');
-    this.video.src = './assets/videos/logo.mp4';
+    this.video.src = `./assets/videos/${AssetPaths.LOGO_VIDEO}`;
     this.video.id = 'splash-logo-video';
     this.video.playsInline = true;
 

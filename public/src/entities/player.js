@@ -1,47 +1,54 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { Projectile } from '../world/projectile.js';
+import { Projectile } from './projectile.js';
 import {
   AnimationNames,
-  AssetNames,
-  ItemTypes,
+  SkillTypes,
+  AssetPaths,
   MovementState,
 } from '../utils/constants.js';
 
 export class Player extends Character {
-  constructor(game) {
-    const loadedModel = game.assetLoader.getAsset(AssetNames.PLAYER_MODEL);
+  constructor(game, playerType, options = {}) {
+    const playerData = game.data[playerType];
+    if (!playerData) {
+      throw new Error(`Player type "${playerType}" not found in game data`);
+    }
+    const modelName = playerData.model.replace('.glb', '');
+    const loadedModel = game.assetLoader.getModel(modelName);
 
     if (loadedModel instanceof THREE.Group) {
-      super(game, loadedModel, null, {
-        hp: game.data.player.maxHp,
-        modelName: AssetNames.PLAYER_MODEL,
-        textureName: AssetNames.PLAYER_TEXTURE,
+      super(game, playerType, playerData, loadedModel, null, {
+        hp: playerData.maxHp,
+        modelName: modelName,
+        textureName: playerData.texture.replace('.png', ''),
       });
     } else {
       const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
       const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-      super(game, geometry, material, { hp: game.data.player.maxHp });
+      super(game, playerType, playerData, geometry, material, {
+        hp: playerData.maxHp,
+      });
     }
 
-    this.maxFp = game.data.player.maxFp;
+    this.maxFp = playerData.maxFp;
     this.fp = this.maxFp;
-    this.maxStamina = game.data.player.maxStamina;
+    this.maxStamina = playerData.maxStamina;
     this.stamina = this.maxStamina;
 
-    this.level = game.data.player.initialLevel;
-    this.experience = game.data.player.initialExperience;
-    this.experienceToNextLevel = game.data.player.initialExpToNextLevel;
-    this.statusPoints = game.data.player.initialStatusPoints;
-    this.inventory = game.data.player.initialInventory || [];
+    this.level = playerData.initialLevel;
+    this.experience = playerData.initialExperience;
+    this.experienceToNextLevel = playerData.initialExpToNextLevel;
+    this.statusPoints = playerData.initialStatusPoints;
+    this.inventory = playerData.initialInventory || [];
 
-    this.weapons = game.data.player.initialWeapons || [];
+    this.weapons = playerData.initialWeapons || [];
     this.currentWeaponIndex = 0;
 
-    this.shields = game.data.player.initialShields || [];
+    this.shields = playerData.initialShields || [];
     this.currentShieldIndex = 0;
 
-    this.skills = game.data.player.initialSkills || [];
+    this.skills = playerData.initialSkills || [];
     this.currentSkillIndex = 0;
     this.currentItemIndex = 0;
     this.isUsingSkill = false;
@@ -51,12 +58,10 @@ export class Player extends Character {
     this.isRolling = false;
     this.isGuarding = false;
 
-    // Elden Ring style movement states
     this.isJumping = false;
     this.isBackStepping = false;
     this.isDashing = false;
 
-    // Lock-on system
     this.lockedTarget = null;
 
     this.attackBuffMultiplier = 1.0;
@@ -64,12 +69,10 @@ export class Player extends Character {
 
     this.spawn();
 
-    // Footstep sound system
     this.footstepAudio = null;
     this.isPlayingFootsteps = false;
     this.lastMovementState = null;
 
-    // Listen for animation finished event
     if (this.mixer) {
       this.mixer.addEventListener('finished', (e) => {
         const clipName = e.action.getClip().name;
@@ -96,7 +99,7 @@ export class Player extends Character {
   }
 
   spawn() {
-    const spawnPoint = this.game.data.player.initialSpawnPoint || {
+    const spawnPoint = this.data.initialSpawnPoint || {
       x: 0,
       z: 0,
     };
@@ -123,7 +126,7 @@ export class Player extends Character {
       !this.isBackStepping &&
       !this.isPickingUp
     ) {
-      this.stamina += this.game.data.player.staminaRegenRate * deltaTime;
+      this.stamina += this.data.staminaRegenRate * deltaTime;
       if (this.stamina > this.maxStamina) {
         this.stamina = this.maxStamina;
       }
@@ -136,7 +139,6 @@ export class Player extends Character {
       return;
     }
 
-    // Don't switch animations if a one-shot animation is in progress
     if (
       this.isAttacking ||
       this.isAttackingWeak ||
@@ -171,9 +173,9 @@ export class Player extends Character {
   }
 
   onDeath() {
-    this.game.playSound(AssetNames.SFX_DEATH);
+    this.game.playSound(AssetPaths.SFX_DEATH);
     this.game.hud.showDeathScreen();
-    setTimeout(() => this.respawn(), this.game.data.player.respawnDelay);
+    setTimeout(() => this.respawn(), this.data.respawnDelay);
   }
 
   takeDamage(amount) {
@@ -181,23 +183,21 @@ export class Player extends Character {
 
     let finalDamage = amount / this.defenseBuffMultiplier;
 
-    // Apply guard damage reduction if guarding
     if (this.isGuarding) {
       const shieldDefense = this.getShieldDefense();
       const blockPercentage = Math.min(0.8, shieldDefense / 100);
       finalDamage = finalDamage * (1 - blockPercentage);
 
-      // Take stamina damage when guarding
       const staminaDamage = amount * 0.3;
       this.takeStaminaDamage(staminaDamage);
 
       this.game.playSound(
-        this.game.audioBuffers[AssetNames.SFX_GUARD_SUCCESS]
-          ? AssetNames.SFX_GUARD_SUCCESS
-          : AssetNames.SFX_DAMAGE
+        this.game.assetLoader.getAudio(AssetPaths.SFX_GUARD_SUCCESS)
+          ? AssetPaths.SFX_GUARD_SUCCESS
+          : AssetPaths.SFX_DAMAGE
       );
     } else {
-      this.game.playSound(AssetNames.SFX_DAMAGE);
+      this.game.playSound(AssetPaths.SFX_DAMAGE);
     }
 
     super.takeDamage(finalDamage);
@@ -221,10 +221,10 @@ export class Player extends Character {
     this.level++;
     this.experience -= this.experienceToNextLevel;
     this.experienceToNextLevel = Math.floor(
-      this.experienceToNextLevel * this.game.data.player.levelUpExpMultiplier
+      this.experienceToNextLevel * this.data.levelUpExpMultiplier
     );
-    this.statusPoints += this.game.data.player.statusPointsPerLevel;
-    this.game.playSound(AssetNames.SFX_LEVEL_UP);
+    this.statusPoints += this.data.statusPointsPerLevel;
+    this.game.playSound(AssetPaths.SFX_LEVEL_UP);
   }
 
   useItem(index) {
@@ -237,19 +237,25 @@ export class Player extends Character {
         return;
       }
 
-      if (itemType === ItemTypes.POTION) {
+      if (itemData.healAmount) {
         this.hp += itemData.healAmount;
         if (this.hp > this.maxHp) this.hp = this.maxHp;
       }
+
+      if (itemData.fpHealAmount) {
+        this.fp += itemData.fpHealAmount;
+        if (this.fp > this.maxFp) this.fp = this.maxFp;
+      }
       this.playAnimation(AnimationNames.USE_ITEM);
-      this.game.playSound(AssetNames.SFX_USE_ITEM);
+      this.game.playSound(AssetPaths.SFX_USE_ITEM);
 
       this.inventory.splice(index, 1);
     }
   }
 
   applyAttackBuff() {
-    this.attackBuffMultiplier = this.game.data.skills.buff.attackBuffMultiplier;
+    const currentSkill = this.getCurrentSkill();
+    this.attackBuffMultiplier = currentSkill.attackBuffMultiplier;
   }
 
   removeAttackBuff() {
@@ -257,8 +263,8 @@ export class Player extends Character {
   }
 
   applyDefenseBuff() {
-    this.defenseBuffMultiplier =
-      this.game.data.skills.buff.defenseBuffMultiplier;
+    const currentSkill = this.getCurrentSkill();
+    this.defenseBuffMultiplier = currentSkill.defenseBuffMultiplier;
   }
 
   removeDefenseBuff() {
@@ -267,15 +273,15 @@ export class Player extends Character {
 
   getCurrentShield() {
     if (this.shields.length === 0) return null;
-    const shieldName = this.shields[this.currentShieldIndex];
-    return this.game.data.shields[shieldName];
+    const shieldType = this.shields[this.currentShieldIndex];
+    return this.game.data.shields[shieldType];
   }
 
   switchShield() {
     if (this.shields.length > 1) {
       this.currentShieldIndex =
         (this.currentShieldIndex + 1) % this.shields.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_SHIELD);
+      this.game.playSound(AssetPaths.SFX_SWITCH_SHIELD);
     }
   }
 
@@ -286,29 +292,29 @@ export class Player extends Character {
 
   getCurrentSkill() {
     if (this.skills.length === 0) return null;
-    const skillName = this.skills[this.currentSkillIndex];
-    return this.game.data.skills[skillName];
+    const skillType = this.skills[this.currentSkillIndex];
+    return this.game.data.skills[skillType];
   }
 
   switchSkill() {
     if (this.skills.length > 1) {
       this.currentSkillIndex =
         (this.currentSkillIndex + 1) % this.skills.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_SKILL);
+      this.game.playSound(AssetPaths.SFX_SWITCH_SKILL);
     }
   }
 
   getCurrentWeapon() {
     if (this.weapons.length === 0) return null;
-    const weaponName = this.weapons[this.currentWeaponIndex];
-    return this.game.data.weapons[weaponName];
+    const weaponType = this.weapons[this.currentWeaponIndex];
+    return this.game.data.weapons[weaponType];
   }
 
   switchWeapon() {
     if (this.weapons.length > 1) {
       this.currentWeaponIndex =
         (this.currentWeaponIndex + 1) % this.weapons.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_WEAPON);
+      this.game.playSound(AssetPaths.SFX_SWITCH_WEAPON);
     }
   }
 
@@ -321,7 +327,7 @@ export class Player extends Character {
     if (this.inventory.length > 1) {
       this.currentItemIndex =
         (this.currentItemIndex + 1) % this.inventory.length;
-      this.game.playSound(AssetNames.SFX_SWITCH_ITEM);
+      this.game.playSound(AssetPaths.SFX_SWITCH_ITEM);
     }
   }
 
@@ -337,31 +343,26 @@ export class Player extends Character {
       return false;
     }
 
-    // Use the item based on its type
     let itemUsed = false;
 
-    // HP recovery items
     if (itemData.healAmount) {
       this.hp += itemData.healAmount || 50;
       if (this.hp > this.maxHp) this.hp = this.maxHp;
       itemUsed = true;
     }
 
-    // FP recovery items
-    if (currentItem === 'fpPotion' || itemData.fpHealAmount) {
-      this.fp += itemData.fpHealAmount || 30;
+    if (itemData.fpHealAmount) {
+      this.fp += itemData.fpHealAmount;
       if (this.fp > this.maxFp) this.fp = this.maxFp;
       itemUsed = true;
     }
 
     if (itemUsed) {
       this.playAnimation(AnimationNames.USE_ITEM);
-      this.game.playSound(AssetNames.SFX_USE_ITEM);
+      this.game.playSound(AssetPaths.SFX_USE_ITEM);
 
-      // Remove item from inventory
       this.inventory.splice(this.currentItemIndex, 1);
 
-      // Adjust current index if needed
       if (
         this.currentItemIndex >= this.inventory.length &&
         this.inventory.length > 0
@@ -385,17 +386,15 @@ export class Player extends Character {
       return false;
     }
 
-    // Check if we have enough FP
     if (this.fp < currentSkill.fpCost) {
       return false;
     }
 
-    // Use the skill based on its type
-    const skillName = this.skills[this.currentSkillIndex];
+    const skillType = this.skills[this.currentSkillIndex];
 
-    if (skillName === 'projectile') {
+    if (skillType === SkillTypes.PROJECTILE) {
       return this.useProjectileSkill(currentSkill);
-    } else if (skillName === 'buff') {
+    } else if (skillType === SkillTypes.BUFF) {
       return this.useBuffSkill(currentSkill);
     }
 
@@ -407,14 +406,16 @@ export class Player extends Character {
     this.fp -= skillData.fpCost;
     this.showSkillProjectileEffect();
     this.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
-    this.game.playSound(AssetNames.SFX_USE_SKILL_PROJECTILE);
+    this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
 
     const direction = new THREE.Vector3();
     this.mesh.getWorldDirection(direction);
+    const skillType = this.skills[this.currentSkillIndex];
     const projectile = new Projectile(
+      this.game,
+      skillType,
       this.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
-      direction,
-      this.game
+      direction
     );
     this.game.projectiles.push(projectile);
     this.game.sceneManager.add(projectile.mesh);
@@ -429,7 +430,7 @@ export class Player extends Character {
   useBuffSkill(skillData) {
     this.isUsingSkill = true;
     this.fp -= skillData.fpCost;
-    this.game.playSound(AssetNames.SFX_USE_SKILL_BUFF);
+    this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
     this.showSkillBuffEffect();
     this.playAnimation(AnimationNames.USE_SKILL_BUFF);
     this.applyAttackBuff();
@@ -445,7 +446,6 @@ export class Player extends Character {
   }
 
   updateFootsteps() {
-    // Skip footsteps if player is not moving or is doing an action that shouldn't have footsteps
     if (
       this.isDead ||
       this.isJumping ||
@@ -458,7 +458,6 @@ export class Player extends Character {
       return;
     }
 
-    // Check if player is moving based on velocity
     const velocity = this.physics.velocity;
     if (!velocity) {
       this.stopFootsteps();
@@ -471,19 +470,16 @@ export class Player extends Character {
       return;
     }
 
-    // Determine movement state based on isDashing
     const currentMovementState = this.isDashing
       ? MovementState.DASH
       : MovementState.WALK;
 
-    // If movement state changed, switch footstep sound
     if (currentMovementState !== this.lastMovementState) {
       this.stopFootsteps();
       this.startFootsteps(currentMovementState);
       this.lastMovementState = currentMovementState;
     }
 
-    // If not playing footsteps but should be, start them
     if (!this.isPlayingFootsteps) {
       this.startFootsteps(currentMovementState);
     }
@@ -496,10 +492,9 @@ export class Player extends Character {
 
     const soundName =
       movementState === MovementState.DASH
-        ? AssetNames.SFX_DASH
-        : AssetNames.SFX_WALK;
+        ? AssetPaths.SFX_DASH
+        : AssetPaths.SFX_WALK;
 
-    // Create looping audio for footsteps using common method
     this.footstepAudio = this.game.createAudio(soundName, {
       volume: 0.3,
       loop: true,
@@ -529,7 +524,6 @@ export class Player extends Character {
     this.isPickingUp = true;
     this.playAnimation(AnimationNames.PICK_UP);
 
-    // Play pickup sound effect
-    this.game.playSound(AssetNames.SFX_PICKUP_ITEM);
+    this.game.playSound(AssetPaths.SFX_PICKUP_ITEM);
   }
 }

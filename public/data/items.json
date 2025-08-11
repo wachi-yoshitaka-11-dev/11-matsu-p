@@ -1,21 +1,25 @@
 {
   "potion": {
     "name": "ポーション",
-    "model": "potion.glb",
-    "image": "potion.png",
+    "model": "items/potion.glb",
+    "texture": "items/potion.png",
+    "image": "items/potion.png",
     "description": "体力を回復するポーション",
     "healAmount": 20
   },
   "fpPotion": {
     "name": "FPポーション",
-    "model": "fp-potion.glb",
-    "image": "fp-potion.png",
+    "model": "items/fp-potion.glb",
+    "texture": "items/fp-potion.png",
+    "image": "items/fp-potion.png",
     "description": "FPを回復するポーション",
     "fpHealAmount": 30
   },
   "generic": {
     "name": "アイテム",
-    "model": "generic-item.glb",
+    "model": "items/item.glb",
+    "texture": "items/item.png",
+    "image": "items/item.png",
     "description": "一般的なアイテム",
     "pickupRange": 2.0,
     "sphereRadius": 0.2,

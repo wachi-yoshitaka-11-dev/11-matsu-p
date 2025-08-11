@@ -1,4 +1,4 @@
-import { GameState, AssetNames } from '../utils/constants.js';
+import { GameState, AssetPaths } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
@@ -43,9 +43,9 @@ export class Hud {
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
 
-    this.hpBar = this.createStatusBar('hp-bar', 'HP');
-    this.fpBar = this.createStatusBar('fp-bar', 'FP');
-    this.staminaBar = this.createStatusBar('stamina-bar', 'ST');
+    this.hpBar = this.createStatusBar('hp-bar');
+    this.fpBar = this.createStatusBar('fp-bar');
+    this.staminaBar = this.createStatusBar('stamina-bar');
 
     barsContainer.appendChild(this.hpBar.element);
     barsContainer.appendChild(this.fpBar.element);
@@ -68,7 +68,9 @@ export class Hud {
     portraitImage.onerror = () => {
       portraitImage.classList.add('hidden');
       portraitImage.classList.remove('visible');
-      let placeholder = portraitContainer.querySelector('.portrait-placeholder');
+      let placeholder = portraitContainer.querySelector(
+        '.portrait-placeholder'
+      );
       if (!placeholder) {
         placeholder = document.createElement('div');
         placeholder.classList.add('portrait-placeholder');
@@ -81,14 +83,10 @@ export class Hud {
     return portraitContainer;
   }
 
-  createStatusBar(id, label) {
+  createStatusBar(id) {
     const barContainer = document.createElement('div');
     barContainer.id = id;
     barContainer.classList.add('status-bar-container');
-
-    const barLabel = document.createElement('div');
-    barLabel.classList.add('status-bar-label');
-    barLabel.textContent = label;
 
     const barBackground = document.createElement('div');
     barBackground.classList.add('status-bar-background');
@@ -97,10 +95,9 @@ export class Hud {
     barFill.classList.add('status-bar-fill');
 
     barBackground.appendChild(barFill);
-    barContainer.appendChild(barLabel);
     barContainer.appendChild(barBackground);
 
-    return { element: barContainer, fill: barFill };
+    return { element: barContainer, fill: barFill, background: barBackground };
   }
 
   createDeathOverlay() {
@@ -160,7 +157,7 @@ export class Hud {
       if (this.player.statusPoints > 0) {
         onClick();
         this.player.statusPoints--;
-        this.game.playSound(AssetNames.SFX_CLICK);
+        this.game.playSound(AssetPaths.SFX_CLICK);
 
         if (this.player.statusPoints === 0) {
           this.player.hp = this.player.maxHp;
@@ -212,6 +209,8 @@ export class Hud {
     container.appendChild(label);
     container.appendChild(value);
 
+    this.totalExperienceValue = value;
+
     return container;
   }
 
@@ -220,8 +219,10 @@ export class Hud {
     element.classList.add('equipment-slot', type);
 
     element.innerHTML = `
-      <img class="item-image hidden" src="" alt="">
-      <span class="placeholder">-</span>
+      <div class="item-icon-container">
+        <img class="item-image" src="" alt="" style="display: none;">
+        <span class="placeholder">-</span>
+      </div>
       <span class="item-name"></span>
     `;
 
@@ -257,14 +258,9 @@ export class Hud {
     this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
     this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
 
-    this.hpBar.element.querySelector('.status-bar-background').style.width =
-      `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
-    this.fpBar.element.querySelector('.status-bar-background').style.width =
-      `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
-    this.staminaBar.element.querySelector(
-      '.status-bar-background'
-    ).style.width =
-      `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+    this.hpBar.background.style.width = `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.background.style.width = `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.background.style.width = `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
 
     if (this.player.statusPoints > 0) {
       this.levelUpMenu.element.classList.remove('hidden');
@@ -367,10 +363,8 @@ export class Hud {
   }
 
   updateExperienceDisplay() {
-    const totalExpElement = document.getElementById('total-experience');
-    if (totalExpElement) {
-      totalExpElement.textContent = this.player.experience.toLocaleString();
-    }
+    this.totalExperienceValue.textContent =
+      this.player.experience.toLocaleString();
   }
 
   // ================================================================

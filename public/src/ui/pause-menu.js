@@ -1,5 +1,5 @@
 import { localization } from '../utils/localization.js';
-import { AssetNames } from '../utils/constants.js';
+import { AssetPaths } from '../utils/constants.js';
 
 const MODAL_TYPES = {
   CONTROLS: 'controls',
@@ -19,7 +19,7 @@ export class PauseMenu {
     this.resumeButton = document.createElement('button');
     this.resumeButton.textContent = localization.getText('ui.resume');
     this.resumeButton.addEventListener('click', () => {
-      this.game.playSound(AssetNames.SFX_CLICK);
+      this.game.playSound(AssetPaths.SFX_CLICK);
       this.game.togglePause();
       this.game.setPauseMenuVisibility(false);
       this.game.inputController.reevaluateKeyStates();
@@ -31,7 +31,7 @@ export class PauseMenu {
     this.controlsButton.setAttribute('aria-haspopup', 'dialog');
     this.controlsButton.textContent = localization.getText('ui.controls');
     this.controlsButton.addEventListener('click', () => {
-      this.game.playSound(AssetNames.SFX_CLICK);
+      this.game.playSound(AssetPaths.SFX_CLICK);
       this.showModal(MODAL_TYPES.CONTROLS);
     });
     this.container.appendChild(this.controlsButton);
@@ -48,11 +48,13 @@ export class PauseMenu {
     modal.classList.add('hidden');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'controls-modal-title');
 
     const modalContent = document.createElement('div');
-    modalContent.className = 'controls-modal-content';
+    modalContent.classList.add('controls-modal-content');
 
     const title = document.createElement('h2');
+    title.id = 'controls-modal-title';
     title.textContent = localization.getText('controls.title');
     modalContent.appendChild(title);
 
@@ -63,7 +65,7 @@ export class PauseMenu {
     const closeButton = document.createElement('button');
     closeButton.textContent = localization.getText('dialog.close');
     closeButton.addEventListener('click', () => {
-      this.game.playSound(AssetNames.SFX_CLICK);
+      this.game.playSound(AssetPaths.SFX_CLICK);
       this.hideModal(MODAL_TYPES.CONTROLS);
     });
     modalContent.appendChild(closeButton);
@@ -108,6 +110,11 @@ export class PauseMenu {
   async fetchAndDisplayControls() {
     try {
       const response = await fetch('data/documents.json');
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch documents.json (HTTP ${response.status})`
+        );
+      }
       const documents = await response.json();
       this.controlsData = documents.controls;
       this.renderControls();
@@ -121,34 +128,38 @@ export class PauseMenu {
 
     // Clear existing content
     this.controlsList.innerHTML = '';
-    
+
     const table = document.createElement('table');
-    
+
     for (const category of this.controlsData.categories) {
       // Create category header row
       const categoryRow = document.createElement('tr');
       const categoryHeader = document.createElement('th');
       categoryHeader.colSpan = 2;
-      categoryHeader.textContent = localization.getText(`controls.${category.name}`);
+      categoryHeader.textContent = localization.getText(
+        `controls.${category.name}`
+      );
       categoryRow.appendChild(categoryHeader);
       table.appendChild(categoryRow);
-      
+
       // Create action rows
       for (const action of category.actions) {
         const actionRow = document.createElement('tr');
-        
+
         const actionCell = document.createElement('td');
-        actionCell.textContent = localization.getText(`controls.${action.action}`);
+        actionCell.textContent = localization.getText(
+          `controls.${action.action}`
+        );
         actionRow.appendChild(actionCell);
-        
+
         const keyCell = document.createElement('td');
         keyCell.textContent = localization.getText(`controls.${action.key}`);
         actionRow.appendChild(keyCell);
-        
+
         table.appendChild(actionRow);
       }
     }
-    
+
     this.controlsList.appendChild(table);
   }
 

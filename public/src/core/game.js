@@ -6,7 +6,7 @@ import { Player } from '../entities/player.js';
 import { Enemy } from '../entities/enemy.js';
 import { Boss } from '../entities/boss.js';
 import { Npc } from '../entities/npc.js';
-import { Item } from '../world/item.js';
+import { Item } from '../entities/item.js';
 import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
@@ -14,7 +14,7 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { AssetNames, GameState, ItemTypes } from '../utils/constants.js';
+import { AssetPaths, GameState } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 
@@ -42,6 +42,7 @@ export class Game {
     this.splashSkipped = false;
 
     this.initAudio();
+    this.setupBeforeUnloadHandler();
 
     this.gameState = GameState.OPENING;
     this.titleScreen = new TitleScreen(
@@ -63,6 +64,21 @@ export class Game {
     this.currentBGM = null;
     this.currentLevel = 1;
     this.currentLevelProgress = 1;
+  }
+
+  setupBeforeUnloadHandler() {
+    window.addEventListener('beforeunload', (e) => {
+      // 実際のゲームプレイ中のみ防止
+      if (
+        this.player &&
+        !this.player.isDead &&
+        this.gameState === GameState.PLAYING
+      ) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    });
   }
 
   async init() {
@@ -91,10 +107,7 @@ export class Game {
     this.field = new Field(this);
     this.sceneManager.add(this.field.mesh);
 
-    this.player = new Player(this, {
-      modelName: AssetNames.PLAYER_MODEL,
-      textureName: AssetNames.PLAYER_TEXTURE,
-    });
+    this.player = new Player(this, 'player');
     this.sceneManager.add(this.player.mesh);
 
     this.hud = new Hud(this, this.player);
@@ -124,6 +137,8 @@ export class Game {
       'items',
       'skills',
       'localization',
+      'terrains',
+      'environments',
     ];
     for (const fileName of dataFiles) {
       const data = await this.assetLoader.loadJSON(
@@ -149,48 +164,47 @@ export class Game {
 
   async loadAudio() {
     const audioAssets = [
-      AssetNames.BGM_ENDING,
-      AssetNames.BGM_OPENING,
-      AssetNames.BGM_TITLE,
-      AssetNames.SFX_ATTACK_STRONG,
-      AssetNames.SFX_ATTACK_WEAK,
-      AssetNames.SFX_BACK_STEP,
-      AssetNames.SFX_CLICK,
-      AssetNames.SFX_DAMAGE,
-      AssetNames.SFX_DASH,
-      AssetNames.SFX_DEATH,
-      AssetNames.SFX_GUARD,
-      AssetNames.SFX_JUMP,
-      AssetNames.SFX_KILL,
-      AssetNames.SFX_LEVEL_UP,
-      AssetNames.SFX_LOCK_ON,
-      AssetNames.SFX_PAUSE,
-      AssetNames.SFX_PICKUP_ITEM,
-      AssetNames.SFX_ROLLING,
-      AssetNames.SFX_START,
-      AssetNames.SFX_SWITCH_ITEM,
-      AssetNames.SFX_SWITCH_SHIELD,
-      AssetNames.SFX_SWITCH_SKILL,
-      AssetNames.SFX_SWITCH_WEAPON,
-      AssetNames.SFX_TALK,
-      AssetNames.SFX_UNPAUSE,
-      AssetNames.SFX_USE_ITEM,
-      AssetNames.SFX_USE_SKILL_BUFF,
-      AssetNames.SFX_USE_SKILL_PROJECTILE,
-      AssetNames.SFX_WALK,
+      AssetPaths.BGM_ENDING,
+      AssetPaths.BGM_OPENING,
+      AssetPaths.BGM_TITLE,
+      AssetPaths.SFX_ATTACK_STRONG,
+      AssetPaths.SFX_ATTACK_WEAK,
+      AssetPaths.SFX_BACK_STEP,
+      AssetPaths.SFX_CLICK,
+      AssetPaths.SFX_DAMAGE,
+      AssetPaths.SFX_DASH,
+      AssetPaths.SFX_DEATH,
+      AssetPaths.SFX_GUARD,
+      AssetPaths.SFX_JUMP,
+      AssetPaths.SFX_KILL,
+      AssetPaths.SFX_LEVEL_UP,
+      AssetPaths.SFX_LOCK_ON,
+      AssetPaths.SFX_PAUSE,
+      AssetPaths.SFX_PICKUP_ITEM,
+      AssetPaths.SFX_ROLLING,
+      AssetPaths.SFX_START,
+      AssetPaths.SFX_SWITCH_ITEM,
+      AssetPaths.SFX_SWITCH_SHIELD,
+      AssetPaths.SFX_SWITCH_SKILL,
+      AssetPaths.SFX_SWITCH_WEAPON,
+      AssetPaths.SFX_TALK,
+      AssetPaths.SFX_UNPAUSE,
+      AssetPaths.SFX_USE_ITEM,
+      AssetPaths.SFX_USE_SKILL_BUFF,
+      AssetPaths.SFX_USE_SKILL_PROJECTILE,
+      AssetPaths.SFX_WALK,
     ];
 
     for (const assetName of audioAssets) {
       const buffer = await this.assetLoader.loadAudio(
         assetName,
-        `assets/audio/${assetName}.mp3`
+        `assets/audio/${assetName}`
       );
-      this.audioBuffers[assetName] = buffer;
 
       if (
-        assetName === AssetNames.BGM_TITLE ||
-        assetName === AssetNames.BGM_OPENING ||
-        assetName === AssetNames.BGM_ENDING
+        assetName === AssetPaths.BGM_TITLE ||
+        assetName === AssetPaths.BGM_OPENING ||
+        assetName === AssetPaths.BGM_ENDING
       ) {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
@@ -201,66 +215,93 @@ export class Game {
   }
 
   loadEntities() {
-    const item = new Item(ItemTypes.POTION, new THREE.Vector3(0, 2, -5), this);
+    const item = new Item(this, 'potion', new THREE.Vector3(0, 2, -5));
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
-    const enemy = new Enemy(this, this.player, new THREE.Vector3(5, 0, 0), {
-      modelName: AssetNames.ENEMY_MODEL,
-      textureName: AssetNames.ENEMY_TEXTURE,
+    const enemy = new Enemy(this, 'grunt', new THREE.Vector3(5, 0, 0), {
+      player: this.player,
     });
 
     this.enemies.push(enemy);
     this.sceneManager.add(enemy.mesh);
 
-    const boss = new Boss(this, this.player, {
-      modelName: AssetNames.BOSS_MODEL,
-      textureName: AssetNames.BOSS_TEXTURE,
+    const boss = new Boss(this, 'boss', new THREE.Vector3(10, 0.5, 10), {
+      player: this.player,
     });
     this.boss = boss;
     this.enemies.push(boss);
     this.sceneManager.add(boss.mesh);
 
-    const npc = new Npc(
-      'guide', // NPCタイプ
-      new THREE.Vector3(-5, 0.5, -5),
-      this,
-      { modelName: AssetNames.NPC_MODEL, textureName: AssetNames.NPC_TEXTURE }
-    );
+    const npc = new Npc(this, 'guide', new THREE.Vector3(-5, 0.5, -5));
     this.npcs.push(npc);
     this.sceneManager.add(npc.mesh);
   }
 
   async loadModels() {
-    const assetsToLoad = [
-      { model: AssetNames.PLAYER_MODEL, texture: AssetNames.PLAYER_TEXTURE },
-      { model: AssetNames.ENEMY_MODEL, texture: AssetNames.ENEMY_TEXTURE },
-      { model: AssetNames.BOSS_MODEL, texture: AssetNames.BOSS_TEXTURE },
-      { model: AssetNames.NPC_MODEL, texture: AssetNames.NPC_TEXTURE },
-      { model: AssetNames.ITEM_MODEL, texture: AssetNames.ITEM_TEXTURE },
-      { model: AssetNames.TREE_MODEL, texture: AssetNames.TREE_TEXTURE },
-      { model: AssetNames.ROCK_MODEL, texture: AssetNames.ROCK_TEXTURE },
-      { model: AssetNames.GRASS_MODEL, texture: AssetNames.GRASS_TEXTURE },
-      { texture: AssetNames.CLOUD_TEXTURE },
-      { texture: AssetNames.GROUND_TEXTURE },
+    const assetsToLoad = [];
+
+    // Player assets
+    assetsToLoad.push({
+      model: this.data.player.model,
+      texture: this.data.player.texture,
+    });
+
+    // Collect all assets from JSON data
+    const collections = [
+      this.data.enemies,
+      this.data.items,
+      this.data.npcs,
+      this.data.shields,
+      this.data.weapons,
+      this.data.skills,
+      this.data.terrains,
     ];
+
+    for (const collection of collections) {
+      if (collection) {
+        for (const item of Object.values(collection)) {
+          if (item.model || item.texture) {
+            assetsToLoad.push({
+              model: item.model,
+              texture: item.texture,
+            });
+          }
+        }
+      }
+    }
+
+    // Environment textures
+    if (this.data.environments) {
+      for (const envData of Object.values(this.data.environments)) {
+        if (envData.texture) {
+          assetsToLoad.push({
+            texture: envData.texture,
+          });
+        }
+      }
+    }
 
     for (const asset of assetsToLoad) {
       try {
         if (asset.model) {
           await this.assetLoader.loadGLTF(
-            asset.model,
-            `assets/models/${asset.model}.glb`
+            asset.model.replace('.glb', ''),
+            `assets/models/${asset.model}`
           );
         }
-        const texturePath = `assets/textures/${asset.model || asset.texture}.png`;
-        try {
-          await this.assetLoader.loadTexture(asset.texture, texturePath);
-        } catch (error) {
-          console.warn(
-            `Texture for ${asset.model || asset.texture} not found at ${texturePath}. Using default material.`,
-            error
-          );
+        if (asset.texture) {
+          try {
+            await this.assetLoader.loadTexture(
+              asset.texture.replace('.png', ''),
+              `assets/textures/${asset.texture}`
+            );
+          } catch (error) {
+            console.warn(
+              `Texture for ${asset.model || asset.texture} not found. Using default material.`,
+              error
+            );
+          }
         }
       } catch (error) {
         console.error(
@@ -269,16 +310,6 @@ export class Game {
         );
       }
     }
-
-    // Explicitly load ground texture
-    try {
-      await this.assetLoader.loadTexture(
-        AssetNames.GROUND_TEXTURE,
-        `assets/textures/${AssetNames.GROUND_TEXTURE}.png`
-      );
-    } catch (error) {
-      console.warn('Error loading ground texture:', error);
-    }
   }
 
   async startGame() {
@@ -286,22 +317,22 @@ export class Game {
 
     this.gameState = GameState.PLAYING;
     this.sceneManager.showCanvas();
-    this.hud.show();
+    this.hud?.show();
 
     if (this.titleScreen) {
       this.titleScreen.hideAll();
     }
-    if (this.bgmAudios[AssetNames.BGM_TITLE]?.isPlaying) {
-      this.bgmAudios[AssetNames.BGM_TITLE].stop();
+    if (this.bgmAudios[AssetPaths.BGM_TITLE]?.isPlaying) {
+      this.bgmAudios[AssetPaths.BGM_TITLE].stop();
     }
     // Start current level BGM
     await this.startLevelBGM();
-    this.playSound(AssetNames.SFX_START);
+    this.playSound(AssetPaths.SFX_START);
     this.sceneManager.renderer.domElement.requestPointerLock();
   }
 
   isTextureAppliedToModel(modelName) {
-    const model = this.assetLoader.getAsset(modelName);
+    const model = this.assetLoader.getModel(modelName);
     if (!model) return false;
 
     let textureApplied = false;
@@ -318,12 +349,12 @@ export class Game {
       this.gameState = GameState.PAUSED;
       this.pauseBGM();
       document.exitPointerLock();
-      this.playSound(AssetNames.SFX_PAUSE);
+      this.playSound(AssetPaths.SFX_PAUSE);
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
       this.resumeBGM();
       this.sceneManager.renderer.domElement.requestPointerLock();
-      this.playSound(AssetNames.SFX_UNPAUSE);
+      this.playSound(AssetPaths.SFX_UNPAUSE);
     }
   }
 
@@ -347,9 +378,8 @@ export class Game {
     try {
       const buffer = await this.assetLoader.loadAudio(
         bgmName,
-        `assets/audio/${bgmName}.mp3`
+        `assets/audio/${bgmName}`
       );
-      this.audioBuffers[bgmName] = buffer;
 
       this.bgmAudios[bgmName] = new THREE.Audio(this.listener);
       this.bgmAudios[bgmName].setBuffer(buffer);
@@ -369,7 +399,7 @@ export class Game {
     const progressString = currentProgress.toString().padStart(2, '0');
     const bgmKey = `BGM_LEVEL_${level.toString().padStart(2, '0')}_${progressString}`;
 
-    return AssetNames[bgmKey] || null;
+    return AssetPaths[bgmKey] || null;
   }
 
   // BGM management methods
@@ -402,7 +432,11 @@ export class Game {
       const audio = this.bgmAudios[this.currentBGM];
       try {
         const ctx = this.listener?.context;
-        if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+        if (
+          ctx &&
+          ctx.state === 'suspended' &&
+          typeof ctx.resume === 'function'
+        ) {
           ctx.resume();
         }
       } catch (e) {
@@ -431,18 +465,20 @@ export class Game {
   }
 
   playSound(name) {
-    if (this.audioBuffers[name]) {
+    const buffer = this.assetLoader.getAudio(name);
+    if (buffer) {
       const sound = new THREE.Audio(this.listener);
-      sound.setBuffer(this.audioBuffers[name]);
+      sound.setBuffer(buffer);
       sound.setVolume(1);
       sound.play();
     }
   }
 
   createAudio(name, options = {}) {
-    if (this.audioBuffers[name]) {
+    const buffer = this.assetLoader.getAudio(name);
+    if (buffer) {
       const sound = new THREE.Audio(this.listener);
-      sound.setBuffer(this.audioBuffers[name]);
+      sound.setBuffer(buffer);
       sound.setVolume(options.volume || 1);
       if (options.loop) {
         sound.setLoop(true);
@@ -485,18 +521,14 @@ export class Game {
           if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
+            // If the removed enemy is the boss, trigger ending flow
+            if (enemy === this.boss) {
+              this.boss = null;
+              this.endingTimer = 1;
+              this.isEndingSequenceReady = false;
+            }
             this.enemies.splice(i, 1);
           }
-        }
-
-        if (this.boss && !this.boss.isDead) {
-          this.boss.update(deltaTime);
-        } else if (this.boss?.isDead) {
-          this.player?.addExperience(this.boss.experience);
-          this.sceneManager.remove(this.boss.mesh);
-          this.boss = null;
-          this.endingTimer = 1;
-          this.isEndingSequenceReady = false;
         }
 
         if (this.endingTimer > 0) {
@@ -602,13 +634,13 @@ export class Game {
       setTimeout(() => {
         this.gameState = GameState.TITLE;
         this.sceneManager.hideCanvas();
-        this.hud.hide();
+        this.hud?.hide();
         this.titleScreen.showMenu();
         if (
-          this.bgmAudios[AssetNames.BGM_TITLE] &&
-          !this.bgmAudios[AssetNames.BGM_TITLE].isPlaying
+          this.bgmAudios[AssetPaths.BGM_TITLE] &&
+          !this.bgmAudios[AssetPaths.BGM_TITLE].isPlaying
         ) {
-          this.bgmAudios[AssetNames.BGM_TITLE].play();
+          this.bgmAudios[AssetPaths.BGM_TITLE].play();
         }
       }, 500);
     });
@@ -618,7 +650,7 @@ export class Game {
     this.gameState = GameState.ENDING;
 
     // Hide HUD immediately when ending starts
-    this.hud.hide();
+    this.hud?.hide();
 
     this.sceneManager.fadeOutCanvas(1000, () => {
       this.titleScreen.hideSplash();
