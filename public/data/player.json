@@ -1,0 +1,40 @@
+{
+  "image": "players/player.png",
+  "model": "players/player.glb",
+  "texture": "players/player.png",
+  "maxHp": 100,
+  "maxFp": 50,
+  "maxStamina": 100,
+  "initialLevel": 1,
+  "initialExperience": 0,
+  "initialExpToNextLevel": 10,
+  "initialStatusPoints": 0,
+  "initialInventory": ["potion", "fpPotion"],
+  "initialWeapons": ["sword", "claws"],
+  "initialShields": ["woodenShield", "ironShield"],
+  "initialSkills": ["projectile", "buff"],
+
+  "initialSpawnPoint": { "x": 0, "y": 0, "z": 0 },
+  "respawnDelay": 3000,
+
+  "levelUpExpMultiplier": 1.5,
+  "statusPointsPerLevel": 5,
+
+  "jumpPower": 7,
+  "jumpDuration": 1000,
+  "dashSpeedMultiplier": 2.0,
+  "rollDuration": 500,
+  "rollDistance": 4.0,
+  "rollingSpeed": 8,
+  "backStepSpeed": 6,
+  "backStepDuration": 300,
+
+  "staminaRegenRate": 15,
+  "staminaCostJump": 10,
+  "staminaCostDash": 5,
+  "staminaCostRoll": 20,
+  "staminaCostRolling": 15,
+  "staminaCostBackStep": 10,
+  "staminaCostGuard": 15,
+  "staminaCostGuardPerSecond": 10
+}

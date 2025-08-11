@@ -1,0 +1,42 @@
+{
+  "opening": {
+    "texts": [
+      "忘れ去られた王国",
+      "かつて、この王国は光に満ちていた。",
+      "しかし、謎の呪いにより、その輝きは失われた。",
+      "今、一匹の猫が目覚める。失われた記憶と、王国を救う使命を胸に。",
+      "希望の光は、再びこの地に灯るのか。"
+    ],
+    "backgroundImages": [
+      "sequences/opening-bg-01.png",
+      "sequences/opening-bg-02.png",
+      "sequences/opening-bg-03.png",
+      "sequences/opening-bg-04.png",
+      "sequences/opening-bg-05.png"
+    ]
+  },
+  "ending": {
+    "texts": [
+      "呪いは解かれ、王国に平和が戻った。",
+      "しかし、冒険はまだ始まったばかりだ…"
+    ],
+    "backgroundImages": [
+      "sequences/ending-bg-01.png",
+      "sequences/ending-bg-02.png"
+    ],
+    "staffRoll": [
+      "Director: わたし",
+      "Game Designer: Claude Code",
+      "Programmer: Claude Code",
+      "Programmer: Gemini CLI",
+      "Cinematic Artist: Veo",
+      "3D Artist: Kenny",
+      "Concept Artist: ImageFX",
+      "Music Composer: Suno",
+      "Sound Designer: 効果音ラボ",
+      "",
+      "Special Thanks: あなた"
+    ],
+    "finText": "おわり"
+  }
+}

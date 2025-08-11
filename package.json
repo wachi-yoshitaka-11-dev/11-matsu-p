@@ -1,0 +1,30 @@
+{
+  "name": "mofumofu-adventure",
+  "version": "0.1.0",
+  "description": "AI-generated 3D open-world action RPG using Three.js",
+  "main": "public/src/main.js",
+  "scripts": {
+    "start": "http-server ./public -p 8080",
+    "test": "npx playwright test",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "three.js",
+    "game",
+    "rpg",
+    "ai-generated"
+  ],
+  "author": "AI Agent",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.1",
+    "eslint": "^9.32.0",
+    "globals": "^16.3.0",
+    "http-server": "^14.1.1",
+    "prettier": "^3.6.2"
+  }
+}

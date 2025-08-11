@@ -1,0 +1,28 @@
+{
+  "grunt": {
+    "name": "雑魚敵",
+    "model": "enemies/enemy.glb",
+    "texture": "enemies/enemy.png",
+    "description": "基本的な敵",
+    "hp": 50,
+    "speed": 2,
+    "experience": 10,
+    "attackCooldown": 2,
+    "attackRange": 1.5,
+    "damage": 10
+  },
+  "boss": {
+    "name": "ボス",
+    "model": "enemies/boss.glb",
+    "texture": "enemies/boss.png",
+    "description": "強力な敵のボス",
+    "hp": 200,
+    "speed": 1.5,
+    "experience": 100,
+    "attackCooldown": 3,
+    "attackRange": 3,
+    "damage": 20,
+    "specialAttackRange": 5,
+    "specialAttackDamage": 40
+  }
+}

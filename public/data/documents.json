@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "controls": {
+    "title": "title",
+    "categories": [
+      {
+        "name": "basicControls",
+        "actions": [
+          { "action": "move", "key": "keyWASD" },
+          { "action": "camera", "key": "keyMouseLook" },
+          { "action": "jump", "key": "keySpace" }
+        ]
+      },
+      {
+        "name": "combatControls",
+        "actions": [
+          { "action": "weakAttack", "key": "keyMouseLeftClick" },
+          { "action": "strongAttack", "key": "keyCtrlLeftClick" },
+          { "action": "guard", "key": "keyMouseRightClick" },
+          { "action": "roll", "key": "keyShiftShortPressMove" },
+          { "action": "backstep", "key": "keyShiftShortPressNoMove" },
+          { "action": "dash", "key": "keyShiftHoldMove" },
+          { "action": "lockOn", "key": "keyMouseWheelClick" },
+          { "action": "switchLockOnTarget", "key": "keyQ" }
+        ]
+      },
+      {
+        "name": "itemsEquipment",
+        "actions": [
+          { "action": "useItem", "key": "keyR" },
+          { "action": "switchItem", "key": "keyArrowDown" },
+          { "action": "switchWeapon", "key": "keyArrowRight" },
+          { "action": "switchShield", "key": "keyArrowLeft" },
+          { "action": "useSkill", "key": "keyF" },
+          { "action": "switchSkill", "key": "keyArrowUp" }
+        ]
+      },
+      {
+        "name": "other",
+        "actions": [
+          { "action": "interactWithNPC", "key": "keyE" },
+          { "action": "pause", "key": "keyEscape" }
+        ]
+      }
+    ]
+  }
+}

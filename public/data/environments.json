@@ -1,0 +1,8 @@
+{
+  "cloud": {
+    "texture": "terrain/cloud.png"
+  },
+  "ground": {
+    "texture": "terrain/ground.png"
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "ja": {
+    "ui": {
+      "clickToStart": "タッチしてはじめる",
+      "continue": "つづきから（準備中）",
+      "experience": "経験値:",
+      "levelUp": "レベルアップ！",
+      "newGame": "はじめから",
+      "none": "なし",
+      "options": "設定（準備中）",
+      "resume": "再開",
+      "shield": "盾",
+      "skill": "スキル",
+      "statusPoints": "Status Points",
+      "title": "もふもふアドベンチャー",
+      "weapon": "武器",
+      "youDied": "YOU DIED",
+      "controls": "操作方法"
+    },
+    "equipment": {
+      "weapon": "武器",
+      "shield": "盾",
+      "item": "アイテム",
+      "skill": "スキル"
+    },
+    "stats": {
+      "hp": "HP",
+      "fp": "FP",
+      "stamina": "ST"
+    },
+    "interactions": {
+      "talkPrompt": "話しかける"
+    },
+    "dialog": {
+      "close": "閉じる"
+    },
+    "messages": {
+      "gameStart": "ゲーム開始",
+      "gamePaused": "ポーズ中",
+      "gameOver": "ゲームオーバー"
+    },
+    "items": {
+      "potion": "ポーション",
+      "fpPotion": "FPポーション",
+      "empty": "-"
+    },
+    "controls": {
+      "title": "操作方法",
+      "basicControls": "基本操作",
+      "combatControls": "戦闘操作",
+      "itemsEquipment": "アイテム・装備",
+      "other": "その他",
+      "move": "移動",
+      "camera": "カメラ操作",
+      "jump": "ジャンプ",
+      "weakAttack": "弱攻撃",
+      "strongAttack": "強攻撃",
+      "guard": "ガード",
+      "roll": "ローリング",
+      "backstep": "バックステップ",
+      "dash": "ダッシュ",
+      "lockOn": "ロックオン",
+      "switchLockOnTarget": "ロックオン対象切り替え",
+      "useItem": "アイテム使用",
+      "switchItem": "アイテム切り替え",
+      "switchWeapon": "武器切り替え",
+      "switchShield": "盾切り替え",
+      "useSkill": "スキル使用",
+      "switchSkill": "スキル切り替え",
+      "interactWithNPC": "NPCインタラクト",
+      "pause": "ポーズ",
+      "keyWASD": "WASD (カメラの向きに依存)",
+      "keyMouseLook": "マウス (上下左右の視点移動)",
+      "keySpace": "Space",
+      "keyMouseLeftClick": "マウス左クリック",
+      "keyCtrlLeftClick": "Ctrl + 左クリック",
+      "keyMouseRightClick": "マウス右クリック",
+      "keyShiftShortPressMove": "Shift (短押し + 移動方向)",
+      "keyShiftShortPressNoMove": "Shift (短押し、移動無し)",
+      "keyShiftHoldMove": "Shift (長押し + 移動)",
+      "keyMouseWheelClick": "ホイールクリック",
+      "keyQ": "Q",
+      "keyR": "R",
+      "keyArrowDown": "下矢印",
+      "keyArrowRight": "右矢印",
+      "keyArrowLeft": "左矢印",
+      "keyF": "F",
+      "keyArrowUp": "上矢印",
+      "keyE": "E",
+      "keyEscape": "Escape"
+    }
+  },
+  "en": {
+    "ui": {
+      "clickToStart": "Click to Start",
+      "continue": "Continue (Coming Soon)",
+      "experience": "Experience:",
+      "levelUp": "Level Up!",
+      "newGame": "New Game",
+      "none": "None",
+      "options": "Options (Coming Soon)",
+      "resume": "Resume",
+      "shield": "Shield",
+      "skill": "Skill",
+      "statusPoints": "Status Points",
+      "title": "Mofumofu Adventure",
+      "weapon": "Weapon",
+      "youDied": "YOU DIED",
+      "controls": "Controls"
+    },
+    "equipment": {
+      "weapon": "Weapon",
+      "shield": "Shield",
+      "item": "Item",
+      "skill": "Skill"
+    },
+    "stats": {
+      "hp": "HP",
+      "fp": "FP",
+      "stamina": "Stamina"
+    },
+    "interactions": {
+      "talkPrompt": "Talk"
+    },
+    "dialog": {
+      "close": "Close"
+    },
+    "messages": {
+      "gameStart": "Game Start",
+      "gamePaused": "Paused",
+      "gameOver": "Game Over"
+    },
+    "items": {
+      "potion": "Potion",
+      "fpPotion": "FP Potion",
+      "empty": "-"
+    },
+    "controls": {
+      "title": "Controls",
+      "basicControls": "Basic Controls",
+      "combatControls": "Combat Controls",
+      "itemsEquipment": "Items & Equipment",
+      "other": "Other",
+      "move": "Move",
+      "camera": "Camera",
+      "jump": "Jump",
+      "weakAttack": "Weak Attack",
+      "strongAttack": "Strong Attack",
+      "guard": "Guard",
+      "roll": "Roll",
+      "backstep": "Backstep",
+      "dash": "Dash",
+      "lockOn": "Lock-on",
+      "switchLockOnTarget": "Switch Lock-on Target",
+      "useItem": "Use Item",
+      "switchItem": "Switch Item",
+      "switchWeapon": "Switch Weapon",
+      "switchShield": "Switch Shield",
+      "useSkill": "Use Skill",
+      "switchSkill": "Switch Skill",
+      "interactWithNPC": "Interact with NPC",
+      "pause": "Pause",
+      "keyWASD": "WASD (camera dependent)",
+      "keyMouseLook": "Mouse (look around)",
+      "keySpace": "Space",
+      "keyMouseLeftClick": "Left Click",
+      "keyCtrlLeftClick": "Ctrl + Left Click",
+      "keyMouseRightClick": "Right Click",
+      "keyShiftShortPressMove": "Shift (short press + direction)",
+      "keyShiftShortPressNoMove": "Shift (short press, no movement)",
+      "keyShiftHoldMove": "Shift (hold + movement)",
+      "keyMouseWheelClick": "Middle Click",
+      "keyQ": "Q",
+      "keyR": "R",
+      "keyArrowDown": "Down Arrow",
+      "keyArrowRight": "Right Arrow",
+      "keyArrowLeft": "Left Arrow",
+      "keyF": "F",
+      "keyArrowUp": "Up Arrow",
+      "keyE": "E",
+      "keyEscape": "Escape"
+    }
+  }
+}

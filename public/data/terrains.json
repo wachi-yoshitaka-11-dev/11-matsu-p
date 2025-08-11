@@ -1,0 +1,14 @@
+{
+  "tree": {
+    "model": "terrain/tree.glb",
+    "texture": "terrain/tree.png"
+  },
+  "rock": {
+    "model": "terrain/rock.glb",
+    "texture": "terrain/rock.png"
+  },
+  "grass": {
+    "model": "terrain/grass.glb",
+    "texture": "terrain/grass.png"
+  }
+}
