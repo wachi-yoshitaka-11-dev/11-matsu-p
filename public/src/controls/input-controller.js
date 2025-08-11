@@ -60,16 +60,9 @@ export class InputController {
       // ゲーム関連のキーの組み合わせでブラウザのデフォルト動作を防ぐ（ゲーム状態に関係なく）
       if (
         (e.ctrlKey || e.metaKey) &&
-        [
-          'KeyW',
-          'KeyD',
-          'KeyA',
-          'KeyS',
-          'KeyQ',
-          'KeyE',
-          'KeyR',
-          'KeyF',
-        ].includes(e.code)
+        ['KeyW', 'KeyD', 'KeyA', 'KeyS', 'KeyE', 'KeyR', 'KeyF'].includes(
+          e.code
+        )
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -135,6 +128,15 @@ export class InputController {
       (e) => {
         if (!this._canProcessInput()) return;
         this.mouse.wheelDelta = e.deltaY;
+
+        // マウスホイールでのロックオンターゲット切り替え
+        if (this.player.lockedTarget && e.deltaY !== 0) {
+          e.preventDefault();
+          // deltaY > 0: ホイールダウン（下方向）= 次のターゲット
+          // deltaY < 0: ホイールアップ（上方向）= 前のターゲット
+          const direction = e.deltaY > 0 ? 1 : -1;
+          this.switchLockOnTarget(direction);
+        }
       },
       { passive: false }
     );
@@ -272,11 +274,6 @@ export class InputController {
     if (this.player.isGuarding) {
       this.player.stamina -=
         (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
-    }
-
-    if (this.keys['KeyQ'] && this.player.lockedTarget) {
-      this.switchLockOnTarget();
-      this.keys['KeyQ'] = false;
     }
 
     if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
@@ -480,8 +477,9 @@ export class InputController {
     }
   }
 
-  switchLockOnTarget() {
+  switchLockOnTarget(direction = 1) {
     if (!this.player.lockedTarget) return;
+    if (direction === 0) return; // 方向が0の場合は何もしない
 
     const enemies = this.game.enemies.filter((enemy) => !enemy.isDead);
     if (enemies.length <= 1) return;
@@ -489,7 +487,14 @@ export class InputController {
     const currentIndex = enemies.indexOf(this.player.lockedTarget);
     if (currentIndex === -1) return;
 
-    const nextIndex = (currentIndex + 1) % enemies.length;
+    // direction: 1 = 次へ, -1 = 前へ
+    let nextIndex;
+    if (direction > 0) {
+      nextIndex = (currentIndex + 1) % enemies.length;
+    } else {
+      nextIndex = (currentIndex - 1 + enemies.length) % enemies.length;
+    }
+
     const nextTarget = enemies[nextIndex];
 
     this.player.lockedTarget = nextTarget;

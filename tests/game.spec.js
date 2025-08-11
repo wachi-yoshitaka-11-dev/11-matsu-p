@@ -697,7 +697,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     }
   });
 
-  test('should implement lock-on system with wheel click and Q key', async ({
+  test('should implement lock-on system with wheel click and mouse wheel', async ({
     page,
   }) => {
     await setupNetworkRoutes(page);
@@ -759,7 +759,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     expect(lockOnState.hasLockedTarget).toBe(true);
     expect(lockOnState.targetIsEnemy).toBe(true);
 
-    // Test Q key target switching (if multiple enemies)
+    // Test mouse wheel target switching (if multiple enemies)
     const enemyCount = await page.evaluate(
       () => window.game?.enemies?.length || 0
     );
@@ -769,13 +769,23 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         () => window.game?.player?.lockedTarget
       );
 
-      await page.keyboard.press('KeyQ');
+      // マウスホイールダウンでターゲット切り替え（次へ）
+      await page.mouse.wheel(0, 100);
       await page.waitForTimeout(100);
 
-      const newTarget = await page.evaluate(
+      const nextTarget = await page.evaluate(
         () => window.game?.player?.lockedTarget
       );
-      expect(newTarget !== initialTarget).toBe(true);
+      expect(nextTarget !== initialTarget).toBe(true);
+
+      // マウスホイールアップでターゲット切り替え（前へ）
+      await page.mouse.wheel(0, -100);
+      await page.waitForTimeout(100);
+
+      const prevTarget = await page.evaluate(
+        () => window.game?.player?.lockedTarget
+      );
+      expect(prevTarget !== nextTarget).toBe(true);
     }
 
     // Test lock-on release (wheel click again)

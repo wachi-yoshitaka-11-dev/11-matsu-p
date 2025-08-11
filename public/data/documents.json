@@ -21,7 +21,7 @@
           { "action": "backstep", "key": "keyShiftShortPressNoMove" },
           { "action": "dash", "key": "keyShiftHoldMove" },
           { "action": "lockOn", "key": "keyMouseWheelClick" },
-          { "action": "switchLockOnTarget", "key": "keyQ" }
+          { "action": "switchLockOnTarget", "key": "keyMouseWheel" }
         ]
       },
       {
