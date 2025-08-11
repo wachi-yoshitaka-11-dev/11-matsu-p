@@ -99,6 +99,7 @@ export class Enemy extends Character {
   }
 
   attack() {
+    this.isAttacking = true;
     this.playAnimation(AnimationNames.ATTACK_WEAK);
     const toPlayer = new THREE.Vector3()
       .subVectors(this.player.mesh.position, this.mesh.position)
@@ -115,7 +116,6 @@ export class Enemy extends Character {
       this.game.playSound(AssetPaths.SFX_GUARD);
     } else {
       this.player.takeDamage(this.data.damage);
-      this.game.playSound(AssetPaths.SFX_DAMAGE);
     }
   }
 

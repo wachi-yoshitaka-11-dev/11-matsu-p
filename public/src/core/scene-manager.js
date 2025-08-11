@@ -15,6 +15,9 @@ export class SceneManager {
     this.light = new Light(this.scene);
     this._gameElements = [];
 
+    // Bind once and store for proper cleanup
+    this._onResize = this.onWindowResize.bind(this);
+
     this.init();
   }
 
@@ -28,7 +31,7 @@ export class SceneManager {
 
     this.scene.background = new THREE.Color(0x87ceeb);
 
-    window.addEventListener('resize', this.onWindowResize.bind(this), false);
+    window.addEventListener('resize', this._onResize, false);
   }
 
   onWindowResize() {
@@ -74,7 +77,7 @@ export class SceneManager {
   }
 
   dispose() {
-    window.removeEventListener('resize', this.onWindowResize.bind(this));
+    window.removeEventListener('resize', this._onResize);
     this.renderer.dispose();
   }
 

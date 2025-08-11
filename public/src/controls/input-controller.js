@@ -130,7 +130,10 @@ export class InputController {
         this.mouse.wheelDelta = e.deltaY;
 
         // マウスホイールでのロックオンターゲット切り替え
-        if (this.player.lockedTarget && e.deltaY !== 0) {
+        const isGameWheelContext =
+          document.pointerLockElement === this.canvas ||
+          e.target === this.canvas;
+        if (isGameWheelContext && this.player.lockedTarget && e.deltaY !== 0) {
           e.preventDefault();
           // deltaY > 0: ホイールダウン（下方向）= 次のターゲット
           // deltaY < 0: ホイールアップ（上方向）= 前のターゲット

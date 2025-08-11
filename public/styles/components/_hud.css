@@ -143,6 +143,9 @@
   .status-bar-fill::after {
     animation: none !important;
   }
+  .lock-on-target {
+    animation: none !important;
+  }
 }
 
 #hp-bar .status-bar-fill {

@@ -732,7 +732,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     });
 
     // Test wheel click lock-on
-    await page.mouse.click(400, 300, { button: 'middle' });
+    await page.locator('canvas').click({ button: 'middle' });
 
     await page.waitForFunction(
       () => {
@@ -765,31 +765,31 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     );
 
     if (enemyCount > 1) {
-      const initialTarget = await page.evaluate(
-        () => window.game?.player?.lockedTarget
+      const initialTargetId = await page.evaluate(
+        () => window.game?.player?.lockedTarget?.mesh?.uuid || null
       );
 
       // マウスホイールダウンでターゲット切り替え（次へ）
       await page.mouse.wheel(0, 100);
       await page.waitForTimeout(100);
 
-      const nextTarget = await page.evaluate(
-        () => window.game?.player?.lockedTarget
+      const nextTargetId = await page.evaluate(
+        () => window.game?.player?.lockedTarget?.mesh?.uuid || null
       );
-      expect(nextTarget !== initialTarget).toBe(true);
+      expect(nextTargetId).not.toBe(initialTargetId);
 
       // マウスホイールアップでターゲット切り替え（前へ）
       await page.mouse.wheel(0, -100);
       await page.waitForTimeout(100);
 
-      const prevTarget = await page.evaluate(
-        () => window.game?.player?.lockedTarget
+      const prevTargetId = await page.evaluate(
+        () => window.game?.player?.lockedTarget?.mesh?.uuid || null
       );
-      expect(prevTarget !== nextTarget).toBe(true);
+      expect(prevTargetId).not.toBe(nextTargetId);
     }
 
     // Test lock-on release (wheel click again)
-    await page.mouse.click(400, 300, { button: 'middle' });
+    await page.locator('canvas').click({ button: 'middle' });
 
     await page.waitForFunction(
       () => {

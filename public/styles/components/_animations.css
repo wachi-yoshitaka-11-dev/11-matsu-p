@@ -180,3 +180,20 @@
   animation: fadeOut 1s ease-in-out forwards;
   opacity: 1;
 }
+
+/* Accessibility: respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .sequence-text-large,
+  .sequence-text-small,
+  .sequence-text-fin,
+  .sequence-overlay-fade-in,
+  .sequence-overlay-fade-out,
+  .title-fade-in,
+  .title-fade-out,
+  .logo-fade-out {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

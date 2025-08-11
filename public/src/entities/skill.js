@@ -10,8 +10,4 @@ export class Skill extends BaseEntity {
     // サブクラスから受け取ったジオメトリとマテリアルをBaseEntityに渡す
     super(game, skillType, skillData, geometry, material, options);
   }
-
-  update(deltaTime) {
-    super.update(deltaTime);
-  }
 }

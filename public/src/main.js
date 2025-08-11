@@ -43,7 +43,7 @@ async function startGame() {
     await game.init();
     game.start();
   } catch (error) {
-    console.error('Failed to initialization game:', error);
+    console.error('Failed to initialize game:', error);
   }
 }
 

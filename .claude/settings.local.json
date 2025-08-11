@@ -24,7 +24,5 @@
       "mcp__serena__replace_regex"
     ]
   },
-  "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": ["filesystem", "git", "web-search"],
-  "disabledMcpjsonServers": ["filesystem", "git", "web-search"]
+  "enableAllProjectMcpServers": true
 }
