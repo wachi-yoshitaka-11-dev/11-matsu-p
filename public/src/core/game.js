@@ -628,8 +628,11 @@ export class Game {
 
   playOpeningSequence() {
     this.gameState = GameState.OPENING;
+    document.exitPointerLock();
+
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
+
     this.sequenceManager.startOpeningSequence(() => {
       setTimeout(() => {
         this.gameState = GameState.TITLE;
@@ -648,6 +651,7 @@ export class Game {
 
   playEndingSequence() {
     this.gameState = GameState.ENDING;
+    document.exitPointerLock();
 
     // Hide HUD immediately when ending starts
     this.hud?.hide();
