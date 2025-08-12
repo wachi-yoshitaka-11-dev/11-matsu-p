@@ -1,4 +1,15 @@
 {
+  "buff": {
+    "name": "強化",
+    "model": "skills/buff.glb",
+    "texture": "skills/buff.png",
+    "image": "skills/buff.png",
+    "description": "攻撃力と防御力を一時的に強化",
+    "fpCost": 30,
+    "duration": 10000,
+    "attackBuffMultiplier": 1.5,
+    "defenseBuffMultiplier": 1.5
+  },
   "projectile": {
     "name": "魔法弾",
     "model": "skills/projectile.glb",
@@ -12,15 +23,16 @@
     "damage": 30,
     "hitRange": 1.0
   },
-  "buff": {
-    "name": "強化",
-    "model": "skills/buff.glb",
-    "texture": "skills/buff.png",
-    "image": "skills/buff.png",
-    "description": "攻撃力と防御力を一時的に強化",
-    "fpCost": 30,
-    "duration": 10000,
-    "attackBuffMultiplier": 1.5,
-    "defenseBuffMultiplier": 1.5
+  "areaAttack": {
+    "name": "魔法爆発",
+    "model": "skills/area-attack.glb",
+    "texture": "skills/area-attack.png",
+    "image": "skills/area-attack.png",
+    "description": "プレイヤー周囲の敵に大ダメージを与える範囲攻撃",
+    "fpCost": 40,
+    "damage": 50,
+    "range": 4.0,
+    "duration": 1500,
+    "castTime": 800
   }
 }

@@ -3,7 +3,7 @@ import { Skill } from './skill.js';
 
 export class Projectile extends Skill {
   constructor(game, projectileType, startPosition, direction) {
-    const geometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100);
+    const geometry = new THREE.SphereGeometry(0.3, 16, 16);
     const material = new THREE.MeshStandardMaterial({
       color: 0xffff00,
       emissive: 0xffff00,

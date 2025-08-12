@@ -11,8 +11,9 @@ export const Fall = {
 export const EffectColors = {
   DAMAGE: 0xff0000,
   ATTACK: 0xffff00,
-  SKILL_PROJECTILE: 0x8a2be2,
   SKILL_BUFF: 0x00ffff,
+  SKILL_PROJECTILE: 0x8a2be2,
+  SKILL_AREA_ATTACK: 0xff4500,
   CHARGE: 0xff00ff,
 };
 
@@ -22,8 +23,9 @@ export const EnvironmentTypes = {
 };
 
 export const SkillTypes = {
-  PROJECTILE: 'projectile',
   BUFF: 'buff',
+  PROJECTILE: 'projectile',
+  AREA_ATTACK: 'areaAttack',
 };
 
 export const AssetPaths = {
@@ -69,6 +71,7 @@ export const AssetPaths = {
   SFX_PICKUP_ITEM: 'sfx/pickup-item.mp3',
   SFX_USE_SKILL_BUFF: 'sfx/use-skill-buff.mp3',
   SFX_USE_SKILL_PROJECTILE: 'sfx/use-skill-projectile.mp3',
+  SFX_USE_SKILL_AREA_ATTACK: 'sfx/use-skill-area-attack.mp3',
   SFX_WALK: 'sfx/walk.mp3',
 };
 
@@ -85,8 +88,9 @@ export const AnimationNames = {
   GUARD: 'holding-right',
   TALK: 'interact-left',
   USE_ITEM: 'interact-right',
-  USE_SKILL_BUFF: 'interact-right',
-  USE_SKILL_PROJECTILE: 'attack-kick-right',
+  USE_SKILL_BUFF: 'interact-left',
+  USE_SKILL_PROJECTILE: 'holding-right',
+  USE_SKILL_AREA_ATTACK: 'holding-both',
   PICK_UP: 'pick-up',
 };
 

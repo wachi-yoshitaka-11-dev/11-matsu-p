@@ -33,6 +33,7 @@ export class Game {
     this.enemies = [];
     this.items = [];
     this.projectiles = [];
+    this.areaAttacks = [];
 
     this.boss = null;
     this.npcs = [];
@@ -193,6 +194,7 @@ export class Game {
       AssetPaths.SFX_USE_ITEM,
       AssetPaths.SFX_USE_SKILL_BUFF,
       AssetPaths.SFX_USE_SKILL_PROJECTILE,
+      AssetPaths.SFX_USE_SKILL_AREA_ATTACK,
       AssetPaths.SFX_WALK,
     ];
 
@@ -571,9 +573,12 @@ export class Game {
 
           if (!shouldRemove) {
             for (const enemy of this.enemies) {
-              const distance = projectile.mesh.position.distanceTo(
-                enemy.mesh.position
-              );
+              // 敵の胴体部分（中心から上に0.5ユニット）で当たり判定
+              const enemyHitPosition = enemy.mesh.position.clone();
+              enemyHitPosition.y += 0.5;
+
+              const distance =
+                projectile.mesh.position.distanceTo(enemyHitPosition);
               const hitRange = this.data.skills?.projectile?.hitRange || 1.0;
               if (distance < hitRange) {
                 enemy.takeDamage(projectile.damage);
@@ -586,6 +591,16 @@ export class Game {
           if (shouldRemove) {
             this.sceneManager.remove(projectile.mesh);
             this.projectiles.splice(i, 1);
+          }
+        }
+
+        for (let i = this.areaAttacks.length - 1; i >= 0; i--) {
+          const areaAttack = this.areaAttacks[i];
+          areaAttack.update(deltaTime);
+
+          if (areaAttack.lifespan <= 0) {
+            this.sceneManager.remove(areaAttack.mesh);
+            this.areaAttacks.splice(i, 1);
           }
         }
 

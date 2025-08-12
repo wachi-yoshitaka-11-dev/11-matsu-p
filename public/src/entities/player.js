@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
 import { Projectile } from './projectile.js';
+import { AreaAttack } from './area-attack.js';
 import {
   AnimationNames,
   SkillTypes,
@@ -392,10 +393,12 @@ export class Player extends Character {
 
     const skillType = this.skills[this.currentSkillIndex];
 
-    if (skillType === SkillTypes.PROJECTILE) {
-      return this.useProjectileSkill(currentSkill);
-    } else if (skillType === SkillTypes.BUFF) {
+    if (skillType === SkillTypes.BUFF) {
       return this.useBuffSkill(currentSkill);
+    } else if (skillType === SkillTypes.PROJECTILE) {
+      return this.useProjectileSkill(currentSkill);
+    } else if (skillType === SkillTypes.AREA_ATTACK) {
+      return this.useAreaAttackSkill(currentSkill);
     }
 
     return false;
@@ -411,10 +414,16 @@ export class Player extends Character {
     const direction = new THREE.Vector3();
     this.mesh.getWorldDirection(direction);
     const skillType = this.skills[this.currentSkillIndex];
+
+    // 胸の高さ（Y座標+1.5）から前方（direction方向に0.5）に発射位置を設定
+    const startPosition = this.mesh.position.clone();
+    startPosition.y += 1.5; // 胸の高さ
+    startPosition.add(direction.clone().multiplyScalar(0.5)); // 前方に少し出す
+
     const projectile = new Projectile(
       this.game,
       skillType,
-      this.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
+      startPosition,
       direction
     );
     this.game.projectiles.push(projectile);
@@ -439,6 +448,34 @@ export class Player extends Character {
     setTimeout(() => {
       this.removeAttackBuff();
       this.removeDefenseBuff();
+      this.isUsingSkill = false;
+    }, skillData.duration);
+
+    return true;
+  }
+
+  useAreaAttackSkill(skillData) {
+    this.isUsingSkill = true;
+    this.fp -= skillData.fpCost;
+    this.playAnimation(AnimationNames.USE_SKILL_AREA_ATTACK);
+    this.game.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
+
+    // AreaAttackオブジェクトを作成
+    const skillType = this.skills[this.currentSkillIndex];
+    const areaAttack = new AreaAttack(
+      this.game,
+      skillType,
+      this.mesh.position.clone()
+    );
+
+    // ゲームの範囲攻撃配列に追加（projectilesと同様の管理）
+    if (!this.game.areaAttacks) {
+      this.game.areaAttacks = [];
+    }
+    this.game.areaAttacks.push(areaAttack);
+    this.game.sceneManager.add(areaAttack.mesh);
+
+    setTimeout(() => {
       this.isUsingSkill = false;
     }, skillData.duration);
 
