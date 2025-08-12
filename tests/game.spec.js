@@ -697,7 +697,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     }
   });
 
-  test('should implement lock-on system with wheel click and Q key', async ({
+  test('should implement lock-on system with wheel click and mouse wheel', async ({
     page,
   }) => {
     await setupNetworkRoutes(page);
@@ -732,7 +732,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     });
 
     // Test wheel click lock-on
-    await page.mouse.click(400, 300, { button: 'middle' });
+    await page.locator('canvas').click({ button: 'middle' });
 
     await page.waitForFunction(
       () => {
@@ -759,27 +759,37 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     expect(lockOnState.hasLockedTarget).toBe(true);
     expect(lockOnState.targetIsEnemy).toBe(true);
 
-    // Test Q key target switching (if multiple enemies)
+    // Test mouse wheel target switching (if multiple enemies)
     const enemyCount = await page.evaluate(
       () => window.game?.enemies?.length || 0
     );
 
     if (enemyCount > 1) {
-      const initialTarget = await page.evaluate(
-        () => window.game?.player?.lockedTarget
+      const initialTargetId = await page.evaluate(
+        () => window.game?.player?.lockedTarget?.mesh?.uuid || null
       );
 
-      await page.keyboard.press('KeyQ');
+      // マウスホイールダウンでターゲット切り替え（次へ）
+      await page.mouse.wheel(0, 100);
       await page.waitForTimeout(100);
 
-      const newTarget = await page.evaluate(
-        () => window.game?.player?.lockedTarget
+      const nextTargetId = await page.evaluate(
+        () => window.game?.player?.lockedTarget?.mesh?.uuid || null
       );
-      expect(newTarget !== initialTarget).toBe(true);
+      expect(nextTargetId).not.toBe(initialTargetId);
+
+      // マウスホイールアップでターゲット切り替え（前へ）
+      await page.mouse.wheel(0, -100);
+      await page.waitForTimeout(100);
+
+      const prevTargetId = await page.evaluate(
+        () => window.game?.player?.lockedTarget?.mesh?.uuid || null
+      );
+      expect(prevTargetId).not.toBe(nextTargetId);
     }
 
     // Test lock-on release (wheel click again)
-    await page.mouse.click(400, 300, { button: 'middle' });
+    await page.locator('canvas').click({ button: 'middle' });
 
     await page.waitForFunction(
       () => {

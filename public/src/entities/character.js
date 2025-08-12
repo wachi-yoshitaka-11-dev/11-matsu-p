@@ -1,33 +1,23 @@
 import * as THREE from 'three';
+import { BaseEntity } from './base-entity.js';
 import { PhysicsComponent } from '../core/components/physics-component.js';
 import {
   EffectColors,
   Fall,
   AnimationNames,
-  AssetNames,
+  AssetPaths,
 } from '../utils/constants.js';
-import { applyTextureToObject } from '../utils/model-utils.js';
 
-export class Character {
-  constructor(game, geometryOrModel, material, options = {}) {
-    this.game = game;
+export class Character extends BaseEntity {
+  constructor(game, type, data, geometryOrModel, material, options = {}) {
+    super(game, type, data, geometryOrModel, material, options);
 
     if (geometryOrModel instanceof THREE.Group) {
-      this.mesh = geometryOrModel;
       this.mixer = new THREE.AnimationMixer(this.mesh);
-      this.animations = game.assetLoader.getAsset(
-        `${options.modelName}-animations`
-      );
+      this.animations = game.assetLoader.getAnimations(options.modelName);
       if (this.animations && this.animations.length > 0) {
         this.playAnimation(AnimationNames.IDLE);
       }
-
-      const texture = game.assetLoader.getAsset(options.textureName);
-      if (texture) {
-        applyTextureToObject(this.mesh, texture);
-      }
-    } else {
-      this.mesh = new THREE.Mesh(geometryOrModel, material);
     }
     this.currentAnimationName = null;
 
@@ -193,7 +183,7 @@ export class Character {
 
     this.hp -= amount;
     this.showDamageEffect();
-    this.game.playSound(AssetNames.SFX_DAMAGE);
+    this.game.playSound(AssetPaths.SFX_DAMAGE);
     if (this.hp <= 0) {
       this.hp = 0;
       this.isDead = true;
@@ -221,38 +211,12 @@ export class Character {
     }
   }
 
-  getPosition() {
-    return this.mesh.position;
-  }
-
-  placeOnGround(x, z) {
-    const groundY = this.game.field.getHeightAt(x, z);
-
-    const bbox = new THREE.Box3().setFromObject(this.mesh);
-    const offsetToBottom = bbox.min.y - this.mesh.position.y;
-
-    this.mesh.position.set(x, groundY - offsetToBottom, z);
-  }
-
   dispose() {
-    if (this.mesh instanceof THREE.Group) {
-      this.mesh.traverse((object) => {
-        if (object.isMesh) {
-          object.geometry?.dispose();
-          if (Array.isArray(object.material)) {
-            object.material.forEach((mat) => mat.dispose());
-          } else {
-            object.material?.dispose();
-          }
-        }
-      });
-    } else {
-      this.mesh.geometry?.dispose();
-      this.mesh.material?.dispose();
-    }
-
-    if (this.mesh.parent) {
-      this.mesh.parent.remove(this.mesh);
-    }
+    super.dispose();
+    this.clearEffectTimeout();
+    this.physics = null;
+    this.mixer = null;
+    this.animations = null;
+    this.originalColors.clear();
   }
 }

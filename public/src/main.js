@@ -2,10 +2,16 @@ function createClickToStartScreen() {
   const clickContainer = document.createElement('div');
   clickContainer.id = 'click-to-start-screen';
 
+  const sparklesEffect = document.createElement('div');
+  sparklesEffect.id = 'sparkles-effect';
+  sparklesEffect.setAttribute('aria-hidden', 'true');
+  sparklesEffect.style.pointerEvents = 'none';
+
   const clickText = document.createElement('div');
-  clickText.className = 'click-text';
+  clickText.classList.add('click-text');
   clickText.textContent = 'タッチしてはじめる';
 
+  clickContainer.appendChild(sparklesEffect);
   clickContainer.appendChild(clickText);
   document.body.appendChild(clickContainer);
 
@@ -20,7 +26,7 @@ function createClickToStartScreen() {
       console.warn('AudioContext initialization failed:', error);
     }
 
-    clickContainer.style.display = 'none';
+    clickContainer.classList.add('hidden');
     clickContainer.remove();
 
     startGame();

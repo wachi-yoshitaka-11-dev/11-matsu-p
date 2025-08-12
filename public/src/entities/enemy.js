@@ -1,44 +1,48 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { AssetNames, AnimationNames } from '../utils/constants.js';
+import { AssetPaths, AnimationNames } from '../utils/constants.js';
 
 export class Enemy extends Character {
-  constructor(game, player, position, options = {}) {
-    if (!player) {
-      throw new Error('Player parameter is required for Enemy');
-    }
+  constructor(game, enemyType, position, options = {}) {
     if (!position || position.x === undefined || position.z === undefined) {
       throw new Error('Valid position with x and z coordinates is required');
     }
+    if (!options.player) {
+      throw new Error('Player parameter is required in options for Enemy');
+    }
 
-    const model = game.assetLoader.getAsset(AssetNames.ENEMY_MODEL);
+    const enemyData = game.data.enemies[enemyType];
+    if (!enemyData) {
+      throw new Error(`Enemy type "${enemyType}" not found in enemies data`);
+    }
+    const modelName = enemyData.model.replace('.glb', '');
+    const model = game.assetLoader.getModel(modelName);
     if (model) {
-      super(game, model.clone(), null, {
-        hp: game.data.enemies.grunt.hp,
-        speed: game.data.enemies.grunt.speed,
-        modelName: AssetNames.ENEMY_MODEL,
-        textureName: AssetNames.ENEMY_TEXTURE,
+      super(game, enemyType, enemyData, model.clone(), null, {
+        hp: enemyData.hp,
+        speed: enemyData.speed,
+        modelName: modelName,
+        textureName: enemyData.texture.replace('.png', ''),
       });
     } else {
       const geometry = new THREE.BoxGeometry(0.6, 1.2, 0.6);
       const material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-      super(game, geometry, material, {
-        hp: game.data.enemies.grunt.hp,
-        speed: game.data.enemies.grunt.speed,
+      super(game, enemyType, enemyData, geometry, material, {
+        hp: enemyData.hp,
+        speed: enemyData.speed,
       });
     }
 
-    this.player = player;
+    this.player = options.player;
 
     this.placeOnGround(position.x, position.z);
 
-    this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
-    this.experience = this.game.data.enemies.grunt.experience;
+    this.attackCooldown = this.data.attackCooldown;
+    this.experience = this.data.experience;
     this.isAttacking = false;
 
-    // Initialize death animation properties
     this.deathAnimationStartTime = null;
-    this.deathAnimationDuration = 2000; // 2 seconds
+    this.deathAnimationDuration = 2000;
     this.readyForRemoval = false;
 
     if (this.mixer) {
@@ -63,7 +67,7 @@ export class Enemy extends Character {
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
 
-    if (distance > this.game.data.enemies.grunt.attackRange) {
+    if (distance > this.data.attackRange) {
       const direction = new THREE.Vector3()
         .subVectors(this.player.mesh.position, this.mesh.position)
         .normalize();
@@ -74,12 +78,9 @@ export class Enemy extends Character {
     this.mesh.lookAt(this.player.mesh.position);
 
     this.attackCooldown -= deltaTime;
-    if (
-      distance <= this.game.data.enemies.grunt.attackRange &&
-      this.attackCooldown <= 0
-    ) {
+    if (distance <= this.data.attackRange && this.attackCooldown <= 0) {
       this.attack();
-      this.attackCooldown = this.game.data.enemies.grunt.attackCooldown;
+      this.attackCooldown = this.data.attackCooldown;
     }
   }
 
@@ -90,7 +91,7 @@ export class Enemy extends Character {
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
 
-    if (distance > this.game.data.enemies.grunt.attackRange) {
+    if (distance > this.data.attackRange) {
       this.playAnimation(AnimationNames.WALK);
     } else {
       this.playAnimation(AnimationNames.IDLE);
@@ -98,6 +99,7 @@ export class Enemy extends Character {
   }
 
   attack() {
+    this.isAttacking = true;
     this.playAnimation(AnimationNames.ATTACK_WEAK);
     const toPlayer = new THREE.Vector3()
       .subVectors(this.player.mesh.position, this.mesh.position)
@@ -111,10 +113,9 @@ export class Enemy extends Character {
 
     if (isGuarded) {
       this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
-      this.game.playSound(AssetNames.SFX_GUARD);
+      this.game.playSound(AssetPaths.SFX_GUARD);
     } else {
-      this.player.takeDamage(this.game.data.enemies.grunt.damage);
-      this.game.playSound(AssetNames.SFX_DAMAGE);
+      this.player.takeDamage(this.data.damage);
     }
   }
 
@@ -124,7 +125,6 @@ export class Enemy extends Character {
     const elapsedTime = Date.now() - this.deathAnimationStartTime;
     const progress = Math.min(elapsedTime / this.deathAnimationDuration, 1);
 
-    // Fade out effect during death animation
     const opacity = 1 - progress;
     this.mesh.traverse((object) => {
       if (object.isMesh && object.material) {
@@ -140,7 +140,6 @@ export class Enemy extends Character {
       }
     });
 
-    // Mark as ready for removal when animation is complete
     if (progress >= 1) {
       this.readyForRemoval = true;
     }
@@ -148,9 +147,8 @@ export class Enemy extends Character {
 
   onDeath() {
     this.playAnimation(AnimationNames.DIE);
-    this.game.playSound(AssetNames.SFX_KILL);
+    this.game.playSound(AssetPaths.SFX_KILL);
 
-    // Start death animation timing
     this.deathAnimationStartTime = Date.now();
   }
 }

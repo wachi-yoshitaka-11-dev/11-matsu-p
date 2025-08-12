@@ -6,7 +6,17 @@ export class AssetLoader {
     this.gltfLoader = new GLTFLoader();
     this.audioLoader = new THREE.AudioLoader();
     this.textureLoader = new THREE.TextureLoader();
-    this.assets = {};
+
+    // データ系
+    this.json = {};
+
+    // 3Dアセット系
+    this.models = {};
+    this.animations = {};
+    this.textures = {};
+
+    // オーディオ系
+    this.audio = {};
   }
 
   async loadTexture(name, path) {
@@ -16,7 +26,7 @@ export class AssetLoader {
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
       texture.flipY = false;
-      this.assets[name] = texture;
+      this.textures[name] = texture;
       return texture;
     } catch (error) {
       console.error(`Error loading texture ${path}:`, error);
@@ -42,9 +52,9 @@ export class AssetLoader {
         }
       });
 
-      this.assets[name] = gltf.scene;
+      this.models[name] = gltf.scene;
       if (gltf.animations && gltf.animations.length > 0) {
-        this.assets[`${name}-animations`] = gltf.animations;
+        this.animations[name] = gltf.animations;
       }
       return gltf.scene;
     } catch (error) {
@@ -56,7 +66,7 @@ export class AssetLoader {
   async loadAudio(name, path) {
     try {
       const buffer = await this.audioLoader.loadAsync(path);
-      this.assets[name] = buffer;
+      this.audio[name] = buffer;
       return buffer;
     } catch (error) {
       console.error(`Error loading audio ${path}:`, error);
@@ -64,17 +74,29 @@ export class AssetLoader {
     }
   }
 
-  getAsset(name) {
-    if (!(name in this.assets)) {
-      console.warn(`Asset '${name}' not found in cache`);
-      return null;
-    }
-    return this.assets[name];
+  getModel(name) {
+    return this.models[name] || null;
+  }
+
+  getTexture(name) {
+    return this.textures[name] || null;
+  }
+
+  getAudio(name) {
+    return this.audio[name] || null;
+  }
+
+  getJSON(name) {
+    return this.json[name] || null;
+  }
+
+  getAnimations(name) {
+    return this.animations[name] || null;
   }
 
   async loadJSON(name, path) {
-    if (this.assets[name]) {
-      return this.assets[name];
+    if (this.json[name]) {
+      return this.json[name];
     }
     try {
       const response = await fetch(path);
@@ -82,7 +104,7 @@ export class AssetLoader {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      this.assets[name] = data;
+      this.json[name] = data;
       return data;
     } catch (error) {
       console.error(`Error loading JSON ${path}:`, error);

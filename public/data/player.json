@@ -1,4 +1,7 @@
 {
+  "image": "players/player.png",
+  "model": "players/player.glb",
+  "texture": "players/player.png",
   "maxHp": 100,
   "maxFp": 50,
   "maxStamina": 100,
@@ -24,8 +27,9 @@
   "rollDistance": 4.0,
   "rollingSpeed": 8,
   "backStepSpeed": 6,
+  "backStepDuration": 300,
 
-  "staminaRegenRate": 5,
+  "staminaRegenRate": 15,
   "staminaCostJump": 10,
   "staminaCostDash": 5,
   "staminaCostRoll": 20,

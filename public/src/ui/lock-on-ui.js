@@ -19,7 +19,7 @@ export class LockOnUI {
     this.hideLockOnTarget(); // Hide any existing target first
 
     const indicator = document.createElement('div');
-    indicator.className = 'lock-on-target';
+    indicator.classList.add('lock-on-target');
 
     const container = document.querySelector('#lock-on-container');
     container.appendChild(indicator);
@@ -45,9 +45,11 @@ export class LockOnUI {
         if (position) {
           indicator.style.left = position.x + 'px';
           indicator.style.top = position.y + 'px';
-          indicator.style.display = 'block';
+          indicator.classList.remove('hidden');
+          indicator.classList.add('visible');
         } else {
-          indicator.style.display = 'none';
+          indicator.classList.add('hidden');
+          indicator.classList.remove('visible');
         }
       } else {
         // Remove indicator if enemy is dead or invalid

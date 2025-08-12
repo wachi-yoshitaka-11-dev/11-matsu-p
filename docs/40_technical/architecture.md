@@ -76,6 +76,24 @@ src/
   - 関数・変数名: `camelCase` (例: `handleClick`)
 - **モジュール:** ES Modules (`import`/`export`) を使用する。
 
+### UI表示制御規約
+
+- **重要:** UI要素の表示/非表示制御は、`style.display`を直接操作するのではなく、CSSクラスを使用する
+- **使用するクラス:**
+  - `hidden`: 要素を非表示にする
+  - `visible`: 要素を表示する（通常のblock/inline要素用）
+  - `visible-flex`: 要素を表示する（flex要素用）
+- **例:**
+
+  ```javascript
+  // 正しい方法
+  element.classList.remove('hidden');
+  element.classList.add('visible-flex');
+
+  // 間違った方法（使用禁止）
+  element.style.display = 'flex';
+  ```
+
 ## 7. アニメーションシステム
 
 本プロジェクトのアニメーションは、状態ベースとイベント駆動を組み合わせたハイブリッドなアプローチを採用している。
@@ -90,7 +108,7 @@ src/
 
 - **`InputController.js`:**
   - 攻撃やローリングといった、プレイヤーの入力に直接起因する一回再生のアクション（イベント）を管理する。
-  - マウスクリックやキープレスを検知した際に、直接`player.playAnimation`を呼び出し、即座にアクションアニメーションをトリガーする。
+  - クリックやキープレスを検知した際に、直接`player.playAnimation`を呼び出し、即座にアクションアニメーションをトリガーする。
 
 - **`Player.js` (イベントリスナー):**
   - `AnimationMixer`の`finished`イベントをリッスンする。
@@ -121,3 +139,80 @@ src/
   - シーケンス中は、`Game.gameState` を新しい状態（例: `GameState.SEQUENCE`）に設定し、プレイヤーの入力や通常のゲームロジックの更新を停止する。
   - シーケンスの進行は、時間経過や特定のアニメーション完了イベントに基づいて制御する。
   - シーケンス終了後、ゲーム状態を元に戻し、次の画面へ遷移させる。
+
+## 10. コーディング規約
+
+### 10.1. スタイルとUI設計規約
+
+- **CSS分離:** インラインスタイル（`style.cssText`）の使用を避け、すべてのスタイルを`public/styles/style.css`に定義する
+- **クラスベーススタイル:** HTML要素にはIDまたはクラス名を付与し、CSSで一元管理する
+- **スタイル命名規約:**
+  - ID: `kebab-case` (例: `stage-info`, `exit-prompt`)
+  - クラス: `kebab-case` (例: `.stage-loading`, `.equipment-slot`)
+
+### 10.2. ローカライゼーション規約
+
+- **メッセージ外部化:** ハードコードされたユーザー向けメッセージを`public/data/localization.json`に移動する
+- **localizationの使用:**
+
+  ```javascript
+  // ❌ 悪い例
+  element.textContent = 'ステージ情報';
+
+  // ✅ 良い例
+  element.textContent = localization.getText('stages.info');
+  ```
+
+- **プレースホルダー対応:** 動的テキストには`{0}`, `{1}`のプレースホルダーを使用
+
+  ```javascript
+  // localization.json
+  "enemiesRemaining": "敵を倒そう (残り: {0})"
+
+  // JavaScript
+  const text = localization.getText('stages.enemiesRemaining').replace('{0}', count);
+  ```
+
+### 10.3. ログメッセージ規約
+
+- **言語統一:** すべてのコンソールログメッセージは英語で記述する
+- **ログレベル:**
+  - `console.log()`: 正常な処理の完了や状態変更
+  - `console.warn()`: 警告レベルの問題
+  - `console.error()`: エラーや例外的な状況
+- **メッセージ形式:**
+
+  ```javascript
+  // ✅ 良い例
+  console.log(`Stage "${stage.name}" loaded successfully`);
+  console.error(`Failed to load stage "${stage.name}":`, error);
+
+  // ❌ 悪い例
+  console.log(`ステージ "${stage.name}" をロードしました`);
+  ```
+
+### 10.4. UI要素の作成規約
+
+- **DOM要素作成:** UI要素はJavaScriptで動的作成し、CSSクラスを適用する
+- **要素識別:** 重要なUI要素には一意のIDを設定する
+- **階層構造:** 論理的な親子関係を明確にする
+
+  ```javascript
+  // ✅ 良い例
+  const container = document.createElement('div');
+  container.id = 'stage-info';
+
+  const title = document.createElement('div');
+  title.id = 'current-stage-name';
+  title.textContent = localization.getText('stages.info');
+
+  container.appendChild(title);
+  ```
+
+### 10.5. エラーハンドリング規約
+
+- **try-catch使用:** 非同期処理や外部データアクセスには必ずtry-catchを使用
+- **フォールバック実装:** エラー時の代替処理を用意する
+- **ユーザー通知:** 必要に応じてユーザーにエラー状況を通知する（ローディング画面など）
+
+この規約に従うことで、コードの保守性、国際化対応、および開発者体験の向上を図る。

@@ -1,10 +1,16 @@
 import { localization } from '../utils/localization.js';
+import { AssetPaths } from '../utils/constants.js';
+
+const MODAL_TYPES = {
+  CONTROLS: 'controls',
+};
 
 export class PauseMenu {
   constructor(game) {
     this.game = game;
     this.container = document.createElement('div');
     this.container.id = 'pause-menu';
+    this.currentActiveModal = null;
 
     this.title = document.createElement('h1');
     this.title.textContent = localization.getText('messages.gamePaused');
@@ -13,25 +19,164 @@ export class PauseMenu {
     this.resumeButton = document.createElement('button');
     this.resumeButton.textContent = localization.getText('ui.resume');
     this.resumeButton.addEventListener('click', () => {
+      this.game.playSound(AssetPaths.SFX_CLICK);
       this.game.togglePause();
       this.game.setPauseMenuVisibility(false);
-      // Re-evaluate key states to sync with actual keyboard state
       this.game.inputController.reevaluateKeyStates();
     });
     this.container.appendChild(this.resumeButton);
 
+    this.controlsButton = document.createElement('button');
+    this.controlsButton.type = 'button';
+    this.controlsButton.setAttribute('aria-haspopup', 'dialog');
+    this.controlsButton.textContent = localization.getText('ui.controls');
+    this.controlsButton.addEventListener('click', () => {
+      this.game.playSound(AssetPaths.SFX_CLICK);
+      this.showModal(MODAL_TYPES.CONTROLS);
+    });
+    this.container.appendChild(this.controlsButton);
+
+    this.controlsModal = this.createControlsModal();
+    this.container.appendChild(this.controlsModal);
+
     document.body.appendChild(this.container);
+  }
+
+  createControlsModal() {
+    const modal = document.createElement('div');
+    modal.id = 'controls-modal';
+    modal.classList.add('hidden');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'controls-modal-title');
+
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('controls-modal-content');
+
+    const title = document.createElement('h2');
+    title.id = 'controls-modal-title';
+    title.textContent = localization.getText('controls.title');
+    modalContent.appendChild(title);
+
+    this.controlsList = document.createElement('div');
+    this.controlsList.id = 'controls-list';
+    modalContent.appendChild(this.controlsList);
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = localization.getText('dialog.close');
+    closeButton.addEventListener('click', () => {
+      this.game.playSound(AssetPaths.SFX_CLICK);
+      this.hideModal(MODAL_TYPES.CONTROLS);
+    });
+    modalContent.appendChild(closeButton);
+
+    modal.appendChild(modalContent);
+    return modal;
+  }
+
+  showModal(modalType) {
+    switch (modalType) {
+      case MODAL_TYPES.CONTROLS:
+        this.controlsModal.classList.remove('hidden');
+        this.controlsModal.classList.add('visible-flex');
+        if (!this.controlsData) {
+          this.fetchAndDisplayControls();
+        }
+        break;
+    }
+    this.currentActiveModal = modalType;
+  }
+
+  hideModal(modalType) {
+    switch (modalType) {
+      case MODAL_TYPES.CONTROLS:
+        this.controlsModal.classList.add('hidden');
+        this.controlsModal.classList.remove('visible-flex');
+        break;
+    }
+    this.currentActiveModal = null;
+  }
+
+  hasActiveModal() {
+    return this.currentActiveModal !== null;
+  }
+
+  closeCurrentModal() {
+    if (this.currentActiveModal) {
+      this.hideModal(this.currentActiveModal);
+    }
+  }
+
+  async fetchAndDisplayControls() {
+    try {
+      const response = await fetch('data/documents.json');
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch documents.json (HTTP ${response.status})`
+        );
+      }
+      const documents = await response.json();
+      this.controlsData = documents.controls;
+      this.renderControls();
+    } catch (error) {
+      console.error('Error fetching controls:', error);
+    }
+  }
+
+  renderControls() {
+    if (!this.controlsData || !this.controlsList) return;
+
+    // Clear existing content
+    this.controlsList.innerHTML = '';
+
+    const table = document.createElement('table');
+
+    for (const category of this.controlsData.categories) {
+      // Create category header row
+      const categoryRow = document.createElement('tr');
+      const categoryHeader = document.createElement('th');
+      categoryHeader.colSpan = 2;
+      categoryHeader.textContent = localization.getText(
+        `controls.${category.name}`
+      );
+      categoryRow.appendChild(categoryHeader);
+      table.appendChild(categoryRow);
+
+      // Create action rows
+      for (const action of category.actions) {
+        const actionRow = document.createElement('tr');
+
+        const actionCell = document.createElement('td');
+        actionCell.textContent = localization.getText(
+          `controls.${action.action}`
+        );
+        actionRow.appendChild(actionCell);
+
+        const keyCell = document.createElement('td');
+        keyCell.textContent = localization.getText(`controls.${action.key}`);
+        actionRow.appendChild(keyCell);
+
+        table.appendChild(actionRow);
+      }
+    }
+
+    this.controlsList.appendChild(table);
   }
 
   updateTexts() {
     this.title.textContent = localization.getText('messages.gamePaused');
     this.resumeButton.textContent = localization.getText('ui.resume');
+    this.controlsButton.textContent = localization.getText('ui.controls');
   }
 
   toggle(show) {
-    this.container.style.display = show ? 'flex' : 'none';
-
-    // Keys will naturally stop having effect during pause display
+    if (show) {
+      this.container.classList.remove('hidden');
+      this.container.classList.add('visible-flex');
+    } else {
+      this.container.classList.add('hidden');
+      this.container.classList.remove('visible-flex');
+    }
   }
 
   dispose() {

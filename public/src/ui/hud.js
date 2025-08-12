@@ -1,4 +1,4 @@
-import { GameState, AssetNames } from '../utils/constants.js';
+import { GameState, AssetPaths } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
@@ -7,7 +7,7 @@ export class Hud {
     this.player = player;
     this.container = document.createElement('div');
     this.container.id = 'hud';
-    this.container.style.display = 'none';
+    this.container.classList.add('hidden');
     document.body.appendChild(this.container);
 
     this.initialMaxHp = this.game.data.player.maxHp;
@@ -15,20 +15,17 @@ export class Hud {
     this.initialMaxStamina = this.game.data.player.maxStamina;
     this.baseBarWidth = 200;
 
-    // Create all UI components
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
 
-    // Add components to main HUD container
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
     this.container.appendChild(this.experienceDisplay);
     this.container.appendChild(this.levelUpMenu.element);
 
-    // Add death overlay to body
     document.body.appendChild(this.deathOverlay.element);
   }
 
@@ -38,39 +35,69 @@ export class Hud {
 
   createStatusBarsContainer() {
     const container = document.createElement('div');
-    container.className = 'status-bars';
+    container.classList.add('status-bars');
 
-    this.hpBar = this.createStatusBar('hp-bar', 'HP');
-    this.fpBar = this.createStatusBar('fp-bar', 'FP');
-    this.staminaBar = this.createStatusBar('stamina-bar', 'Stamina');
+    this.playerPortrait = this.createPlayerPortrait();
+    container.appendChild(this.playerPortrait);
 
-    container.appendChild(this.hpBar.element);
-    container.appendChild(this.fpBar.element);
-    container.appendChild(this.staminaBar.element);
+    const barsContainer = document.createElement('div');
+    barsContainer.classList.add('bars-container');
+
+    this.hpBar = this.createStatusBar('hp-bar');
+    this.fpBar = this.createStatusBar('fp-bar');
+    this.staminaBar = this.createStatusBar('stamina-bar');
+
+    barsContainer.appendChild(this.hpBar.element);
+    barsContainer.appendChild(this.fpBar.element);
+    barsContainer.appendChild(this.staminaBar.element);
+
+    container.appendChild(barsContainer);
 
     return container;
   }
 
-  createStatusBar(id, label) {
+  createPlayerPortrait() {
+    const portraitContainer = document.createElement('div');
+    portraitContainer.classList.add('player-portrait');
+
+    const portraitImage = document.createElement('img');
+    portraitImage.src = `./assets/images/${this.game.data.player.image}`;
+    portraitImage.alt = 'Player Portrait';
+    portraitImage.classList.add('portrait-image');
+
+    portraitImage.onerror = () => {
+      portraitImage.classList.add('hidden');
+      portraitImage.classList.remove('visible');
+      let placeholder = portraitContainer.querySelector(
+        '.portrait-placeholder'
+      );
+      if (!placeholder) {
+        placeholder = document.createElement('div');
+        placeholder.classList.add('portrait-placeholder');
+        placeholder.textContent = '?';
+        portraitContainer.appendChild(placeholder);
+      }
+    };
+
+    portraitContainer.appendChild(portraitImage);
+    return portraitContainer;
+  }
+
+  createStatusBar(id) {
     const barContainer = document.createElement('div');
     barContainer.id = id;
-    barContainer.className = 'status-bar-container';
-
-    const barLabel = document.createElement('div');
-    barLabel.className = 'status-bar-label';
-    barLabel.textContent = label;
+    barContainer.classList.add('status-bar-container');
 
     const barBackground = document.createElement('div');
-    barBackground.className = 'status-bar-background';
+    barBackground.classList.add('status-bar-background');
 
     const barFill = document.createElement('div');
-    barFill.className = 'status-bar-fill';
+    barFill.classList.add('status-bar-fill');
 
     barBackground.appendChild(barFill);
-    barContainer.appendChild(barLabel);
     barContainer.appendChild(barBackground);
 
-    return { element: barContainer, fill: barFill };
+    return { element: barContainer, fill: barFill, background: barBackground };
   }
 
   createDeathOverlay() {
@@ -130,7 +157,7 @@ export class Hud {
       if (this.player.statusPoints > 0) {
         onClick();
         this.player.statusPoints--;
-        this.game.playSound(AssetNames.SFX_CLICK);
+        this.game.playSound(AssetPaths.SFX_CLICK);
 
         if (this.player.statusPoints === 0) {
           this.player.hp = this.player.maxHp;
@@ -155,22 +182,10 @@ export class Hud {
     container.id = 'equipment-container';
 
     // Create equipment slots
-    this.equipmentWeapon = this.createEquipmentSlot(
-      localization.getText('controls.weapon'),
-      'weapon'
-    );
-    this.equipmentShield = this.createEquipmentSlot(
-      localization.getText('controls.shield'),
-      'shield'
-    );
-    this.equipmentItem = this.createEquipmentSlot(
-      localization.getText('controls.item'),
-      'item'
-    );
-    this.equipmentSkill = this.createEquipmentSlot(
-      localization.getText('controls.skill'),
-      'skill'
-    );
+    this.equipmentWeapon = this.createEquipmentSlot('weapon');
+    this.equipmentShield = this.createEquipmentSlot('shield');
+    this.equipmentItem = this.createEquipmentSlot('item');
+    this.equipmentSkill = this.createEquipmentSlot('skill');
 
     container.appendChild(this.equipmentWeapon);
     container.appendChild(this.equipmentShield);
@@ -194,16 +209,20 @@ export class Hud {
     container.appendChild(label);
     container.appendChild(value);
 
+    this.totalExperienceValue = value;
+
     return container;
   }
 
-  createEquipmentSlot(keyHint, type) {
+  createEquipmentSlot(type) {
     const element = document.createElement('div');
-    element.className = `equipment-slot ${type}`;
+    element.classList.add('equipment-slot', type);
 
     element.innerHTML = `
-      <img class="item-image" src="" alt="" style="display: none;">
-      <span class="placeholder">-</span>
+      <div class="item-icon-container">
+        <img class="item-image" src="" alt="" style="display: none;">
+        <span class="placeholder">-</span>
+      </div>
       <span class="item-name"></span>
     `;
 
@@ -215,19 +234,23 @@ export class Hud {
   // ================================================================
 
   show() {
-    this.container.style.display = 'block';
+    this.container.classList.remove('hidden');
+    this.container.classList.add('visible');
   }
 
   hide() {
-    this.container.style.display = 'none';
+    this.container.classList.add('hidden');
+    this.container.classList.remove('visible');
   }
 
   showDeathScreen() {
-    this.deathOverlay.element.style.opacity = 1;
+    this.deathOverlay.element.classList.remove('transparent');
+    this.deathOverlay.element.classList.add('opaque');
   }
 
   hideDeathScreen() {
-    this.deathOverlay.element.style.opacity = 0;
+    this.deathOverlay.element.classList.add('transparent');
+    this.deathOverlay.element.classList.remove('opaque');
   }
 
   update() {
@@ -235,23 +258,20 @@ export class Hud {
     this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
     this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
 
-    this.hpBar.element.querySelector('.status-bar-background').style.width =
-      `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
-    this.fpBar.element.querySelector('.status-bar-background').style.width =
-      `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
-    this.staminaBar.element.querySelector(
-      '.status-bar-background'
-    ).style.width =
-      `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+    this.hpBar.background.style.width = `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.background.style.width = `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.background.style.width = `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
 
     if (this.player.statusPoints > 0) {
-      this.levelUpMenu.element.style.display = 'block';
+      this.levelUpMenu.element.classList.remove('hidden');
+      this.levelUpMenu.element.classList.add('visible');
       this._updateStatusPointsDisplay();
       if (this.game.gameState === GameState.PLAYING) {
         this.game.togglePause();
       }
     } else {
-      this.levelUpMenu.element.style.display = 'none';
+      this.levelUpMenu.element.classList.add('hidden');
+      this.levelUpMenu.element.classList.remove('visible');
     }
 
     // Update equipment container
@@ -260,9 +280,13 @@ export class Hud {
     // Update experience display
     this.updateExperienceDisplay();
 
-    this.deathOverlay.element.style.display = this.player.isDead
-      ? 'flex'
-      : 'none';
+    if (this.player.isDead) {
+      this.deathOverlay.element.classList.remove('hidden');
+      this.deathOverlay.element.classList.add('visible-flex');
+    } else {
+      this.deathOverlay.element.classList.add('hidden');
+      this.deathOverlay.element.classList.remove('visible-flex');
+    }
   }
 
   // ================================================================
@@ -306,35 +330,41 @@ export class Hud {
 
       if (itemData.image) {
         imageElement.src = `./assets/images/${itemData.image}`;
-        imageElement.style.display = 'block';
-        placeholderElement.style.display = 'none';
+        imageElement.classList.remove('hidden');
+        imageElement.classList.add('visible');
+        placeholderElement.classList.add('hidden');
+        placeholderElement.classList.remove('visible');
 
         imageElement.onerror = () => {
           // 画像が見つからない場合はプレースホルダーを表示
-          imageElement.style.display = 'none';
-          placeholderElement.style.display = 'block';
+          imageElement.classList.add('hidden');
+          imageElement.classList.remove('visible');
+          placeholderElement.classList.remove('hidden');
+          placeholderElement.classList.add('visible');
           placeholderElement.textContent = '?';
         };
       } else {
         // 画像が指定されていない場合
-        imageElement.style.display = 'none';
-        placeholderElement.style.display = 'block';
+        imageElement.classList.add('hidden');
+        imageElement.classList.remove('visible');
+        placeholderElement.classList.remove('hidden');
+        placeholderElement.classList.add('visible');
         placeholderElement.textContent = '?';
       }
     } else {
       // アイテムが存在しない場合
       nameElement.textContent = '';
-      imageElement.style.display = 'none';
-      placeholderElement.style.display = 'block';
+      imageElement.classList.add('hidden');
+      imageElement.classList.remove('visible');
+      placeholderElement.classList.remove('hidden');
+      placeholderElement.classList.add('visible');
       placeholderElement.textContent = '-';
     }
   }
 
   updateExperienceDisplay() {
-    const totalExpElement = document.getElementById('total-experience');
-    if (totalExpElement) {
-      totalExpElement.textContent = this.player.experience.toLocaleString();
-    }
+    this.totalExperienceValue.textContent =
+      this.player.experience.toLocaleString();
   }
 
   // ================================================================

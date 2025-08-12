@@ -1,8 +1,9 @@
 {
   "projectile": {
     "name": "魔法弾",
-    "model": "projectile.glb",
-    "image": "projectile.png",
+    "model": "skills/projectile.glb",
+    "texture": "skills/projectile.png",
+    "image": "skills/projectile.png",
     "description": "魔力を込めた遠距離攻撃",
     "fpCost": 20,
     "duration": 1000,
@@ -13,8 +14,9 @@
   },
   "buff": {
     "name": "強化",
-    "model": "buff.glb",
-    "image": "buff.png",
+    "model": "skills/buff.glb",
+    "texture": "skills/buff.png",
+    "image": "skills/buff.png",
     "description": "攻撃力と防御力を一時的に強化",
     "fpCost": 30,
     "duration": 10000,

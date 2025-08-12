@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { AnimationNames, AssetNames, GameState } from '../utils/constants.js';
+import { AnimationNames, AssetPaths, GameState } from '../utils/constants.js';
 
 export class InputController {
   constructor(player, camera, game, canvas) {
@@ -9,6 +9,8 @@ export class InputController {
     this.canvas = canvas;
     this.keys = {};
     this.mouse = { x: 0, y: 0, wheelDelta: 0 };
+    this.lastWheelTime = 0;
+    this.wheelCooldown = 150;
 
     this.cameraYaw = 0;
     this.cameraPitch = 0;
@@ -23,8 +25,8 @@ export class InputController {
   }
 
   _getWeaponParams() {
-    const weaponName = this.player.weapons[this.player.currentWeaponIndex];
-    const weaponData = this.game.data.weapons[weaponName];
+    const weaponType = this.player.weapons[this.player.currentWeaponIndex];
+    const weaponData = this.game.data.weapons[weaponType];
     if (weaponData) {
       return {
         attackRange: weaponData.attackRange,
@@ -57,14 +59,41 @@ export class InputController {
 
   setupEventListeners() {
     document.addEventListener('keydown', (e) => {
+      // ゲーム関連のキーの組み合わせでブラウザのデフォルト動作を防ぐ（ゲーム操作時のみ）
+      const isGameTarget =
+        document.pointerLockElement === this.canvas ||
+        e.target === this.canvas ||
+        this.game.gameState === GameState.PLAYING;
+      const isFormField =
+        e.target instanceof HTMLElement &&
+        (e.target.tagName === 'INPUT' ||
+          e.target.tagName === 'TEXTAREA' ||
+          e.target.isContentEditable);
+      if (
+        isGameTarget &&
+        !isFormField &&
+        (e.ctrlKey || e.metaKey) &&
+        ['KeyW', 'KeyD', 'KeyA', 'KeyS', 'KeyE', 'KeyR', 'KeyF'].includes(
+          e.code
+        )
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
       if (e.code === 'Escape') {
+        e.preventDefault();
         if (this.game.gameState === GameState.PLAYING) {
           this.game.togglePause();
           this.game.setPauseMenuVisibility(true);
         } else if (this.game.gameState === GameState.PAUSED) {
-          this.game.togglePause();
-          this.game.setPauseMenuVisibility(false);
-          this.reevaluateKeyStates();
+          if (this.game.pauseMenu && this.game.pauseMenu.hasActiveModal()) {
+            this.game.pauseMenu.closeCurrentModal();
+          } else {
+            this.game.togglePause();
+            this.game.setPauseMenuVisibility(false);
+            this.reevaluateKeyStates();
+          }
         }
         this.keys[e.code] = false;
         return;
@@ -112,15 +141,27 @@ export class InputController {
       (e) => {
         if (!this._canProcessInput()) return;
         this.mouse.wheelDelta = e.deltaY;
+
+        // マウスホイールでのロックオンターゲット切り替え
+        const isGameWheelContext =
+          document.pointerLockElement === this.canvas ||
+          e.target === this.canvas;
+        if (isGameWheelContext && this.player.lockedTarget && e.deltaY !== 0) {
+          e.preventDefault();
+          // deltaY > 0: ホイールダウン（下方向）= 次のターゲット
+          // deltaY < 0: ホイールアップ（上方向）= 前のターゲット
+          const direction = e.deltaY > 0 ? 1 : -1;
+          this.switchLockOnTarget(direction);
+        }
       },
       { passive: false }
     );
 
     this.canvas.addEventListener('click', () => {
+      if (!this._canProcessInput()) return;
       if (typeof window.playwright === 'undefined') {
         this.canvas.requestPointerLock();
       }
-      if (!this._canProcessInput()) return;
     });
 
     this.canvas.addEventListener('contextmenu', (e) => {
@@ -151,14 +192,14 @@ export class InputController {
             this.player.isAttackingWeak = false;
             this.player.showAttackEffect();
             this.player.playAnimation(AnimationNames.ATTACK_STRONG);
-            this.game.playSound(AssetNames.SFX_ATTACK_STRONG);
+            this.game.playSound(AssetPaths.SFX_ATTACK_STRONG);
             this.performAttack(params.damageStrong, params.attackRangeStrong);
           } else {
             this.player.isAttackingWeak = true;
             this.player.isAttackingStrong = false;
             this.player.showAttackEffect();
             this.player.playAnimation(AnimationNames.ATTACK_WEAK);
-            this.game.playSound(AssetNames.SFX_ATTACK_WEAK);
+            this.game.playSound(AssetPaths.SFX_ATTACK_WEAK);
             this.performAttack(params.damage, params.attackRange);
           }
         }
@@ -251,11 +292,6 @@ export class InputController {
         (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
     }
 
-    if (this.keys['KeyQ'] && this.player.lockedTarget) {
-      this.switchLockOnTarget();
-      this.keys['KeyQ'] = false;
-    }
-
     if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
       const targetPosition = this.player.lockedTarget.mesh.position;
       const playerPosition = this.player.mesh.position;
@@ -342,7 +378,7 @@ export class InputController {
       this.player.physics.velocity.y = this.game.data.player.jumpPower;
       this.player.stamina -= this.game.data.player.staminaCostJump;
       this.player.playAnimation(AnimationNames.JUMP);
-      this.game.playSound(AssetNames.SFX_JUMP);
+      this.game.playSound(AssetPaths.SFX_JUMP);
 
       setTimeout(() => {
         this.player.isJumping = false;
@@ -372,7 +408,7 @@ export class InputController {
       this.player.isRolling = true;
       this.player.stamina -= this.game.data.player.staminaCostRolling;
       this.player.playAnimation(AnimationNames.ROLLING);
-      this.game.playSound(AssetNames.SFX_ROLLING);
+      this.game.playSound(AssetPaths.SFX_ROLLING);
 
       const direction = this.getMovementDirection();
       if (direction.length() > 0) {
@@ -381,6 +417,14 @@ export class InputController {
         this.player.physics.velocity.x = direction.x * rollingSpeed;
         this.player.physics.velocity.z = direction.z * rollingSpeed;
       }
+
+      setTimeout(() => {
+        if (this.player.isRolling) {
+          this.player.isRolling = false;
+          this.player.physics.velocity.x = 0;
+          this.player.physics.velocity.z = 0;
+        }
+      }, this.game.data.player.rollDuration || 500);
     }
   }
 
@@ -393,27 +437,26 @@ export class InputController {
       this.player.isBackStepping = true;
       this.player.stamina -= this.game.data.player.staminaCostBackStep;
       this.player.playAnimation(AnimationNames.BACK_STEP);
-      this.game.playSound(AssetNames.SFX_BACK_STEP);
+      this.game.playSound(AssetPaths.SFX_BACK_STEP);
 
       const playerForward = new THREE.Vector3(0, 0, 1);
       playerForward.applyQuaternion(this.player.mesh.quaternion);
       playerForward.y = 0;
       playerForward.normalize();
 
-      // Move backward relative to player's facing direction (negate for backward)
       const direction = playerForward.clone().negate();
 
       const backStepSpeed = this.game.data.player.backStepSpeed || 6;
       this.player.physics.velocity.x = direction.x * backStepSpeed;
       this.player.physics.velocity.z = direction.z * backStepSpeed;
 
-      // Set timer to stop backStep movement after a set duration
       setTimeout(() => {
         if (this.player.isBackStepping) {
+          this.player.isBackStepping = false;
           this.player.physics.velocity.x = 0;
           this.player.physics.velocity.z = 0;
         }
-      }, this.game.data.player.rollDuration || 500); // Use same duration as rolling
+      }, this.game.data.player.backStepDuration || 500);
     }
   }
 
@@ -425,7 +468,6 @@ export class InputController {
     if (this.keys['KeyA']) direction.x -= 1;
     if (this.keys['KeyD']) direction.x += 1;
 
-    // Apply camera rotation to movement direction
     if (direction.length() > 0) {
       direction.applyQuaternion(
         new THREE.Quaternion().setFromEuler(
@@ -439,26 +481,32 @@ export class InputController {
 
   handleLockOnToggle() {
     if (this.player.lockedTarget) {
-      // Release lock-on
       this.player.lockedTarget = null;
       if (this.game.lockOnUI) {
         this.game.lockOnUI.hideLockOnTarget();
       }
     } else {
-      // Find nearest enemy to lock onto
       const nearestEnemy = this.findNearestEnemy();
       if (nearestEnemy) {
         this.player.lockedTarget = nearestEnemy;
         if (this.game.lockOnUI) {
           this.game.lockOnUI.showLockOnTarget(nearestEnemy);
         }
-        this.game.playSound(AssetNames.SFX_LOCK_ON);
+        this.game.playSound(AssetPaths.SFX_LOCK_ON);
       }
     }
   }
 
-  switchLockOnTarget() {
+  switchLockOnTarget(direction) {
     if (!this.player.lockedTarget) return;
+    if (direction === 0) return; // 方向が0の場合は何もしない
+
+    // ホイール操作のクールダウンチェック
+    const now = Date.now();
+    if (now - this.lastWheelTime < this.wheelCooldown) {
+      return;
+    }
+    this.lastWheelTime = now;
 
     const enemies = this.game.enemies.filter((enemy) => !enemy.isDead);
     if (enemies.length <= 1) return;
@@ -466,14 +514,21 @@ export class InputController {
     const currentIndex = enemies.indexOf(this.player.lockedTarget);
     if (currentIndex === -1) return;
 
-    const nextIndex = (currentIndex + 1) % enemies.length;
+    // direction: 1 = 次へ, -1 = 前へ
+    let nextIndex;
+    if (direction > 0) {
+      nextIndex = (currentIndex + 1) % enemies.length;
+    } else {
+      nextIndex = (currentIndex - 1 + enemies.length) % enemies.length;
+    }
+
     const nextTarget = enemies[nextIndex];
 
     this.player.lockedTarget = nextTarget;
     if (this.game.lockOnUI) {
       this.game.lockOnUI.showLockOnTarget(nextTarget);
     }
-    this.game.playSound(AssetNames.SFX_LOCK_ON);
+    this.game.playSound(AssetPaths.SFX_LOCK_ON);
   }
 
   findNearestEnemy() {
@@ -501,7 +556,6 @@ export class InputController {
       if (this.player.mesh.position.distanceTo(enemy.mesh.position) < range) {
         const finalDamage = damage * this.player.attackBuffMultiplier;
 
-        // Check if enemy is guarding and reduce damage
         if (enemy.isGuarding && typeof enemy.getShieldDefense === 'function') {
           const shieldDefense = enemy.getShieldDefense();
           const reducedDamage = Math.max(1, finalDamage - shieldDefense);
@@ -513,17 +567,13 @@ export class InputController {
     });
   }
 
-  // Clear all key states (useful when pausing/unpausing)
   clearKeyStates() {
     this.keys = {};
   }
 
-  // Re-evaluate current key states based on actual keyboard state
   reevaluateKeyStates() {
-    // Create a temporary event listener to detect currently pressed keys
     const currentlyPressed = new Set();
 
-    // Listen for keydown events briefly to capture currently pressed keys
     const keydownHandler = (e) => {
       currentlyPressed.add(e.code);
     };
@@ -532,26 +582,21 @@ export class InputController {
       currentlyPressed.delete(e.code);
     };
 
-    // Add listeners temporarily
     document.addEventListener('keydown', keydownHandler);
     document.addEventListener('keyup', keyupHandler);
 
-    // After a brief delay, update our key states to match actual pressed keys
-    setTimeout(() => {
-      // Remove temporary listeners
+    requestAnimationFrame(() => {
       document.removeEventListener('keydown', keydownHandler);
       document.removeEventListener('keyup', keyupHandler);
 
-      // Update our key states to match currently pressed keys
       const allKeys = Object.keys(this.keys);
       for (const key of allKeys) {
         this.keys[key] = currentlyPressed.has(key);
       }
 
-      // Also add any newly detected pressed keys
       for (const key of currentlyPressed) {
         this.keys[key] = true;
       }
-    }, 16); // One frame delay at 60fps
+    });
   }
 }

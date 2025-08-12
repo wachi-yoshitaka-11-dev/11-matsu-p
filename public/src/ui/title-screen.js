@@ -1,9 +1,14 @@
 import { localization } from '../utils/localization.js';
+import { AssetPaths } from '../utils/constants.js';
 
 export class TitleScreen {
   constructor(onStart, skipSplashScreenDelay) {
     this.onStart = onStart;
     this.skipSplashScreenDelay = skipSplashScreenDelay;
+
+    // Bind video event handlers once
+    this._onVideoClick = this._handleVideoClick.bind(this);
+    this._onVideoEnded = this._handleVideoEnded.bind(this);
     this.container = document.createElement('div');
     this.container.id = 'title-screen';
 
@@ -11,7 +16,7 @@ export class TitleScreen {
     this.splashContainer.id = 'splash-screen';
 
     this.logoImage = document.createElement('img');
-    this.logoImage.src = './assets/images/logo.png';
+    this.logoImage.src = `./assets/images/${AssetPaths.LOGO_IMAGE}`;
     this.logoImage.id = 'splash-logo-image';
     this.splashContainer.appendChild(this.logoImage);
 
@@ -19,7 +24,7 @@ export class TitleScreen {
     this.videoContainer.id = 'splash-video-container';
 
     this.video = document.createElement('video');
-    this.video.src = './assets/videos/logo.mp4';
+    this.video.src = `./assets/videos/${AssetPaths.LOGO_VIDEO}`;
     this.video.id = 'splash-logo-video';
     this.video.playsInline = true;
 
@@ -61,37 +66,44 @@ export class TitleScreen {
   }
 
   playIntroVideo() {
-    this.videoContainer.style.display = 'flex';
+    this.videoContainer.classList.remove('hidden');
+    this.videoContainer.classList.add('visible-flex');
     this.video.play().catch((error) => {
       console.error('Video play failed:', error);
       this.hideVideo();
     });
 
-    const videoClickHandler = () => {
-      this.hideVideo();
-    };
+    this.video.addEventListener('ended', this._onVideoEnded);
+    this.video.addEventListener('click', this._onVideoClick);
+  }
 
-    const hideVideoHandler = () => {
-      this.hideVideo();
-      this.video.removeEventListener('ended', hideVideoHandler);
-      this.video.removeEventListener('click', videoClickHandler);
-    };
+  _handleVideoClick() {
+    this.hideVideo();
+  }
 
-    this.video.addEventListener('ended', hideVideoHandler);
-    this.video.addEventListener('click', videoClickHandler);
+  _handleVideoEnded() {
+    this.hideVideo();
+    this._removeVideoListeners();
+  }
+
+  _removeVideoListeners() {
+    this.video.removeEventListener('ended', this._onVideoEnded);
+    this.video.removeEventListener('click', this._onVideoClick);
   }
 
   hideVideo() {
-    this.videoContainer.className = 'logo-fade-out';
+    this._removeVideoListeners();
+    this.videoContainer.classList.add('logo-fade-out');
     setTimeout(() => {
-      this.videoContainer.style.display = 'none';
-      this.videoContainer.className = '';
+      this.videoContainer.classList.add('hidden');
+      this.videoContainer.classList.remove('logo-fade-out');
     }, 1000);
   }
 
   showSplash() {
-    this.splashContainer.style.display = 'flex';
-    this.container.style.display = 'none';
+    this.splashContainer.classList.remove('hidden');
+    this.splashContainer.classList.add('visible-flex');
+    this.container.classList.add('hidden');
     this.playIntroVideo();
   }
 
@@ -101,30 +113,30 @@ export class TitleScreen {
       this.video.currentTime = 0;
     }
 
-    this.splashContainer.className = 'logo-fade-out';
+    this.splashContainer.classList.add('logo-fade-out');
     setTimeout(() => {
-      this.splashContainer.style.display = 'none';
-      this.splashContainer.className = '';
+      this.splashContainer.classList.add('hidden');
+      this.splashContainer.classList.remove('logo-fade-out');
     }, 1000);
   }
 
   showMenu() {
-    this.splashContainer.style.display = 'none';
-    this.container.style.display = 'flex';
-    this.container.className = 'title-fade-in';
+    this.splashContainer.classList.add('hidden');
+    this.container.classList.remove('hidden');
+    this.container.classList.add('visible-flex', 'title-fade-in');
   }
 
   hideMenu() {
-    this.container.className = 'title-fade-out';
+    this.container.classList.add('title-fade-out');
     setTimeout(() => {
-      this.container.style.display = 'none';
-      this.container.className = '';
+      this.container.classList.add('hidden');
+      this.container.classList.remove('title-fade-out');
     }, 1000);
   }
 
   hideAll() {
-    this.splashContainer.style.display = 'none';
-    this.container.style.display = 'none';
+    this.splashContainer.classList.add('hidden');
+    this.container.classList.add('hidden');
   }
 
   updateTexts() {

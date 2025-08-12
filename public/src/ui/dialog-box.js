@@ -1,12 +1,12 @@
 import { localization } from '../utils/localization.js';
-import { AssetNames } from '../utils/constants.js';
+import { AssetPaths, HTMLTags } from '../utils/constants.js';
 
 export class DialogBox {
   constructor(game) {
     this.game = game;
     this.container = document.createElement('div');
     this.container.id = 'dialog-box';
-    this.container.style.display = 'none';
+    this.container.classList.add('hidden');
 
     this.messageElement = document.createElement('p');
     this.container.appendChild(this.messageElement);
@@ -32,18 +32,33 @@ export class DialogBox {
   show(message) {
     this.stopTypewriter();
 
-    const formattedMessage = message.replace(/\n/g, '<br>');
+    const formattedMessage = this.sanitizeMessage(message);
 
-    this.container.style.display = 'flex';
+    this.container.classList.remove('hidden');
+    this.container.classList.add('visible-flex');
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);
 
     this.startTypewriter(formattedMessage);
   }
 
+  // Escape all HTML but allow intentional line breaks.
+  sanitizeMessage(message) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    const escaped = message.replace(/[&<>"']/g, (ch) => map[ch]);
+    return escaped.replace(/\n/g, HTMLTags.BR);
+  }
+
   hide() {
     this.stopTypewriter();
-    this.container.style.display = 'none';
+    this.container.classList.add('hidden');
+    this.container.classList.remove('visible-flex');
 
     this.game.togglePause();
     this.game.setPauseMenuVisibility(false);
@@ -81,6 +96,7 @@ export class DialogBox {
   handleClick() {
     if (this.isTypewriting) {
       this.stopTypewriter();
+      // Safe because fullMessage is sanitized via sanitizeMessage()
       this.messageElement.innerHTML = this.fullMessage;
       this.stopTalkSound();
     } else {
@@ -98,13 +114,13 @@ export class DialogBox {
   }
 
   parseHTMLString(htmlString) {
-    // Note: This parser only handles <br> tags. Other HTML tags will be displayed as text.
+    // Note: Only handles <br> tags. Other HTML is sanitized in sanitizeMessage().
     const characters = [];
     let i = 0;
 
     while (i < htmlString.length) {
-      if (htmlString.substring(i, i + 4) === '<br>') {
-        characters.push('<br>');
+      if (htmlString.substring(i, i + 4) === HTMLTags.BR) {
+        characters.push(HTMLTags.BR);
         i += 4;
       } else {
         characters.push(htmlString[i]);
@@ -116,13 +132,17 @@ export class DialogBox {
   }
 
   startTalkSound() {
-    this.talkSound = this.game.createAudio(AssetNames.SFX_TALK, {
+    this.talkSound = this.game.createAudio(AssetPaths.SFX_TALK, {
       volume: 0.7,
       loop: true,
     });
 
     if (this.talkSound) {
-      this.talkSound.play();
+      try {
+        this.talkSound.play();
+      } catch (e) {
+        /* noop */
+      }
     }
   }
 
