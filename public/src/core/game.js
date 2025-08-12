@@ -91,19 +91,6 @@ export class Game {
     await this.loadAudio();
     await this.loadModels();
 
-    const elapsedTime = Date.now() - loadStartTime;
-    const minDisplayTime = 10000;
-    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-    if (this.splashSkipped) {
-      this.playOpeningSequence();
-    } else {
-      this.minDisplayTimeTimeoutId = setTimeout(() => {
-        this.minDisplayTimeTimeoutId = null;
-        this.playOpeningSequence();
-      }, remainingTime);
-    }
-
     this.field = new Field(this);
     this.sceneManager.add(this.field.mesh);
 
@@ -125,6 +112,20 @@ export class Game {
     );
 
     this.loadEntities();
+
+    // All initialization complete - now handle splash screen timing
+    const elapsedTime = Date.now() - loadStartTime;
+    const minDisplayTime = 10000;
+    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+    if (this.splashSkipped) {
+      this.playOpeningSequence();
+    } else {
+      this.minDisplayTimeTimeoutId = setTimeout(() => {
+        this.minDisplayTimeTimeoutId = null;
+        this.playOpeningSequence();
+      }, remainingTime);
+    }
   }
 
   async loadGameData() {
@@ -622,7 +623,6 @@ export class Game {
     if (this.minDisplayTimeTimeoutId) {
       clearTimeout(this.minDisplayTimeTimeoutId);
       this.minDisplayTimeTimeoutId = null;
-      this.playOpeningSequence();
     }
   }
 
