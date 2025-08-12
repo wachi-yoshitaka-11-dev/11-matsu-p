@@ -37,9 +37,12 @@ export class Enemy extends Character {
 
     this.placeOnGround(position.x, position.z);
 
-    this.attackCooldown = this.data.attackCooldown;
+    this.weakAttackCooldown = 0;
+    this.strongAttackCooldown = 0;
     this.experience = this.data.experience;
-    this.isAttacking = false;
+    this.isPerformingWeakAttack = false;
+    this.isPerformingStrongAttack = false;
+    this.nextAttackType = null;
 
     this.deathAnimationStartTime = null;
     this.deathAnimationDuration = 2000;
@@ -49,7 +52,10 @@ export class Enemy extends Character {
       this.mixer.addEventListener('finished', (e) => {
         const clipName = e.action.getClip().name;
         if (clipName === AnimationNames.ATTACK_WEAK) {
-          this.isAttacking = false;
+          this.isPerformingWeakAttack = false;
+        }
+        if (clipName === AnimationNames.ATTACK_STRONG) {
+          this.isPerformingStrongAttack = false;
         }
       });
     }
@@ -63,11 +69,19 @@ export class Enemy extends Character {
       return;
     }
 
+    if (this.isPerformingWeakAttack || this.isPerformingStrongAttack) {
+      return;
+    }
+
     this.updateAnimation();
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const minAttackRange = Math.min(
+      this.data.weakAttack.range,
+      this.data.strongAttack.range
+    );
 
-    if (distance > this.data.attackRange) {
+    if (distance > minAttackRange) {
       const direction = new THREE.Vector3()
         .subVectors(this.player.mesh.position, this.mesh.position)
         .normalize();
@@ -77,30 +91,83 @@ export class Enemy extends Character {
 
     this.mesh.lookAt(this.player.mesh.position);
 
-    this.attackCooldown -= deltaTime;
-    if (distance <= this.data.attackRange && this.attackCooldown <= 0) {
-      this.attack();
-      this.attackCooldown = this.data.attackCooldown;
-    }
+    this.weakAttackCooldown = Math.max(0, this.weakAttackCooldown - deltaTime);
+    this.strongAttackCooldown = Math.max(
+      0,
+      this.strongAttackCooldown - deltaTime
+    );
+
+    this.chooseAndPerformAttack(distance);
   }
 
   updateAnimation() {
-    if (this.isAttacking) {
+    if (this.isPerformingWeakAttack || this.isPerformingStrongAttack) {
       return;
     }
 
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const minAttackRange = Math.min(
+      this.data.weakAttack.range,
+      this.data.strongAttack.range
+    );
 
-    if (distance > this.data.attackRange) {
+    if (distance > minAttackRange) {
       this.playAnimation(AnimationNames.WALK);
     } else {
       this.playAnimation(AnimationNames.IDLE);
     }
   }
 
-  attack() {
-    this.isAttacking = true;
+  chooseAndPerformAttack(distance) {
+    // 次の攻撃タイプが決まっていない場合、確率で決定
+    if (this.nextAttackType === null) {
+      this.nextAttackType =
+        Math.random() < this.data.strongAttack.probability ? 'strong' : 'weak';
+    }
+
+    // 決定された攻撃タイプを実行
+    if (
+      this.nextAttackType === 'strong' &&
+      this.strongAttackCooldown <= 0 &&
+      distance <= this.data.strongAttack.range
+    ) {
+      this.performStrongAttack();
+      this.nextAttackType = null; // 次回のために攻撃タイプをリセット
+    } else if (
+      this.nextAttackType === 'weak' &&
+      this.weakAttackCooldown <= 0 &&
+      distance <= this.data.weakAttack.range
+    ) {
+      this.performWeakAttack();
+      this.nextAttackType = null; // 次回のために攻撃タイプをリセット
+    }
+  }
+
+  performWeakAttack() {
+    this.isPerformingWeakAttack = true;
+    this.weakAttackCooldown = this.data.weakAttack.cooldown;
+
     this.playAnimation(AnimationNames.ATTACK_WEAK);
+
+    setTimeout(() => {
+      this.dealDamageToPlayer(this.data.weakAttack.damage);
+      this.game.playSound(AssetPaths.SFX_ATTACK_WEAK);
+    }, this.data.weakAttack.castTime * 1000);
+  }
+
+  performStrongAttack() {
+    this.isPerformingStrongAttack = true;
+    this.strongAttackCooldown = this.data.strongAttack.cooldown;
+
+    this.playAnimation(AnimationNames.ATTACK_STRONG);
+
+    setTimeout(() => {
+      this.dealDamageToPlayer(this.data.strongAttack.damage);
+      this.game.playSound(AssetPaths.SFX_ATTACK_STRONG);
+    }, this.data.strongAttack.castTime * 1000);
+  }
+
+  dealDamageToPlayer(damage) {
     const toPlayer = new THREE.Vector3()
       .subVectors(this.player.mesh.position, this.mesh.position)
       .normalize();
@@ -115,7 +182,7 @@ export class Enemy extends Character {
       this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
       this.game.playSound(AssetPaths.SFX_GUARD);
     } else {
-      this.player.takeDamage(this.data.damage);
+      this.player.takeDamage(damage);
     }
   }
 
