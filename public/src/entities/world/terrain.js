@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BaseEntity } from './base-entity.js';
+import { BaseEntity } from '../base-entity.js';
 
 export class Terrain extends BaseEntity {
   constructor(game, terrainType, position, options = {}) {

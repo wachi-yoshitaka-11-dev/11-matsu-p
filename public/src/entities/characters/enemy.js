@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { AssetPaths, AnimationNames } from '../utils/constants.js';
+import { AssetPaths, AnimationNames } from '../../utils/constants.js';
 
 export class Enemy extends Character {
   constructor(game, enemyType, position, options = {}) {

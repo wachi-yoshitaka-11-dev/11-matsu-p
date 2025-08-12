@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Skill } from './skill.js';
-import { EffectColors } from '../utils/constants.js';
+import { EffectColors } from '../../utils/constants.js';
 
 export class AreaAttack extends Skill {
   constructor(game, areaAttackType, centerPosition) {

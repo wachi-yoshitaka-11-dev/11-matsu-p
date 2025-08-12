@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import { BaseEntity } from './base-entity.js';
-import { PhysicsComponent } from '../core/components/physics-component.js';
+import { BaseEntity } from '../base-entity.js';
+import { PhysicsComponent } from '../../core/components/physics-component.js';
 import {
   EffectColors,
   Fall,
   AnimationNames,
   AssetPaths,
-} from '../utils/constants.js';
+} from '../../utils/constants.js';
 
 export class Character extends BaseEntity {
   constructor(game, type, data, geometryOrModel, material, options = {}) {

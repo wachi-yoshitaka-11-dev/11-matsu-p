@@ -1,4 +1,4 @@
-import { BaseEntity } from './base-entity.js';
+import { BaseEntity } from '../base-entity.js';
 
 export class Skill extends BaseEntity {
   constructor(game, skillType, geometry, material, options = {}) {

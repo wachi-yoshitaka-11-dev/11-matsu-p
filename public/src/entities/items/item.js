@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BaseEntity } from './base-entity.js';
+import { BaseEntity } from '../base-entity.js';
 
 export class Item extends BaseEntity {
   constructor(game, itemType, position, options = {}) {

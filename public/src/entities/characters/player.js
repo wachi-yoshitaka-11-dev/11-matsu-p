@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { Projectile } from './projectile.js';
-import { AreaAttack } from './area-attack.js';
+import { Projectile } from '../skills/projectile.js';
+import { AreaAttack } from '../skills/area-attack.js';
 import {
   AnimationNames,
   SkillTypes,
   AssetPaths,
   MovementState,
-} from '../utils/constants.js';
+} from '../../utils/constants.js';
 
 export class Player extends Character {
   constructor(game, playerType, options = {}) {

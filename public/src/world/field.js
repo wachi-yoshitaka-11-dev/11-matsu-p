@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Fall, EnvironmentTypes } from '../utils/constants.js';
-import { Terrain } from '../entities/terrain.js';
-import { Environment } from '../entities/environment.js';
+import { Terrain } from '../entities/world/terrain.js';
+import { Environment } from '../entities/world/environment.js';
 
 export class Field {
   constructor(game) {

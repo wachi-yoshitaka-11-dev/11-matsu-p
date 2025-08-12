@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { localization } from '../utils/localization.js';
+import { localization } from '../../utils/localization.js';
 
 export class Npc extends Character {
   static PROMPT_SCALE_FACTOR = 0.01;
