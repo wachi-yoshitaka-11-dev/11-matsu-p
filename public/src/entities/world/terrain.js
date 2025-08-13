@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { BaseEntity } from './base-entity.js';
+import { BaseEntity } from '../base-entity.js';
 
 export class Terrain extends BaseEntity {
-  constructor(game, terrainType, position, options = {}) {
+  constructor(game, terrainId, position, options = {}) {
     const scale = options.scale || 1;
-    const terrainData = game.data.terrains[terrainType];
+    const terrainData = game.data.terrains[terrainId];
     if (!terrainData) {
       throw new Error(
-        `Terrain object type "${terrainType}" not found in terrain data`
+        `Terrain object ID "${terrainId}" not found in terrain data`
       );
     }
 
@@ -15,7 +15,7 @@ export class Terrain extends BaseEntity {
     const model = game.assetLoader.getModel(modelName);
 
     if (model) {
-      super(game, terrainType, terrainData, model.clone(), null, {
+      super(game, terrainId, terrainData, model.clone(), null, {
         textureName: terrainData.texture.replace('.png', ''),
       });
       this.mesh.scale.set(scale, scale, scale);
@@ -25,10 +25,10 @@ export class Terrain extends BaseEntity {
         color: 0x808080,
         wireframe: true,
       });
-      super(game, terrainType, terrainData, geometry, material);
+      super(game, terrainId, terrainData, geometry, material);
       this.mesh.scale.set(scale, scale, scale);
       console.warn(
-        `Model not found for terrain object "${terrainType}". Using fallback geometry.`
+        `Model not found for terrain object "${terrainId}". Using fallback geometry.`
       );
     }
 

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Fall, EnvironmentTypes } from '../utils/constants.js';
-import { Terrain } from '../entities/terrain.js';
-import { Environment } from '../entities/environment.js';
+import { Terrain } from '../entities/world/terrain.js';
+import { Environment } from '../entities/world/environment.js';
 
 export class Field {
   constructor(game) {
@@ -58,11 +58,11 @@ export class Field {
     this.placeObjects();
   }
 
-  _placeTerrainObjectsOfType(terrainType, count, minScale, maxScale) {
+  _placeTerrainObjectsOfType(terrainId, count, minScale, maxScale) {
     const positions = this._getRandomPositions(count);
     positions.forEach((position) => {
       const scale = Math.random() * (maxScale - minScale) + minScale;
-      const terrainObject = new Terrain(this.game, terrainType, position, {
+      const terrainObject = new Terrain(this.game, terrainId, position, {
         scale,
       });
       this.mesh.add(terrainObject.mesh);

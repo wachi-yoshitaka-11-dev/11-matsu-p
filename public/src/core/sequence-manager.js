@@ -15,7 +15,7 @@ export class SequenceManager {
     this.currentSequence = null;
     this.sequencesData = null;
 
-    // 初期化時にsequencesDataを読み込み
+    // Loads sequencesData during initialization
     this.loadSequencesData();
     this.sequenceCamera = new THREE.PerspectiveCamera(
       SEQUENCE_CAMERA_CONFIG.FOV,
@@ -96,7 +96,8 @@ export class SequenceManager {
         );
       } catch (error) {
         console.error('Failed to load sequences data:', error);
-        // フォールバック
+        // Fallback
+
         this.sequencesData = {
           opening: {
             texts: [],
@@ -233,7 +234,7 @@ export class SequenceManager {
     const nextImage = this.backgroundImages[nextIndex];
     const currentImage = this.backgroundImages[this.currentBackgroundIndex];
 
-    // ファイルパスを自動補完（./assets/images/プレフィックスを追加）
+    // Auto-complete file path (add ./assets/images/ prefix)
     const fullImagePath = imagePath.startsWith('./')
       ? imagePath
       : `./assets/images/${imagePath}`;
@@ -261,7 +262,7 @@ export class SequenceManager {
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = SequenceStep.SHOWING_TEXT;
 
-    // プレイヤーの歩行音を停止
+    // Stop player footsteps
     if (this.game.player && this.game.player.stopFootsteps) {
       this.game.player.stopFootsteps();
     }
@@ -272,7 +273,7 @@ export class SequenceManager {
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
-    // 初期化時に読み込まれたデータを使用
+    // Use data loaded during initialization
     this.textSequence = this.sequencesData.opening.texts;
     this.backgroundImagePaths = this.sequencesData.opening.backgroundImages;
     this.currentTextIndex = 0;
@@ -349,7 +350,7 @@ export class SequenceManager {
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = SequenceStep.SHOWING_TEXT;
 
-    // プレイヤーの歩行音を停止
+    // Stop player footsteps
     if (this.game.player && this.game.player.stopFootsteps) {
       this.game.player.stopFootsteps();
     }
@@ -367,7 +368,7 @@ export class SequenceManager {
     this.game.sceneManager.setCamera(this.sequenceCamera);
     this.game.sceneManager.hideGameElements();
 
-    // 初期化時に読み込まれたデータを使用
+    // Use data loaded during initialization
     this.textSequence = this.sequencesData.ending.texts;
     this.backgroundImagePaths = this.sequencesData.ending.backgroundImages;
     this.currentTextIndex = 0;

@@ -1,18 +1,18 @@
 import * as THREE from 'three';
-import { BaseEntity } from './base-entity.js';
+import { BaseEntity } from '../base-entity.js';
 
 export class Item extends BaseEntity {
-  constructor(game, itemType, position, options = {}) {
-    const itemData = game.data.items[itemType];
+  constructor(game, itemId, position, options = {}) {
+    const itemData = game.data.items[itemId];
     if (!itemData) {
-      throw new Error(`Item type "${itemType}" not found in items data`);
+      throw new Error(`Item ID "${itemId}" not found in items data`);
     }
 
     const modelName = itemData.model.replace('.glb', '');
     const model = game.assetLoader.getModel(modelName);
 
     if (model) {
-      super(game, itemType, itemData, model.clone(), null, {
+      super(game, itemId, itemData, model.clone(), null, {
         textureName: itemData.texture.replace('.png', ''),
       });
       const s = options.scale ?? itemData.scale ?? 2;
@@ -29,7 +29,7 @@ export class Item extends BaseEntity {
         itemData.geometrySegments || 8
       );
       const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
-      super(game, itemType, itemData, geometry, material);
+      super(game, itemId, itemData, geometry, material);
     }
 
     this.mesh.castShadow = true;

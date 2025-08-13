@@ -1,16 +1,4 @@
 {
-  "default": {
-    "name": "村人",
-    "model": "npcs/npc.glb",
-    "texture": "npcs/npc.png",
-    "description": "村の住民",
-    "interactionRange": 5,
-    "dialogue": [
-      "こんにちは、冒険者よ。\n村へようこそ。",
-      "この先には強力なボスが\n待ち構えているぞ。\n\n十分に準備してから挑むのじゃ。",
-      "気をつけて進むんじゃ。\n幸運を祈っておる。"
-    ]
-  },
   "guide": {
     "name": "案内人",
     "model": "npcs/npc.glb",

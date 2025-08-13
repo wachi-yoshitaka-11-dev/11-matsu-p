@@ -1,24 +1,23 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { Projectile } from './projectile.js';
 import {
   AnimationNames,
   SkillTypes,
   AssetPaths,
   MovementState,
-} from '../utils/constants.js';
+} from '../../utils/constants.js';
 
 export class Player extends Character {
-  constructor(game, playerType, options = {}) {
-    const playerData = game.data[playerType];
+  constructor(game, playerId, options = {}) {
+    const playerData = game.data[playerId];
     if (!playerData) {
-      throw new Error(`Player type "${playerType}" not found in game data`);
+      throw new Error(`Player ID "${playerId}" not found in game data`);
     }
     const modelName = playerData.model.replace('.glb', '');
     const loadedModel = game.assetLoader.getModel(modelName);
 
     if (loadedModel instanceof THREE.Group) {
-      super(game, playerType, playerData, loadedModel, null, {
+      super(game, playerId, playerData, loadedModel, null, {
         hp: playerData.maxHp,
         modelName: modelName,
         textureName: playerData.texture.replace('.png', ''),
@@ -26,7 +25,7 @@ export class Player extends Character {
     } else {
       const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
       const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-      super(game, playerType, playerData, geometry, material, {
+      super(game, playerId, playerData, geometry, material, {
         hp: playerData.maxHp,
       });
     }
@@ -37,8 +36,9 @@ export class Player extends Character {
     this.stamina = this.maxStamina;
 
     this.level = playerData.initialLevel;
-    this.experience = playerData.initialExperience;
-    this.experienceToNextLevel = playerData.initialExpToNextLevel;
+    this.totalExperience = playerData.initialExperience; // Cumulative experience
+    this.currentLevelExperience = playerData.initialExperience; // Experience at current level
+    this.experienceToNextLevel = playerData.initialExpToNextLevel; // Experience needed for next level
     this.statusPoints = playerData.initialStatusPoints;
     this.inventory = playerData.initialInventory || [];
 
@@ -68,10 +68,6 @@ export class Player extends Character {
     this.defenseBuffMultiplier = 1.0;
 
     this.spawn();
-
-    this.footstepAudio = null;
-    this.isPlayingFootsteps = false;
-    this.lastMovementState = null;
 
     if (this.mixer) {
       this.mixer.addEventListener('finished', (e) => {
@@ -116,7 +112,6 @@ export class Player extends Character {
   update(deltaTime) {
     super.update(deltaTime);
     this.updateAnimation();
-    this.updateFootsteps();
 
     if (
       !this.isDashing &&
@@ -145,7 +140,8 @@ export class Player extends Character {
       this.isAttackingStrong ||
       this.isRolling ||
       this.isBackStepping ||
-      this.isPickingUp
+      this.isPickingUp ||
+      this.isUsingSkill
     ) {
       return;
     }
@@ -169,7 +165,10 @@ export class Player extends Character {
       newAnimation = AnimationNames.WALK;
     }
 
-    this.playAnimation(newAnimation);
+    // Do not re-execute the same animation
+    if (this.currentAnimationName !== newAnimation) {
+      this.playAnimation(newAnimation);
+    }
   }
 
   onDeath() {
@@ -179,7 +178,7 @@ export class Player extends Character {
   }
 
   takeDamage(amount) {
-    if (this.isInvincible) return;
+    if (this.isInvincible || this.isRolling) return;
 
     let finalDamage = amount / this.defenseBuffMultiplier;
 
@@ -198,6 +197,9 @@ export class Player extends Character {
       );
     } else {
       this.game.playSound(AssetPaths.SFX_DAMAGE);
+      if (this.game.hud) {
+        this.game.hud.showHpDamageEffect();
+      }
     }
 
     super.takeDamage(finalDamage);
@@ -211,70 +213,34 @@ export class Player extends Character {
   }
 
   addExperience(amount) {
-    this.experience += amount;
-    if (this.experience >= this.experienceToNextLevel) {
+    this.totalExperience += amount;
+    this.currentLevelExperience += amount;
+    if (this.currentLevelExperience >= this.experienceToNextLevel) {
       this.levelUp();
     }
   }
 
   levelUp() {
     this.level++;
-    this.experience -= this.experienceToNextLevel;
+    // Reset current level experience and carry over excess to next level
+    this.currentLevelExperience -= this.experienceToNextLevel;
+    // Increase experience needed for next level
     this.experienceToNextLevel = Math.floor(
       this.experienceToNextLevel * this.data.levelUpExpMultiplier
     );
     this.statusPoints += this.data.statusPointsPerLevel;
     this.game.playSound(AssetPaths.SFX_LEVEL_UP);
-  }
 
-  useItem(index) {
-    if (this.inventory.length > index) {
-      const itemType = this.inventory[index];
-      const itemData = this.game.data.items[itemType];
-
-      if (!itemData) {
-        console.warn(`Unknown item type: ${itemType}`);
-        return;
-      }
-
-      if (itemData.healAmount) {
-        this.hp += itemData.healAmount;
-        if (this.hp > this.maxHp) this.hp = this.maxHp;
-      }
-
-      if (itemData.fpHealAmount) {
-        this.fp += itemData.fpHealAmount;
-        if (this.fp > this.maxFp) this.fp = this.maxFp;
-      }
-      this.playAnimation(AnimationNames.USE_ITEM);
-      this.game.playSound(AssetPaths.SFX_USE_ITEM);
-
-      this.inventory.splice(index, 1);
+    // Check for consecutive level-ups
+    if (this.currentLevelExperience >= this.experienceToNextLevel) {
+      this.levelUp();
     }
-  }
-
-  applyAttackBuff() {
-    const currentSkill = this.getCurrentSkill();
-    this.attackBuffMultiplier = currentSkill.attackBuffMultiplier;
-  }
-
-  removeAttackBuff() {
-    this.attackBuffMultiplier = 1.0;
-  }
-
-  applyDefenseBuff() {
-    const currentSkill = this.getCurrentSkill();
-    this.defenseBuffMultiplier = currentSkill.defenseBuffMultiplier;
-  }
-
-  removeDefenseBuff() {
-    this.defenseBuffMultiplier = 1.0;
   }
 
   getCurrentShield() {
     if (this.shields.length === 0) return null;
-    const shieldType = this.shields[this.currentShieldIndex];
-    return this.game.data.shields[shieldType];
+    const shieldId = this.shields[this.currentShieldIndex];
+    return this.game.data.shields[shieldId];
   }
 
   switchShield() {
@@ -292,8 +258,8 @@ export class Player extends Character {
 
   getCurrentSkill() {
     if (this.skills.length === 0) return null;
-    const skillType = this.skills[this.currentSkillIndex];
-    return this.game.data.skills[skillType];
+    const skillId = this.skills[this.currentSkillIndex];
+    return this.game.data.skills[skillId];
   }
 
   switchSkill() {
@@ -306,8 +272,8 @@ export class Player extends Character {
 
   getCurrentWeapon() {
     if (this.weapons.length === 0) return null;
-    const weaponType = this.weapons[this.currentWeaponIndex];
-    return this.game.data.weapons[weaponType];
+    const weaponId = this.weapons[this.currentWeaponIndex];
+    return this.game.data.weapons[weaponId];
   }
 
   switchWeapon() {
@@ -387,65 +353,97 @@ export class Player extends Character {
     }
 
     if (this.fp < currentSkill.fpCost) {
+      this.game.playSound(AssetPaths.SFX_FP_INSUFFICIENT);
+      if (this.game.hud) {
+        this.game.hud.showFpInsufficientEffect();
+      }
       return false;
     }
 
-    const skillType = this.skills[this.currentSkillIndex];
+    const skillType = currentSkill.type;
 
-    if (skillType === SkillTypes.PROJECTILE) {
-      return this.useProjectileSkill(currentSkill);
-    } else if (skillType === SkillTypes.BUFF) {
-      return this.useBuffSkill(currentSkill);
+    this.fp -= currentSkill.fpCost;
+
+    if (this.game.hud) {
+      this.game.hud.showFpUseEffect();
     }
 
-    return false;
-  }
-
-  useProjectileSkill(skillData) {
+    // Player-specific skill execution (FP-based, by type)
     this.isUsingSkill = true;
-    this.fp -= skillData.fpCost;
-    this.showSkillProjectileEffect();
-    this.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
-    this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
 
-    const direction = new THREE.Vector3();
-    this.mesh.getWorldDirection(direction);
-    const skillType = this.skills[this.currentSkillIndex];
-    const projectile = new Projectile(
-      this.game,
-      skillType,
-      this.mesh.position.clone().add(new THREE.Vector3(0, 0.5, 0)),
-      direction
-    );
-    this.game.projectiles.push(projectile);
-    this.game.sceneManager.add(projectile.mesh);
+    if (skillType === SkillTypes.BUFF) {
+      this.executeBuffSkill(this.skills[this.currentSkillIndex]);
+    } else if (skillType === SkillTypes.PROJECTILE) {
+      this.executeProjectileSkill(this.skills[this.currentSkillIndex]);
+    } else if (skillType === SkillTypes.AREA_ATTACK) {
+      this.executeAreaAttackSkill(this.skills[this.currentSkillIndex]);
+    }
+
+    // Set appropriate animation duration for each skill type
+    let skillAnimationDuration;
+    if (skillType === SkillTypes.BUFF) {
+      // Buff skills have shorter animation duration
+      skillAnimationDuration = (currentSkill.castTime || 0) + 1000;
+    } else {
+      // Other skills use the standard duration
+      skillAnimationDuration = Math.max(
+        (currentSkill.castTime || 0) + 1000,
+        currentSkill.duration || 1000
+      );
+    }
 
     setTimeout(() => {
       this.isUsingSkill = false;
-    }, skillData.duration);
+    }, skillAnimationDuration);
 
     return true;
   }
 
-  useBuffSkill(skillData) {
-    this.isUsingSkill = true;
-    this.fp -= skillData.fpCost;
-    this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
-    this.showSkillBuffEffect();
-    this.playAnimation(AnimationNames.USE_SKILL_BUFF);
-    this.applyAttackBuff();
-    this.applyDefenseBuff();
+  // Player-specific buff skill (with effects and sound)
+  executeBuffSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    super.executeBuffSkill(skillId);
 
     setTimeout(() => {
-      this.removeAttackBuff();
-      this.removeDefenseBuff();
-      this.isUsingSkill = false;
-    }, skillData.duration);
-
-    return true;
+      this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
+      this.showSkillBuffEffect();
+    }, skillData.castTime || 0);
   }
 
-  updateFootsteps() {
+  // Player-specific projectile skill (with sound effects)
+  executeProjectileSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    super.executeProjectileSkill(skillId);
+
+    setTimeout(() => {
+      if (!this.isDead) {
+        this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
+        this.showSkillProjectileEffect();
+      }
+    }, skillData.castTime || 0);
+  }
+
+  // Player-specific area attack skill (with sound effects)
+  executeAreaAttackSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    super.executeAreaAttackSkill(skillId);
+
+    setTimeout(() => {
+      if (!this.isDead) {
+        this.game.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
+      }
+    }, skillData.castTime || 0);
+  }
+
+  // Get movement information (Player-specific complex state checks)
+  getMovementInfo() {
+    // Check for movement-disabled states
     if (
       this.isDead ||
       this.isJumping ||
@@ -454,66 +452,22 @@ export class Player extends Character {
       this.isAttacking ||
       this.isPickingUp
     ) {
-      this.stopFootsteps();
-      return;
+      return { shouldPlay: false, state: null };
     }
 
     const velocity = this.physics.velocity;
     if (!velocity) {
-      this.stopFootsteps();
-      return;
+      return { shouldPlay: false, state: null };
     }
+
     const isMoving = velocity.length() > 0.1;
-
     if (!isMoving) {
-      this.stopFootsteps();
-      return;
+      return { shouldPlay: false, state: null };
     }
 
-    const currentMovementState = this.isDashing
-      ? MovementState.DASH
-      : MovementState.WALK;
-
-    if (currentMovementState !== this.lastMovementState) {
-      this.stopFootsteps();
-      this.startFootsteps(currentMovementState);
-      this.lastMovementState = currentMovementState;
-    }
-
-    if (!this.isPlayingFootsteps) {
-      this.startFootsteps(currentMovementState);
-    }
-  }
-
-  startFootsteps(movementState) {
-    if (this.isPlayingFootsteps) {
-      this.stopFootsteps();
-    }
-
-    const soundName =
-      movementState === MovementState.DASH
-        ? AssetPaths.SFX_DASH
-        : AssetPaths.SFX_WALK;
-
-    this.footstepAudio = this.game.createAudio(soundName, {
-      volume: 0.3,
-      loop: true,
-    });
-
-    if (this.footstepAudio) {
-      this.footstepAudio.play();
-    }
-
-    this.isPlayingFootsteps = true;
-  }
-
-  stopFootsteps() {
-    if (this.footstepAudio) {
-      this.footstepAudio.stop();
-      this.footstepAudio = null;
-    }
-    this.isPlayingFootsteps = false;
-    this.lastMovementState = null;
+    // Determine movement state
+    const state = this.isDashing ? MovementState.DASH : MovementState.WALK;
+    return { shouldPlay: true, state: state };
   }
 
   playPickUpAnimation() {
