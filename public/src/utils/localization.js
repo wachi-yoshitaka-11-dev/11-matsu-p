@@ -1,6 +1,6 @@
 export class Localization {
   constructor() {
-    this.currentLanguage = 'ja'; // デフォルト言語
+    this.currentLanguage = 'ja'; // Default language
     this.texts = {};
   }
 
@@ -9,7 +9,7 @@ export class Localization {
       this.texts = localizationData;
     } else {
       console.error('No localization data provided');
-      // フォールバック用の最小限のテキストは空でいいです
+      // Minimal fallback text is fine to be empty
       this.texts = {};
     }
   }
@@ -20,7 +20,7 @@ export class Localization {
       this.texts = await response.json();
     } catch (error) {
       console.error('Failed to load localization data:', error);
-      // フォールバック用の最小限のテキストは空でいいです
+      // Minimal fallback text is fine to be empty
       this.texts = {};
     }
   }
@@ -42,14 +42,14 @@ export class Localization {
         current = current[key];
       } else {
         console.warn(`Localization key not found: ${path}`);
-        return `[${path}]`; // Show missing key for easier debugging
+        return `[${path}]`;
       }
     }
 
     return current;
   }
 
-  // よく使われるテキストのショートカットメソッド
+  // Shortcut methods for frequently used texts
   getUI(key) {
     return this.getText(`ui.${key}`);
   }
@@ -63,7 +63,7 @@ export class Localization {
   }
 }
 
-// グローバルインスタンス (シングルトンパターン)
-// この設計により、どこからでも同じインスタンスにアクセスできますが、
-// テストの際には依存関係の注入が難しくなる可能性があります。
+// Global instance (Singleton pattern)
+// This design allows access to the same instance from anywhere, but
+// dependency injection may be difficult during testing.
 export const localization = new Localization();

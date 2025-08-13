@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { BaseEntity } from './base-entity.js';
-import { EnvironmentTypes } from '../utils/constants.js';
+import { BaseEntity } from '../base-entity.js';
+import { EnvironmentTypes } from '../../utils/constants.js';
 
 export class Environment extends BaseEntity {
-  constructor(game, envType, position, options = {}) {
-    const envData = game.data.environments[envType];
+  constructor(game, envId, position, options = {}) {
+    const envData = game.data.environments[envId];
     if (!envData) {
       throw new Error(
-        `Environment type "${envType}" not found in environment data`
+        `Environment ID "${envId}" not found in environment data`
       );
     }
 
@@ -15,6 +15,9 @@ export class Environment extends BaseEntity {
     const texture = game.assetLoader.getTexture(textureName);
 
     let geometry, material;
+    // Get environment type from data (now properly separated from ID)
+    const envType = envData.type;
+
     switch (envType) {
       case EnvironmentTypes.CLOUD:
         material = new THREE.SpriteMaterial({
@@ -24,7 +27,7 @@ export class Environment extends BaseEntity {
           alphaTest: 0.1,
         });
         geometry = new THREE.PlaneGeometry(1, 1);
-        super(game, envType, envData, geometry, material);
+        super(game, envId, envData, geometry, material);
         this.mesh = new THREE.Sprite(material);
         this.mesh.position.copy(position);
         this.mesh.scale.set(
@@ -42,7 +45,7 @@ export class Environment extends BaseEntity {
           map: texture,
           transparent: true,
         });
-        super(game, envType, envData, geometry, material);
+        super(game, envId, envData, geometry, material);
         this.mesh.position.copy(position);
         this.mesh.rotation.x = -Math.PI / 2;
         break;

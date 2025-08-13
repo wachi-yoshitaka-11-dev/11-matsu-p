@@ -29,10 +29,6 @@ export class Hud {
     document.body.appendChild(this.deathOverlay.element);
   }
 
-  // ================================================================
-  // CREATE METHODS - UI要素作成
-  // ================================================================
-
   createStatusBarsContainer() {
     const container = document.createElement('div');
     container.classList.add('status-bars');
@@ -181,7 +177,6 @@ export class Hud {
     const container = document.createElement('div');
     container.id = 'equipment-container';
 
-    // Create equipment slots
     this.equipmentWeapon = this.createEquipmentSlot('weapon');
     this.equipmentShield = this.createEquipmentSlot('shield');
     this.equipmentItem = this.createEquipmentSlot('item');
@@ -229,10 +224,6 @@ export class Hud {
     return element;
   }
 
-  // ================================================================
-  // PUBLIC METHODS - 外部インターフェース
-  // ================================================================
-
   show() {
     this.container.classList.remove('hidden');
     this.container.classList.add('visible');
@@ -274,10 +265,8 @@ export class Hud {
       this.levelUpMenu.element.classList.remove('visible');
     }
 
-    // Update equipment container
     this.updateEquipmentDisplay();
 
-    // Update experience display
     this.updateExperienceDisplay();
 
     if (this.player.isDead) {
@@ -289,22 +278,15 @@ export class Hud {
     }
   }
 
-  // ================================================================
-  // UPDATE METHODS - 更新処理
-  // ================================================================
-
   updateEquipmentDisplay() {
     if (!this.equipmentWeapon) return;
 
-    // Update weapon
     const currentWeapon = this.player.getCurrentWeapon();
     this.updateEquipmentSlot(this.equipmentWeapon, currentWeapon);
 
-    // Update shield
     const currentShield = this.player.getCurrentShield();
     this.updateEquipmentSlot(this.equipmentShield, currentShield);
 
-    // Update item
     const currentItem = this.player.getCurrentItem();
     let itemData = null;
     if (currentItem) {
@@ -312,7 +294,6 @@ export class Hud {
     }
     this.updateEquipmentSlot(this.equipmentItem, itemData, currentItem);
 
-    // Update skill
     const currentSkill = this.player.getCurrentSkill();
     this.updateEquipmentSlot(this.equipmentSkill, currentSkill);
   }
@@ -323,7 +304,6 @@ export class Hud {
     const placeholderElement = slotElement.querySelector('.placeholder');
 
     if (itemData) {
-      // アイテムが存在する場合
       nameElement.textContent =
         itemData.name ||
         (itemKey ? localization.getText(`items.${itemKey}`) || itemKey : '');
@@ -336,7 +316,6 @@ export class Hud {
         placeholderElement.classList.remove('visible');
 
         imageElement.onerror = () => {
-          // 画像が見つからない場合はプレースホルダーを表示
           imageElement.classList.add('hidden');
           imageElement.classList.remove('visible');
           placeholderElement.classList.remove('hidden');
@@ -344,7 +323,6 @@ export class Hud {
           placeholderElement.textContent = '?';
         };
       } else {
-        // 画像が指定されていない場合
         imageElement.classList.add('hidden');
         imageElement.classList.remove('visible');
         placeholderElement.classList.remove('hidden');
@@ -352,7 +330,6 @@ export class Hud {
         placeholderElement.textContent = '?';
       }
     } else {
-      // アイテムが存在しない場合
       nameElement.textContent = '';
       imageElement.classList.add('hidden');
       imageElement.classList.remove('visible');
@@ -364,12 +341,29 @@ export class Hud {
 
   updateExperienceDisplay() {
     this.totalExperienceValue.textContent =
-      this.player.experience.toLocaleString();
+      this.player.totalExperience.toLocaleString();
   }
 
-  // ================================================================
-  // PRIVATE METHODS - 内部ヘルパー
-  // ================================================================
+  showFpInsufficientEffect() {
+    this.fpBar.element.classList.add('fp-insufficient-flash');
+    setTimeout(() => {
+      this.fpBar.element.classList.remove('fp-insufficient-flash');
+    }, 500);
+  }
+
+  showHpDamageEffect() {
+    this.hpBar.element.classList.add('hp-damage-flash');
+    setTimeout(() => {
+      this.hpBar.element.classList.remove('hp-damage-flash');
+    }, 500);
+  }
+
+  showFpUseEffect() {
+    this.fpBar.element.classList.add('fp-use-flash');
+    setTimeout(() => {
+      this.fpBar.element.classList.remove('fp-use-flash');
+    }, 300);
+  }
 
   _updateStatusPointsDisplay() {
     this.levelUpMenu.points.textContent = `${localization.getText('ui.statusPoints')}: ${this.player.statusPoints}`;

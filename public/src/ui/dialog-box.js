@@ -138,11 +138,7 @@ export class DialogBox {
     });
 
     if (this.talkSound) {
-      try {
-        this.talkSound.play();
-      } catch (e) {
-        /* noop */
-      }
+      this.talkSound.play();
     }
   }
 

@@ -1,3 +1,5 @@
+// Basic game constants
+
 export const GameConstants = {
   GAME_SPEED: 1.0,
   GRAVITY: 9.8,
@@ -8,12 +10,36 @@ export const Fall = {
   MAX_FALL_DEPTH: -1000,
 };
 
-export const EffectColors = {
-  DAMAGE: 0xff0000,
-  ATTACK: 0xffff00,
-  SKILL_PROJECTILE: 0x8a2be2,
-  SKILL_BUFF: 0x00ffff,
-  CHARGE: 0xff00ff,
+// Type definitions (equivalent to Enum)
+
+export const GameState = {
+  SPLASH_SCREEN: 'splashScreen',
+  OPENING: 'opening',
+  TITLE: 'title',
+  PLAYING: 'playing',
+  PAUSED: 'paused',
+  ENDING: 'ending',
+};
+
+export const MovementState = {
+  WALK: 'walk',
+  DASH: 'dash',
+};
+
+export const SkillTypes = {
+  BUFF: 'buff',
+  PROJECTILE: 'projectile',
+  AREA_ATTACK: 'areaAttack',
+};
+
+export const AttackTypes = {
+  WEAK: 'weak',
+  STRONG: 'strong',
+};
+
+export const EnemyTypes = {
+  GRUNT: 'grunt',
+  BOSS: 'boss',
 };
 
 export const EnvironmentTypes = {
@@ -21,10 +47,16 @@ export const EnvironmentTypes = {
   GROUND: 'ground',
 };
 
-export const SkillTypes = {
-  PROJECTILE: 'projectile',
-  BUFF: 'buff',
+export const SequenceStep = {
+  IDLE: 'idle',
+  TEXT_COMPLETE: 'textComplete',
+  SHOWING_TEXT: 'showingText',
+  FADING_OUT: 'fadingOut',
+  SHOWING_STAFF_ROLL: 'showingStaffRoll',
+  SHOWING_FIN: 'showingFin',
 };
+
+// Asset path definitions
 
 export const AssetPaths = {
   LOGO_IMAGE: 'sequences/logo.png',
@@ -69,6 +101,8 @@ export const AssetPaths = {
   SFX_PICKUP_ITEM: 'sfx/pickup-item.mp3',
   SFX_USE_SKILL_BUFF: 'sfx/use-skill-buff.mp3',
   SFX_USE_SKILL_PROJECTILE: 'sfx/use-skill-projectile.mp3',
+  SFX_USE_SKILL_AREA_ATTACK: 'sfx/use-skill-area-attack.mp3',
+  SFX_FP_INSUFFICIENT: 'sfx/fp-insufficient.mp3',
   SFX_WALK: 'sfx/walk.mp3',
 };
 
@@ -85,38 +119,40 @@ export const AnimationNames = {
   GUARD: 'holding-right',
   TALK: 'interact-left',
   USE_ITEM: 'interact-right',
-  USE_SKILL_BUFF: 'interact-right',
-  USE_SKILL_PROJECTILE: 'attack-kick-right',
+  USE_SKILL_BUFF: 'holding-left',
+  USE_SKILL_PROJECTILE: 'holding-right',
+  USE_SKILL_AREA_ATTACK: 'holding-both',
   PICK_UP: 'pick-up',
 };
 
-export const GameState = {
-  OPENING: 'opening',
-  TITLE: 'title',
-  PLAYING: 'playing',
-  PAUSED: 'paused',
-  ENDING: 'ending',
+// Feature-specific constants
+
+export const EffectColors = {
+  DAMAGE: 0xff0000,
+  ATTACK: 0xffff00,
+  SKILL_BUFF: 0x00ffff,
+  SKILL_PROJECTILE: 0x8a2be2,
+  SKILL_AREA_ATTACK: 0xff4500,
+  CHARGE: 0xff00ff,
 };
 
-export const MovementState = {
-  WALK: 'walk',
-  DASH: 'dash',
+export const AudioConstants = {
+  FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // Sound is not audible beyond this distance
+  FOOTSTEP_MIN_VOLUME: 0.05, // Minimum volume
+  FOOTSTEP_MAX_VOLUME: 0.3, // Maximum volume (close range)
+  PLAYER_FOOTSTEP_VOLUME: 0.3,
 };
 
-export const SequenceStep = {
-  IDLE: 'idle',
-  TEXT_COMPLETE: 'textComplete',
-  SHOWING_TEXT: 'showingText',
-  FADING_OUT: 'fadingOut',
-  SHOWING_STAFF_ROLL: 'showingStaffRoll',
-  SHOWING_FIN: 'showingFin',
+export const ItemConstants = {
+  PICKUP_RANGE: 2.0,
 };
+
+// Helper constants and utilities
 
 export const HTMLTags = {
   BR: '<br>',
 };
 
-// BGM Level constants array for easier management
 export const LevelBGM = [
   AssetPaths.BGM_LEVEL_01_01,
   AssetPaths.BGM_LEVEL_01_02,

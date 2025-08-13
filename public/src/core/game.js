@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { SceneManager } from './scene-manager.js';
 import { AssetLoader } from './asset-loader.js';
 import { Field } from '../world/field.js';
-import { Player } from '../entities/player.js';
-import { Enemy } from '../entities/enemy.js';
-import { Boss } from '../entities/boss.js';
-import { Npc } from '../entities/npc.js';
-import { Item } from '../entities/item.js';
+import { Player } from '../entities/characters/player.js';
+import { Enemy } from '../entities/characters/enemy.js';
+import { Boss } from '../entities/characters/boss.js';
+import { Npc } from '../entities/characters/npc.js';
+import { Item } from '../entities/items/item.js';
 import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
@@ -14,7 +14,7 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { AssetPaths, GameState } from '../utils/constants.js';
+import { AssetPaths, GameState, ItemConstants } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 
@@ -33,6 +33,7 @@ export class Game {
     this.enemies = [];
     this.items = [];
     this.projectiles = [];
+    this.areaAttacks = [];
 
     this.boss = null;
     this.npcs = [];
@@ -44,7 +45,7 @@ export class Game {
     this.initAudio();
     this.setupBeforeUnloadHandler();
 
-    this.gameState = GameState.OPENING;
+    this.gameState = GameState.SPLASH_SCREEN;
     this.titleScreen = new TitleScreen(
       () => this.startGame(),
       () => this.skipSplashScreenDelay()
@@ -68,7 +69,7 @@ export class Game {
 
   setupBeforeUnloadHandler() {
     window.addEventListener('beforeunload', (e) => {
-      // 実際のゲームプレイ中のみ防止
+      // Prevent only during actual gameplay
       if (
         this.player &&
         !this.player.isDead &&
@@ -91,19 +92,6 @@ export class Game {
     await this.loadAudio();
     await this.loadModels();
 
-    const elapsedTime = Date.now() - loadStartTime;
-    const minDisplayTime = 10000;
-    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-    if (this.splashSkipped) {
-      this.playOpeningSequence();
-    } else {
-      this.minDisplayTimeTimeoutId = setTimeout(() => {
-        this.minDisplayTimeTimeoutId = null;
-        this.playOpeningSequence();
-      }, remainingTime);
-    }
-
     this.field = new Field(this);
     this.sceneManager.add(this.field.mesh);
 
@@ -125,6 +113,22 @@ export class Game {
     );
 
     this.loadEntities();
+
+    const elapsedTime = Date.now() - loadStartTime;
+    const minDisplayTime = 10000;
+    const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+    if (this.splashSkipped) {
+      this.playOpeningSequence();
+    } else {
+      this.minDisplayTimeTimeoutId = setTimeout(() => {
+        this.minDisplayTimeTimeoutId = null;
+
+        if (!this.splashSkipped) {
+          this.playOpeningSequence();
+        }
+      }, remainingTime);
+    }
   }
 
   async loadGameData() {
@@ -174,6 +178,7 @@ export class Game {
       AssetPaths.SFX_DAMAGE,
       AssetPaths.SFX_DASH,
       AssetPaths.SFX_DEATH,
+      AssetPaths.SFX_FP_INSUFFICIENT,
       AssetPaths.SFX_GUARD,
       AssetPaths.SFX_JUMP,
       AssetPaths.SFX_KILL,
@@ -192,6 +197,7 @@ export class Game {
       AssetPaths.SFX_USE_ITEM,
       AssetPaths.SFX_USE_SKILL_BUFF,
       AssetPaths.SFX_USE_SKILL_PROJECTILE,
+      AssetPaths.SFX_USE_SKILL_AREA_ATTACK,
       AssetPaths.SFX_WALK,
     ];
 
@@ -219,14 +225,14 @@ export class Game {
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
-    const enemy = new Enemy(this, 'grunt', new THREE.Vector3(5, 0, 0), {
+    const enemy = new Enemy(this, 'forestGoblin', new THREE.Vector3(5, 0, 0), {
       player: this.player,
     });
 
     this.enemies.push(enemy);
     this.sceneManager.add(enemy.mesh);
 
-    const boss = new Boss(this, 'boss', new THREE.Vector3(10, 0.5, 10), {
+    const boss = new Boss(this, 'dragonKing', new THREE.Vector3(10, 0.5, 10), {
       player: this.player,
     });
     this.boss = boss;
@@ -504,6 +510,7 @@ export class Game {
 
   _updateLoop(deltaTime) {
     if (
+      this.gameState === GameState.SPLASH_SCREEN ||
       this.gameState === GameState.OPENING ||
       this.gameState === GameState.ENDING
     ) {
@@ -546,13 +553,13 @@ export class Game {
           const distance = this.player?.mesh.position.distanceTo(
             item.mesh.position
           );
-          if (distance < (this.data.items?.generic?.pickupRange || 0.5)) {
+          if (distance < ItemConstants.PICKUP_RANGE) {
             // Skip if player is already picking up an item
             if (this.player?.isPickingUp) {
               continue;
             }
 
-            this.player?.inventory.push(item.type);
+            this.player?.inventory.push(item.id);
             this.player?.playPickUpAnimation();
             this.sceneManager.remove(item.mesh);
             this.items.splice(i, 1);
@@ -569,15 +576,32 @@ export class Game {
           }
 
           if (!shouldRemove) {
-            for (const enemy of this.enemies) {
-              const distance = projectile.mesh.position.distanceTo(
-                enemy.mesh.position
-              );
-              const hitRange = this.data.skills?.projectile?.hitRange || 1.0;
-              if (distance < hitRange) {
-                enemy.takeDamage(projectile.damage);
+            const hitRange = this.data.skills[projectile.id]?.hitRange || 1.0;
+
+            if (projectile.caster !== this.player) {
+              // Enemy attack: collision detection with player
+              const playerHitPosition = this.player.mesh.position.clone();
+              playerHitPosition.y += 1.0;
+              if (
+                projectile.mesh.position.distanceTo(playerHitPosition) <
+                hitRange
+              ) {
+                this.player.takeDamage(projectile.damage);
                 shouldRemove = true;
-                break;
+              }
+            } else {
+              // Player attack: collision detection with enemies
+              for (const enemy of this.enemies) {
+                const enemyHitPosition = enemy.mesh.position.clone();
+                enemyHitPosition.y += 0.5;
+                if (
+                  projectile.mesh.position.distanceTo(enemyHitPosition) <
+                  hitRange
+                ) {
+                  enemy.takeDamage(projectile.damage);
+                  shouldRemove = true;
+                  break;
+                }
               }
             }
           }
@@ -588,8 +612,18 @@ export class Game {
           }
         }
 
+        for (let i = this.areaAttacks.length - 1; i >= 0; i--) {
+          const areaAttack = this.areaAttacks[i];
+          areaAttack.update(deltaTime);
+
+          if (areaAttack.lifespan <= 0) {
+            this.sceneManager.remove(areaAttack.mesh);
+            this.areaAttacks.splice(i, 1);
+          }
+        }
+
         this.npcs.forEach((npc) => {
-          npc.update(this.player?.mesh.position);
+          npc.update(deltaTime);
         });
       }
     }
@@ -618,16 +652,20 @@ export class Game {
   };
 
   skipSplashScreenDelay() {
+    if (this.splashSkipped) return;
     this.splashSkipped = true;
+
     if (this.minDisplayTimeTimeoutId) {
       clearTimeout(this.minDisplayTimeTimeoutId);
       this.minDisplayTimeTimeoutId = null;
+
       this.playOpeningSequence();
     }
   }
 
   playOpeningSequence() {
     this.gameState = GameState.OPENING;
+
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
     this.sequenceManager.startOpeningSequence(() => {
@@ -649,7 +687,6 @@ export class Game {
   playEndingSequence() {
     this.gameState = GameState.ENDING;
 
-    // Hide HUD immediately when ending starts
     this.hud?.hide();
 
     this.sceneManager.fadeOutCanvas(1000, () => {

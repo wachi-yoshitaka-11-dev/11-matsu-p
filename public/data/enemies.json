@@ -1,28 +1,62 @@
 {
-  "grunt": {
-    "name": "雑魚敵",
+  "forestGoblin": {
+    "name": "森のゴブリン",
+    "type": "grunt",
     "model": "enemies/enemy.glb",
     "texture": "enemies/enemy.png",
     "description": "基本的な敵",
     "hp": 50,
     "speed": 2,
     "experience": 10,
-    "attackCooldown": 2,
-    "attackRange": 1.5,
-    "damage": 10
+    "weakAttack": {
+      "damage": 8,
+      "range": 1.3,
+      "cooldown": 1.5,
+      "castTime": 0.2
+    },
+    "strongAttack": {
+      "damage": 15,
+      "range": 1.8,
+      "cooldown": 4.0,
+      "castTime": 0.5,
+      "probability": 0.25
+    }
   },
-  "boss": {
-    "name": "ボス",
+  "dragonKing": {
+    "name": "竜の王",
+    "type": "boss",
     "model": "enemies/boss.glb",
     "texture": "enemies/boss.png",
     "description": "強力な敵のボス",
     "hp": 200,
     "speed": 1.5,
     "experience": 100,
-    "attackCooldown": 3,
-    "attackRange": 3,
-    "damage": 20,
-    "specialAttackRange": 5,
-    "specialAttackDamage": 40
+    "weakAttack": {
+      "damage": 15,
+      "range": 2.0,
+      "cooldown": 1.2,
+      "castTime": 0.3
+    },
+    "strongAttack": {
+      "damage": 35,
+      "range": 3.5,
+      "cooldown": 3.5,
+      "castTime": 0.8,
+      "probability": 0.35
+    },
+    "skills": {
+      "holyBlessing": {
+        "cooldown": 15.0,
+        "probability": 0.1
+      },
+      "magicMissile": {
+        "cooldown": 4.0,
+        "probability": 0.3
+      },
+      "holyExplosion": {
+        "cooldown": 8.0,
+        "probability": 0.2
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { localization } from '../utils/localization.js';
+import { localization } from '../../utils/localization.js';
 
 export class Npc extends Character {
   static PROMPT_SCALE_FACTOR = 0.01;
@@ -26,22 +26,22 @@ export class Npc extends Character {
     return { texture: new THREE.CanvasTexture(canvas), canvas: canvas };
   }
 
-  constructor(game, npcType, position, options = {}) {
-    const npcData = game.data.npcs[npcType];
+  constructor(game, npcId, position, options = {}) {
+    const npcData = game.data.npcs[npcId];
     if (!npcData) {
-      throw new Error(`NPC type "${npcType}" not found in npcs data`);
+      throw new Error(`NPC ID "${npcId}" not found in npcs data`);
     }
     const modelName = npcData.model.replace('.glb', '');
     const model = game.assetLoader.getModel(modelName);
     if (model) {
-      super(game, npcType, npcData, model.clone(), null, {
+      super(game, npcId, npcData, model.clone(), null, {
         modelName: modelName,
         textureName: npcData.texture.replace('.png', ''),
       });
     } else {
       const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
       const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-      super(game, npcType, npcData, geometry, material, {});
+      super(game, npcId, npcData, geometry, material, {});
     }
 
     this.dialogue = npcData.dialogue || ['...'];
@@ -74,11 +74,17 @@ export class Npc extends Character {
     return prompt;
   }
 
-  update(playerPosition) {
-    if (!this.data) return;
-    const distance = this.mesh.position.distanceTo(playerPosition);
+  update(deltaTime) {
+    // Call parent class update (physics, animations, etc.)
+    super.update(deltaTime);
+
+    if (!this.data || !this.game.player) return;
+    const distanceSq = this.mesh.position.distanceToSquared(
+      this.game.player.mesh.position
+    );
     const interactionRange = this.data.interactionRange;
-    this.interactionPrompt.visible = distance < interactionRange;
+    this.interactionPrompt.visible =
+      distanceSq < interactionRange * interactionRange;
   }
 
   interact() {
@@ -91,17 +97,12 @@ export class Npc extends Character {
   }
 
   dispose() {
-    if (this.mesh.geometry) {
-      this.mesh.geometry.dispose();
-    }
-    if (this.mesh.material) {
-      this.mesh.material.dispose();
-    }
     if (this.interactionPrompt) {
       const sprite = this.interactionPrompt.children[0];
       sprite?.material?.map?.dispose();
       sprite?.material?.dispose();
     }
+    super.dispose(); // ensures deep disposal for Group meshes
     this.currentDialogueIndex = 0;
     this.dialogue = null;
     this.data = null;

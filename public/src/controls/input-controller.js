@@ -18,15 +18,15 @@ export class InputController {
 
     this.shiftPressTime = 0;
     this.isShiftPressed = false;
-    this.shortPressThreshold = 250; // milliseconds for short press
+    this.shortPressThreshold = 400; // milliseconds for short press
     this.movementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
     this.setupEventListeners();
   }
 
   _getWeaponParams() {
-    const weaponType = this.player.weapons[this.player.currentWeaponIndex];
-    const weaponData = this.game.data.weapons[weaponType];
+    const weaponId = this.player.weapons[this.player.currentWeaponIndex];
+    const weaponData = this.game.data.weapons[weaponId];
     if (weaponData) {
       return {
         attackRange: weaponData.attackRange,
@@ -59,7 +59,7 @@ export class InputController {
 
   setupEventListeners() {
     document.addEventListener('keydown', (e) => {
-      // ゲーム関連のキーの組み合わせでブラウザのデフォルト動作を防ぐ（ゲーム操作時のみ）
+      // Prevent browser default behavior for game-related key combinations (during gameplay only)
       const isGameTarget =
         document.pointerLockElement === this.canvas ||
         e.target === this.canvas ||
@@ -142,14 +142,14 @@ export class InputController {
         if (!this._canProcessInput()) return;
         this.mouse.wheelDelta = e.deltaY;
 
-        // マウスホイールでのロックオンターゲット切り替え
+        // Lock-on target switching with mouse wheel
         const isGameWheelContext =
           document.pointerLockElement === this.canvas ||
           e.target === this.canvas;
         if (isGameWheelContext && this.player.lockedTarget && e.deltaY !== 0) {
           e.preventDefault();
-          // deltaY > 0: ホイールダウン（下方向）= 次のターゲット
-          // deltaY < 0: ホイールアップ（上方向）= 前のターゲット
+          // deltaY > 0: Wheel down (downward) = next target
+          // deltaY < 0: Wheel up (upward) = previous target
           const direction = e.deltaY > 0 ? 1 : -1;
           this.switchLockOnTarget(direction);
         }
@@ -313,11 +313,6 @@ export class InputController {
       const cameraOffset = new THREE.Vector3(0, 2, 5);
       cameraOffset.applyQuaternion(this.camera.quaternion);
       this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
-    }
-
-    if (this.keys['Digit1']) {
-      this.player.useItem(0);
-      this.keys['Digit1'] = false;
     }
 
     if (this.keys['KeyE']) {
@@ -499,9 +494,9 @@ export class InputController {
 
   switchLockOnTarget(direction) {
     if (!this.player.lockedTarget) return;
-    if (direction === 0) return; // 方向が0の場合は何もしない
+    if (direction === 0) return; // Do nothing if direction is 0
 
-    // ホイール操作のクールダウンチェック
+    // Check cooldown for wheel operation
     const now = Date.now();
     if (now - this.lastWheelTime < this.wheelCooldown) {
       return;
@@ -514,7 +509,7 @@ export class InputController {
     const currentIndex = enemies.indexOf(this.player.lockedTarget);
     if (currentIndex === -1) return;
 
-    // direction: 1 = 次へ, -1 = 前へ
+    // direction: 1 = next, -1 = previous
     let nextIndex;
     if (direction > 0) {
       nextIndex = (currentIndex + 1) % enemies.length;
