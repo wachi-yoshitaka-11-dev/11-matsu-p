@@ -41,10 +41,10 @@ export class Character extends BaseEntity {
     this.originalColors = new Map();
     this.effectTimeout = null;
 
-    // スキルパフォーマンス状態（キャラクター共通）
+    // Skill performance states (common to all characters)
     this.skillPerformanceStates = {};
 
-    // 歩行音関連（キャラクター共通）
+    // Footstep audio properties (common to all characters)
     this.footstepAudio = null;
     this.isPlayingFootsteps = false;
     this.lastMovementState = null;
@@ -229,23 +229,19 @@ export class Character extends BaseEntity {
       this.onDeath();
     }
 
-    // 歩行音を自動管理
     this.updateFootsteps();
-
-    // 必要に応じて子クラスで追加のアップデートを実行
   }
 
-  // キャラクターの前方向を取得（共通処理）
   getForwardDirection() {
     const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(
       this.mesh.quaternion
     );
-    direction.y = 0; // Y軸方向は無視して水平方向のみ
+    // Ignore Y-axis, horizontal direction only
+    direction.y = 0;
     direction.normalize();
     return direction;
   }
 
-  // 歩行音管理（キャラクター共通）
   startFootsteps(movementState) {
     if (this.isPlayingFootsteps) {
       this.stopFootsteps();
@@ -256,7 +252,6 @@ export class Character extends BaseEntity {
         ? AssetPaths.SFX_DASH
         : AssetPaths.SFX_WALK;
 
-    // 距離に基づく音量を計算
     const volume = this.calculateFootstepVolume();
 
     this.footstepAudio = this.game.createAudio(soundName, {
@@ -271,24 +266,20 @@ export class Character extends BaseEntity {
     this.isPlayingFootsteps = true;
   }
 
-  // 距離に基づく歩行音の音量計算
   calculateFootstepVolume() {
-    // プレイヤー自身の場合は基本音量
     if (this === this.game.player) {
       return AudioConstants.PLAYER_FOOTSTEP_VOLUME;
     }
 
-    // プレイヤーとの距離を計算
     const distance = this.mesh.position.distanceTo(
       this.game.player.mesh.position
     );
 
-    // 距離が最大可聴距離を超えている場合は音量0
     if (distance >= AudioConstants.FOOTSTEP_MAX_AUDIBLE_DISTANCE) {
       return 0;
     }
 
-    // 線形補間で音量を計算（距離が近いほど音量大）
+    // Calculate volume using linear interpolation (closer = louder)
     const volumeRatio =
       1 - distance / AudioConstants.FOOTSTEP_MAX_AUDIBLE_DISTANCE;
     const volume =
@@ -312,7 +303,6 @@ export class Character extends BaseEntity {
     this.lastMovementState = null;
   }
 
-  // 歩行音の自動管理（基底クラス共通処理）
   updateFootsteps() {
     const movementInfo = this.getMovementInfo();
 
@@ -331,33 +321,28 @@ export class Character extends BaseEntity {
       this.startFootsteps(movementInfo.state);
     }
 
-    // 再生中の歩行音の音量を距離に応じて動的に更新
     this.updateFootstepVolume();
   }
 
-  // 再生中の歩行音の音量を動的に更新
   updateFootstepVolume() {
     if (this.footstepAudio && this.isPlayingFootsteps) {
       const newVolume = this.calculateFootstepVolume();
 
-      // 音量が0の場合は音を停止
       if (newVolume === 0) {
         this.stopFootsteps();
         return;
       }
 
-      // 音量を更新
       this.footstepAudio.setVolume(newVolume);
     }
   }
 
-  // 移動情報取得（子クラスでオーバーライド）
+  // Get movement information (override in subclasses)
   getMovementInfo() {
-    // デフォルト実装：移動していない
+    // Default implementation: not moving
     return { shouldPlay: false, state: null };
   }
 
-  // 共通エフェクトメソッド（子クラスで使用可能）
   createProjectile(skillId) {
     const startPosition = this.mesh.position.clone();
     startPosition.y += 1.5;
@@ -394,7 +379,6 @@ export class Character extends BaseEntity {
     return areaAttack;
   }
 
-  // 共通バフ処理
   applyAttackBuff(skillData) {
     this.attackBuffMultiplier = skillData.attackBuffMultiplier || 1.5;
   }
@@ -411,12 +395,10 @@ export class Character extends BaseEntity {
     this.defenseBuffMultiplier = 1.0;
   }
 
-  // 基本スキル実行メソッド（アニメーション付き）
   executeBuffSkill(skillId) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    // 共通のアニメーション実行
     this.playAnimation(this.getSkillAnimation(SkillTypes.BUFF));
 
     setTimeout(() => {
@@ -434,7 +416,6 @@ export class Character extends BaseEntity {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    // 共通のアニメーション実行
     this.playAnimation(this.getSkillAnimation(SkillTypes.PROJECTILE));
 
     setTimeout(() => {
@@ -448,7 +429,6 @@ export class Character extends BaseEntity {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    // 共通のアニメーション実行
     this.playAnimation(this.getSkillAnimation(SkillTypes.AREA_ATTACK));
 
     setTimeout(() => {
@@ -458,7 +438,6 @@ export class Character extends BaseEntity {
     }, skillData.castTime || 200);
   }
 
-  // スキルアニメーション名を取得
   getSkillAnimation(skillType) {
     switch (skillType) {
       case SkillTypes.BUFF:

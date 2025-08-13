@@ -36,9 +36,9 @@ export class Player extends Character {
     this.stamina = this.maxStamina;
 
     this.level = playerData.initialLevel;
-    this.totalExperience = playerData.initialExperience; // 累積経験値
-    this.experience = playerData.initialExperience; // 現在レベルでの経験値
-    this.experienceToNextLevel = playerData.initialExpToNextLevel; // 次のレベルに必要な経験値
+    this.totalExperience = playerData.initialExperience; // Cumulative experience
+    this.experience = playerData.initialExperience; // Experience at current level
+    this.experienceToNextLevel = playerData.initialExpToNextLevel; // Experience needed for next level
     this.statusPoints = playerData.initialStatusPoints;
     this.inventory = playerData.initialInventory || [];
 
@@ -165,7 +165,7 @@ export class Player extends Character {
       newAnimation = AnimationNames.WALK;
     }
 
-    // 現在のアニメーションと同じ場合は再実行しない
+    // Do not re-execute the same animation
     if (this.currentAnimationName !== newAnimation) {
       this.playAnimation(newAnimation);
     }
@@ -197,7 +197,6 @@ export class Player extends Character {
       );
     } else {
       this.game.playSound(AssetPaths.SFX_DAMAGE);
-      // ダメージ時のHPバーエフェクト
       if (this.game.hud) {
         this.game.hud.showHpDamageEffect();
       }
@@ -214,8 +213,8 @@ export class Player extends Character {
   }
 
   addExperience(amount) {
-    this.totalExperience += amount; // 累積経験値に加算
-    this.experience += amount; // 現在レベルでの経験値に加算
+    this.totalExperience += amount;
+    this.experience += amount;
     if (this.experience >= this.experienceToNextLevel) {
       this.levelUp();
     }
@@ -223,16 +222,16 @@ export class Player extends Character {
 
   levelUp() {
     this.level++;
-    // 現在レベルでの経験値をリセットし、余剰分を次に繰り越し
+    // Reset current level experience and carry over excess to next level
     this.experience -= this.experienceToNextLevel;
-    // 次のレベルに必要な経験値を増加
+    // Increase experience needed for next level
     this.experienceToNextLevel = Math.floor(
       this.experienceToNextLevel * this.data.levelUpExpMultiplier
     );
     this.statusPoints += this.data.statusPointsPerLevel;
     this.game.playSound(AssetPaths.SFX_LEVEL_UP);
 
-    // 連続レベルアップのチェック
+    // Check for consecutive level-ups
     if (this.experience >= this.experienceToNextLevel) {
       this.levelUp();
     }
@@ -354,7 +353,6 @@ export class Player extends Character {
     }
 
     if (this.fp < currentSkill.fpCost) {
-      // FP不足時のバーエフェクトと効果音
       this.game.playSound(AssetPaths.SFX_FP_INSUFFICIENT);
       if (this.game.hud) {
         this.game.hud.showFpInsufficientEffect();
@@ -362,17 +360,15 @@ export class Player extends Character {
       return false;
     }
 
-    const skillType = currentSkill.type; // 実行タイプ（JSONの"type"フィールド）
+    const skillType = currentSkill.type;
 
-    // FP消費
     this.fp -= currentSkill.fpCost;
 
-    // FP使用時のバーエフェクト
     if (this.game.hud) {
       this.game.hud.showFpUseEffect();
     }
 
-    // プレイヤー固有のスキル実行（FPベース、タイプ別）
+    // Player-specific skill execution (FP-based, by type)
     this.isUsingSkill = true;
 
     if (skillType === SkillTypes.BUFF) {
@@ -383,13 +379,13 @@ export class Player extends Character {
       this.executeAreaAttackSkill(this.skills[this.currentSkillIndex]);
     }
 
-    // スキルタイプごとに適切なアニメーション時間を設定
+    // Set appropriate animation duration for each skill type
     let skillAnimationDuration;
     if (skillType === SkillTypes.BUFF) {
-      // バフスキルは短時間でアニメーション終了
+      // Buff skills have shorter animation duration
       skillAnimationDuration = (currentSkill.castTime || 0) + 1000;
     } else {
-      // その他のスキルは従来通り
+      // Other skills use the standard duration
       skillAnimationDuration = Math.max(
         (currentSkill.castTime || 0) + 1000,
         currentSkill.duration || 1000
@@ -403,30 +399,26 @@ export class Player extends Character {
     return true;
   }
 
-  // プレイヤー固有のバフスキル（エフェクトと音響効果）
+  // Player-specific buff skill (with effects and sound)
   executeBuffSkill(skillId) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    // 親クラスの共通処理（アニメーション + バフ適用）
     super.executeBuffSkill(skillId);
 
-    // Player固有の処理（音響 + エフェクト）
     setTimeout(() => {
       this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
       this.showSkillBuffEffect();
     }, skillData.castTime || 0);
   }
 
-  // プレイヤー固有のプロジェクタイルスキル（音響効果付き）
+  // Player-specific projectile skill (with sound effects)
   executeProjectileSkill(skillId) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    // 親クラスの共通処理（アニメーション + プロジェクタイル生成）
     super.executeProjectileSkill(skillId);
 
-    // Player固有の処理（音響 + エフェクト）
     setTimeout(() => {
       if (!this.isDead) {
         this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
@@ -435,15 +427,13 @@ export class Player extends Character {
     }, skillData.castTime || 0);
   }
 
-  // プレイヤー固有の範囲攻撃スキル（音響効果付き）
+  // Player-specific area attack skill (with sound effects)
   executeAreaAttackSkill(skillId) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    // 親クラスの共通処理（アニメーション + エリア攻撃生成）
     super.executeAreaAttackSkill(skillId);
 
-    // Player固有の処理（音響効果）
     setTimeout(() => {
       if (!this.isDead) {
         this.game.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
@@ -451,9 +441,9 @@ export class Player extends Character {
     }, skillData.castTime || 0);
   }
 
-  // 移動情報取得（Player固有の複雑な状態判定）
+  // Get movement information (Player-specific complex state checks)
   getMovementInfo() {
-    // 移動不可状態をチェック
+    // Check for movement-disabled states
     if (
       this.isDead ||
       this.isJumping ||
@@ -475,7 +465,7 @@ export class Player extends Character {
       return { shouldPlay: false, state: null };
     }
 
-    // 移動状態を判定
+    // Determine movement state
     const state = this.isDashing ? MovementState.DASH : MovementState.WALK;
     return { shouldPlay: true, state: state };
   }

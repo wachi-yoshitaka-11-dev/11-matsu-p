@@ -50,7 +50,7 @@ export class Enemy extends Character {
     this.isPerformingStrongAttack = false;
     this.nextAction = null;
 
-    // スキルクールダウン管理（Enemy固有）
+    // Skill cooldown management (Enemy-specific)
     this.initializeSkillCooldowns();
 
     this.deathAnimationStartTime = null;
@@ -70,11 +70,9 @@ export class Enemy extends Character {
     }
   }
 
-  // スキルクールダウン初期化（Enemy固有）
   initializeSkillCooldowns() {
     this.skillCooldowns = {};
 
-    // データからスキル情報を取得して初期化
     if (this.data && this.data.skills) {
       for (const skillId of Object.keys(this.data.skills)) {
         this.skillCooldowns[skillId] = 0;
@@ -86,7 +84,6 @@ export class Enemy extends Character {
   update(deltaTime) {
     super.update(deltaTime);
 
-    // スキルクールダウン更新（Enemy固有）
     this.updateSkillCooldowns(deltaTime);
 
     if (this.isDead) {
@@ -144,25 +141,24 @@ export class Enemy extends Character {
   }
 
   chooseAndPerformAction(distance) {
-    // 次の行動が決まっていない場合、確率で決定
+    // If the next action is not determined, decide based on probability
     if (this.nextAction === null) {
       this.selectNextAction();
     }
 
-    // 決定された行動を実行
     this.executeSelectedAction(distance);
   }
 
-  // 行動選択ロジック（子クラスでオーバーライド可能）
+  // Action selection logic (can be overridden in subclasses)
   selectNextAction() {
-    // 通常のEnemyは基本攻撃のみ
+    // Regular Enemy uses basic attacks only
     this.nextAction =
       Math.random() < this.data.strongAttack.probability
         ? AttackTypes.STRONG
         : AttackTypes.WEAK;
   }
 
-  // 選択された行動の実行（子クラスでオーバーライド可能）
+  // Execute the selected action (can be overridden in subclasses)
   executeSelectedAction(distance) {
     if (
       this.nextAction === AttackTypes.STRONG &&
@@ -255,7 +251,6 @@ export class Enemy extends Character {
     this.deathAnimationStartTime = Date.now();
   }
 
-  // スキルクールダウンの更新（Enemy固有）
   updateSkillCooldowns(deltaTime) {
     for (const skillId of Object.keys(this.skillCooldowns)) {
       this.skillCooldowns[skillId] = Math.max(
@@ -265,18 +260,14 @@ export class Enemy extends Character {
     }
   }
 
-  // スキル実行可能かチェック（Enemy固有）
   canPerformSkill(skillId, distance = 0) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return false;
 
-    // クールダウン中か確認
     if (this.skillCooldowns[skillId] > 0) return false;
 
-    // 実行中か確認
     if (this.skillPerformanceStates[skillId]) return false;
 
-    // 距離チェック
     if (skillData.range && distance > skillData.range) {
       return false;
     }
@@ -284,7 +275,6 @@ export class Enemy extends Character {
     return true;
   }
 
-  // スキル実行（Enemy固有）
   performSkill(skillId) {
     if (
       !this.data.skills ||
@@ -301,11 +291,9 @@ export class Enemy extends Character {
     this.skillPerformanceStates[skillId] = true;
     this.skillCooldowns[skillId] = this.data.skills[skillId].cooldown;
 
-    // スキルデータからタイプを取得
-    const skillData = this.game.data.skills[skillId]; // skillIdはID
-    const skillType = skillData.type; // 実行タイプ
+    const skillData = this.game.data.skills[skillId];
+    const skillType = skillData.type;
 
-    // タイプ別の実行ロジック
     switch (skillType) {
       case SkillTypes.BUFF:
         this.executeBuffSkill(skillId);
@@ -327,7 +315,7 @@ export class Enemy extends Character {
     return true;
   }
 
-  // Enemy版のスキル実行（状態管理付き）
+  // Enemy version of skill execution (with state management)
   executeBuffSkill(skillId) {
     super.executeBuffSkill(skillId);
     this.scheduleSkillStateReset(skillId, 500);
@@ -343,20 +331,18 @@ export class Enemy extends Character {
     this.scheduleSkillStateReset(skillId, 500);
   }
 
-  // スキル状態リセットのスケジュール
   scheduleSkillStateReset(skillId, delay) {
     setTimeout(() => {
       this.skillPerformanceStates[skillId] = false;
     }, delay);
   }
 
-  // 移動情報取得（Enemy固有のシンプルな移動判定）
+  // Get movement information (Enemy-specific simple movement check)
   getMovementInfo() {
     if (this.isDead) {
       return { shouldPlay: false, state: null };
     }
 
-    // プレイヤーとの距離による移動判定
     const distance = this.mesh.position.distanceTo(this.player.mesh.position);
     const minAttackRange = Math.min(
       this.data.weakAttack.range,
