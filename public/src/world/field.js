@@ -6,7 +6,6 @@ import { Environment } from '../entities/world/environment.js';
 export class Field {
   constructor(game) {
     this.game = game;
-    this.terrainConfig = this.game.data.terrains;
     // Field constants (will be moved to stage definition later)
     this.TERRAIN_SIZE = 100;
     this.TERRAIN_SEGMENTS = 50;
@@ -24,34 +23,22 @@ export class Field {
     this.CLOUD_MAX_SCALE = 50.0;
     this.CLOUD_OPACITY = 0.4;
 
-    const size = this.TERRAIN_SIZE;
-    const segments = this.TERRAIN_SEGMENTS;
-    const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
-    geometry.rotateX(-Math.PI / 2);
+    // Use Environment class for ground - will use default size/segments if not specified
+    const groundEnv = new Environment(
+      this.game,
+      EnvironmentTypes.GROUND,
+      new THREE.Vector3(0, 0, 0),
+      {
+        width: this.TERRAIN_SIZE,
+        height: this.TERRAIN_SIZE,
+        segments: this.TERRAIN_SEGMENTS,
+        textureRepeat: { x: 10, y: 10 },
+        color: 0x4a7d2c,
+        side: THREE.DoubleSide,
+      }
+    );
 
-    const vertices = geometry.attributes.position.array;
-    for (let i = 0; i < vertices.length; i += 3) {
-      const x = vertices[i];
-      const z = vertices[i + 2];
-      const y = Math.sin(x * 0.1) * 2 + Math.cos(z * 0.1) * 2;
-      vertices[i + 1] = y;
-    }
-    geometry.attributes.position.needsUpdate = true;
-    geometry.computeVertexNormals();
-
-    const groundTexture = this.game.assetLoader.getTexture('terrain/ground');
-    if (groundTexture) {
-      groundTexture.wrapS = THREE.RepeatWrapping;
-      groundTexture.wrapT = THREE.RepeatWrapping;
-      groundTexture.repeat.set(10, 10);
-    }
-
-    const material = new THREE.MeshStandardMaterial({
-      map: groundTexture || null,
-      color: groundTexture ? 0xffffff : 0x4a7d2c,
-      side: THREE.DoubleSide,
-    });
-    this.mesh = new THREE.Mesh(geometry, material);
+    this.mesh = groundEnv.mesh;
 
     this.raycaster = new THREE.Raycaster();
 

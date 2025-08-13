@@ -27,5 +27,11 @@
       "mcp__playwright__browser_handle_dialog"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7",
+    "playwright",
+    "sequential-thinking",
+    "serena"
+  ]
 }

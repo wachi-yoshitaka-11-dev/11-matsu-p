@@ -133,13 +133,13 @@ export class Game {
 
   async loadGameData() {
     const dataFiles = [
-      'player',
+      'skills',
+      'items',
       'weapons',
       'shields',
+      'player',
       'enemies',
       'npcs',
-      'items',
-      'skills',
       'localization',
       'terrains',
       'environments',
@@ -255,13 +255,13 @@ export class Game {
 
     // Collect all assets from JSON data
     const collections = [
+      this.data.terrains,
+      this.data.npcs,
       this.data.enemies,
       this.data.items,
-      this.data.npcs,
-      this.data.shields,
       this.data.weapons,
+      this.data.shields,
       this.data.skills,
-      this.data.terrains,
     ];
 
     for (const collection of collections) {

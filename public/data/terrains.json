@@ -1,14 +1,14 @@
 {
   "tree": {
-    "model": "terrain/tree.glb",
-    "texture": "terrain/tree.png"
+    "model": "terrains/tree.glb",
+    "texture": "terrains/tree.png"
   },
   "rock": {
-    "model": "terrain/rock.glb",
-    "texture": "terrain/rock.png"
+    "model": "terrains/rock.glb",
+    "texture": "terrains/rock.png"
   },
   "grass": {
-    "model": "terrain/grass.glb",
-    "texture": "terrain/grass.png"
+    "model": "terrains/grass.glb",
+    "texture": "terrains/grass.png"
   }
 }

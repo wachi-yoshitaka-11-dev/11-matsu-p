@@ -1,10 +1,10 @@
 {
   "cloud": {
     "type": "cloud",
-    "texture": "terrain/cloud.png"
+    "texture": "terrains/cloud.png"
   },
   "ground": {
     "type": "ground",
-    "texture": "terrain/ground.png"
+    "texture": "terrains/ground.png"
   }
 }

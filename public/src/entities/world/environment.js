@@ -37,17 +37,55 @@ export class Environment extends BaseEntity {
         );
         break;
       case EnvironmentTypes.GROUND:
-        geometry = new THREE.PlaneGeometry(
-          options.width || 1,
-          options.height || 1
-        );
+        // Check if model file is specified (future: glb file support)
+        if (envData.model) {
+          // TODO: Load glb model when model is specified
+          throw new Error('GLB model loading for ground not yet implemented');
+        } else {
+          // Current: Create geometry (custom or default)
+          geometry =
+            options.geometry ||
+            new THREE.PlaneGeometry(
+              options.width || 100,
+              options.height || 100,
+              options.segments || 50,
+              options.segments || 50
+            );
+
+          // Apply rotation if geometry wasn't pre-rotated
+          if (!options.geometry) {
+            geometry.rotateX(-Math.PI / 2);
+
+            // Generate height variations if no custom geometry provided
+            const vertices = geometry.attributes.position.array;
+            for (let i = 0; i < vertices.length; i += 3) {
+              const x = vertices[i];
+              const z = vertices[i + 2];
+              const y = Math.sin(x * 0.1) * 2 + Math.cos(z * 0.1) * 2;
+              vertices[i + 1] = y;
+            }
+            geometry.attributes.position.needsUpdate = true;
+            geometry.computeVertexNormals();
+          }
+        }
+
+        // Apply texture wrapping settings if specified
+        if (texture && options.textureRepeat) {
+          texture.wrapS = THREE.RepeatWrapping;
+          texture.wrapT = THREE.RepeatWrapping;
+          texture.repeat.set(
+            options.textureRepeat.x || 1,
+            options.textureRepeat.y || 1
+          );
+        }
+
         material = new THREE.MeshStandardMaterial({
           map: texture,
-          transparent: true,
+          color: texture ? 0xffffff : options.color || 0x4a7d2c,
+          side: options.side || THREE.DoubleSide,
         });
         super(game, envId, envData, geometry, material);
         this.mesh.position.copy(position);
-        this.mesh.rotation.x = -Math.PI / 2;
         break;
       default:
         throw new Error(`Unknown environment type: ${envType}`);
