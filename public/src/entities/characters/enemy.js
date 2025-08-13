@@ -5,6 +5,7 @@ import {
   AnimationNames,
   SkillTypes,
   AttackTypes,
+  MovementState,
 } from '../../utils/constants.js';
 
 export class Enemy extends Character {
@@ -348,5 +349,25 @@ export class Enemy extends Character {
     setTimeout(() => {
       this.skillPerformanceStates[skillId] = false;
     }, delay);
+  }
+
+  // 移動情報取得（Enemy固有のシンプルな移動判定）
+  getMovementInfo() {
+    if (this.isDead) {
+      return { shouldPlay: false, state: null };
+    }
+
+    // プレイヤーとの距離による移動判定
+    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const minAttackRange = Math.min(
+      this.data.weakAttack.range,
+      this.data.strongAttack.range
+    );
+
+    const isMoving = distance > minAttackRange;
+    return {
+      shouldPlay: isMoving,
+      state: isMoving ? MovementState.WALK : null,
+    };
   }
 }

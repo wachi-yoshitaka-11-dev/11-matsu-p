@@ -69,10 +69,6 @@ export class Player extends Character {
 
     this.spawn();
 
-    this.footstepAudio = null;
-    this.isPlayingFootsteps = false;
-    this.lastMovementState = null;
-
     if (this.mixer) {
       this.mixer.addEventListener('finished', (e) => {
         const clipName = e.action.getClip().name;
@@ -116,7 +112,6 @@ export class Player extends Character {
   update(deltaTime) {
     super.update(deltaTime);
     this.updateAnimation();
-    this.updateFootsteps();
 
     if (
       !this.isDashing &&
@@ -202,6 +197,10 @@ export class Player extends Character {
       );
     } else {
       this.game.playSound(AssetPaths.SFX_DAMAGE);
+      // ダメージ時のHPバーエフェクト
+      if (this.game.hud) {
+        this.game.hud.showHpDamageEffect();
+      }
     }
 
     super.takeDamage(finalDamage);
@@ -355,6 +354,11 @@ export class Player extends Character {
     }
 
     if (this.fp < currentSkill.fpCost) {
+      // FP不足時のバーエフェクトと効果音
+      this.game.playSound(AssetPaths.SFX_FP_INSUFFICIENT);
+      if (this.game.hud) {
+        this.game.hud.showFpInsufficientEffect();
+      }
       return false;
     }
 
@@ -362,6 +366,11 @@ export class Player extends Character {
 
     // FP消費
     this.fp -= currentSkill.fpCost;
+
+    // FP使用時のバーエフェクト
+    if (this.game.hud) {
+      this.game.hud.showFpUseEffect();
+    }
 
     // プレイヤー固有のスキル実行（FPベース、タイプ別）
     this.isUsingSkill = true;
@@ -442,7 +451,9 @@ export class Player extends Character {
     }, skillData.castTime || 0);
   }
 
-  updateFootsteps() {
+  // 移動情報取得（Player固有の複雑な状態判定）
+  getMovementInfo() {
+    // 移動不可状態をチェック
     if (
       this.isDead ||
       this.isJumping ||
@@ -451,66 +462,22 @@ export class Player extends Character {
       this.isAttacking ||
       this.isPickingUp
     ) {
-      this.stopFootsteps();
-      return;
+      return { shouldPlay: false, state: null };
     }
 
     const velocity = this.physics.velocity;
     if (!velocity) {
-      this.stopFootsteps();
-      return;
+      return { shouldPlay: false, state: null };
     }
+
     const isMoving = velocity.length() > 0.1;
-
     if (!isMoving) {
-      this.stopFootsteps();
-      return;
+      return { shouldPlay: false, state: null };
     }
 
-    const currentMovementState = this.isDashing
-      ? MovementState.DASH
-      : MovementState.WALK;
-
-    if (currentMovementState !== this.lastMovementState) {
-      this.stopFootsteps();
-      this.startFootsteps(currentMovementState);
-      this.lastMovementState = currentMovementState;
-    }
-
-    if (!this.isPlayingFootsteps) {
-      this.startFootsteps(currentMovementState);
-    }
-  }
-
-  startFootsteps(movementState) {
-    if (this.isPlayingFootsteps) {
-      this.stopFootsteps();
-    }
-
-    const soundName =
-      movementState === MovementState.DASH
-        ? AssetPaths.SFX_DASH
-        : AssetPaths.SFX_WALK;
-
-    this.footstepAudio = this.game.createAudio(soundName, {
-      volume: 0.3,
-      loop: true,
-    });
-
-    if (this.footstepAudio) {
-      this.footstepAudio.play();
-    }
-
-    this.isPlayingFootsteps = true;
-  }
-
-  stopFootsteps() {
-    if (this.footstepAudio) {
-      this.footstepAudio.stop();
-      this.footstepAudio = null;
-    }
-    this.isPlayingFootsteps = false;
-    this.lastMovementState = null;
+    // 移動状態を判定
+    const state = this.isDashing ? MovementState.DASH : MovementState.WALK;
+    return { shouldPlay: true, state: state };
   }
 
   playPickUpAnimation() {

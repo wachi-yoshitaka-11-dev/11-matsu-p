@@ -1,3 +1,7 @@
+// ========================================
+// 基本ゲーム定数
+// ========================================
+
 export const GameConstants = {
   GAME_SPEED: 1.0,
   GRAVITY: 9.8,
@@ -8,18 +12,21 @@ export const Fall = {
   MAX_FALL_DEPTH: -1000,
 };
 
-export const EffectColors = {
-  DAMAGE: 0xff0000,
-  ATTACK: 0xffff00,
-  SKILL_BUFF: 0x00ffff,
-  SKILL_PROJECTILE: 0x8a2be2,
-  SKILL_AREA_ATTACK: 0xff4500,
-  CHARGE: 0xff00ff,
+// ========================================
+// タイプ定義（Enum相当）
+// ========================================
+
+export const GameState = {
+  OPENING: 'opening',
+  TITLE: 'title',
+  PLAYING: 'playing',
+  PAUSED: 'paused',
+  ENDING: 'ending',
 };
 
-export const EnvironmentTypes = {
-  CLOUD: 'cloud',
-  GROUND: 'ground',
+export const MovementState = {
+  WALK: 'walk',
+  DASH: 'dash',
 };
 
 export const SkillTypes = {
@@ -28,19 +35,33 @@ export const SkillTypes = {
   AREA_ATTACK: 'areaAttack',
 };
 
-export const EnemyTypes = {
-  GRUNT: 'grunt',
-  BOSS: 'boss',
-};
-
 export const AttackTypes = {
   WEAK: 'weak',
   STRONG: 'strong',
 };
 
-export const ItemConstants = {
-  PICKUP_RANGE: 2.0,
+export const EnemyTypes = {
+  GRUNT: 'grunt',
+  BOSS: 'boss',
 };
+
+export const EnvironmentTypes = {
+  CLOUD: 'cloud',
+  GROUND: 'ground',
+};
+
+export const SequenceStep = {
+  IDLE: 'idle',
+  TEXT_COMPLETE: 'textComplete',
+  SHOWING_TEXT: 'showingText',
+  FADING_OUT: 'fadingOut',
+  SHOWING_STAFF_ROLL: 'showingStaffRoll',
+  SHOWING_FIN: 'showingFin',
+};
+
+// ========================================
+// アセットパス定義
+// ========================================
 
 export const AssetPaths = {
   LOGO_IMAGE: 'sequences/logo.png',
@@ -86,6 +107,7 @@ export const AssetPaths = {
   SFX_USE_SKILL_BUFF: 'sfx/use-skill-buff.mp3',
   SFX_USE_SKILL_PROJECTILE: 'sfx/use-skill-projectile.mp3',
   SFX_USE_SKILL_AREA_ATTACK: 'sfx/use-skill-area-attack.mp3',
+  SFX_FP_INSUFFICIENT: 'sfx/fp-insufficient.mp3',
   SFX_WALK: 'sfx/walk.mp3',
 };
 
@@ -108,27 +130,33 @@ export const AnimationNames = {
   PICK_UP: 'pick-up',
 };
 
-export const GameState = {
-  OPENING: 'opening',
-  TITLE: 'title',
-  PLAYING: 'playing',
-  PAUSED: 'paused',
-  ENDING: 'ending',
+// ========================================
+// 機能別定数
+// ========================================
+
+export const EffectColors = {
+  DAMAGE: 0xff0000,
+  ATTACK: 0xffff00,
+  SKILL_BUFF: 0x00ffff,
+  SKILL_PROJECTILE: 0x8a2be2,
+  SKILL_AREA_ATTACK: 0xff4500,
+  CHARGE: 0xff00ff,
 };
 
-export const MovementState = {
-  WALK: 'walk',
-  DASH: 'dash',
+export const AudioConstants = {
+  FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // この距離以上では音が聞こえない
+  FOOTSTEP_MIN_VOLUME: 0.05, // 最小音量
+  FOOTSTEP_MAX_VOLUME: 0.3, // 最大音量（近距離）
+  PLAYER_FOOTSTEP_VOLUME: 0.3, // プレイヤーの歩行音量
 };
 
-export const SequenceStep = {
-  IDLE: 'idle',
-  TEXT_COMPLETE: 'textComplete',
-  SHOWING_TEXT: 'showingText',
-  FADING_OUT: 'fadingOut',
-  SHOWING_STAFF_ROLL: 'showingStaffRoll',
-  SHOWING_FIN: 'showingFin',
+export const ItemConstants = {
+  PICKUP_RANGE: 2.0,
 };
+
+// ========================================
+// ヘルパー定数・ユーティリティ
+// ========================================
 
 export const HTMLTags = {
   BR: '<br>',

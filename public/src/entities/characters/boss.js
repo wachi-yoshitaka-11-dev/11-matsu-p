@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 import { Enemy } from './enemy.js';
-import {
-  AttackTypes,
-  AnimationNames,
-} from '../../utils/constants.js';
+import { AttackTypes, AnimationNames } from '../../utils/constants.js';
 
 export class Boss extends Enemy {
   constructor(game, enemyId, position, options = {}) {

@@ -367,6 +367,36 @@ export class Hud {
       this.player.totalExperience.toLocaleString();
   }
 
+  // FP不足時のエフェクト表示
+  showFpInsufficientEffect() {
+    // FPバーを紫色フラッシュ
+    this.fpBar.element.classList.add('fp-insufficient-flash');
+    // 0.5秒後にフラッシュエフェクトを削除
+    setTimeout(() => {
+      this.fpBar.element.classList.remove('fp-insufficient-flash');
+    }, 500);
+  }
+
+  // HPダメージ時のエフェクト表示
+  showHpDamageEffect() {
+    // HPバーを赤色フラッシュ
+    this.hpBar.element.classList.add('hp-damage-flash');
+    // 0.5秒後にフラッシュエフェクトを削除
+    setTimeout(() => {
+      this.hpBar.element.classList.remove('hp-damage-flash');
+    }, 500);
+  }
+
+  // FP使用時のエフェクト表示
+  showFpUseEffect() {
+    // FPバーを青色フラッシュ
+    this.fpBar.element.classList.add('fp-use-flash');
+    // 0.3秒後にフラッシュエフェクトを削除
+    setTimeout(() => {
+      this.fpBar.element.classList.remove('fp-use-flash');
+    }, 300);
+  }
+
   // ================================================================
   // PRIVATE METHODS - 内部ヘルパー
   // ================================================================

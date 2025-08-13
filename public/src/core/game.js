@@ -176,6 +176,7 @@ export class Game {
       AssetPaths.SFX_DAMAGE,
       AssetPaths.SFX_DASH,
       AssetPaths.SFX_DEATH,
+      AssetPaths.SFX_FP_INSUFFICIENT,
       AssetPaths.SFX_GUARD,
       AssetPaths.SFX_JUMP,
       AssetPaths.SFX_KILL,

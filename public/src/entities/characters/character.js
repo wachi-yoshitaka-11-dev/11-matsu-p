@@ -9,6 +9,8 @@ import {
   AnimationNames,
   AssetPaths,
   SkillTypes,
+  MovementState,
+  AudioConstants,
 } from '../../utils/constants.js';
 
 export class Character extends BaseEntity {
@@ -41,6 +43,11 @@ export class Character extends BaseEntity {
 
     // スキルパフォーマンス状態（キャラクター共通）
     this.skillPerformanceStates = {};
+
+    // 歩行音関連（キャラクター共通）
+    this.footstepAudio = null;
+    this.isPlayingFootsteps = false;
+    this.lastMovementState = null;
 
     this.mesh.traverse((object) => {
       if (object.isMesh && object.material) {
@@ -212,6 +219,7 @@ export class Character extends BaseEntity {
     }
 
     if (this.isDead) {
+      this.stopFootsteps();
       return;
     }
 
@@ -220,6 +228,9 @@ export class Character extends BaseEntity {
       this.isDead = true;
       this.onDeath();
     }
+
+    // 歩行音を自動管理
+    this.updateFootsteps();
 
     // 必要に応じて子クラスで追加のアップデートを実行
   }
@@ -232,6 +243,118 @@ export class Character extends BaseEntity {
     direction.y = 0; // Y軸方向は無視して水平方向のみ
     direction.normalize();
     return direction;
+  }
+
+  // 歩行音管理（キャラクター共通）
+  startFootsteps(movementState) {
+    if (this.isPlayingFootsteps) {
+      this.stopFootsteps();
+    }
+
+    const soundName =
+      movementState === MovementState.DASH
+        ? AssetPaths.SFX_DASH
+        : AssetPaths.SFX_WALK;
+
+    // 距離に基づく音量を計算
+    const volume = this.calculateFootstepVolume();
+
+    this.footstepAudio = this.game.createAudio(soundName, {
+      volume: volume,
+      loop: true,
+    });
+
+    if (this.footstepAudio) {
+      this.footstepAudio.play();
+    }
+
+    this.isPlayingFootsteps = true;
+  }
+
+  // 距離に基づく歩行音の音量計算
+  calculateFootstepVolume() {
+    // プレイヤー自身の場合は基本音量
+    if (this === this.game.player) {
+      return AudioConstants.PLAYER_FOOTSTEP_VOLUME;
+    }
+
+    // プレイヤーとの距離を計算
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
+
+    // 距離が最大可聴距離を超えている場合は音量0
+    if (distance >= AudioConstants.FOOTSTEP_MAX_AUDIBLE_DISTANCE) {
+      return 0;
+    }
+
+    // 線形補間で音量を計算（距離が近いほど音量大）
+    const volumeRatio =
+      1 - distance / AudioConstants.FOOTSTEP_MAX_AUDIBLE_DISTANCE;
+    const volume =
+      AudioConstants.FOOTSTEP_MIN_VOLUME +
+      (AudioConstants.FOOTSTEP_MAX_VOLUME -
+        AudioConstants.FOOTSTEP_MIN_VOLUME) *
+        volumeRatio;
+
+    return Math.max(
+      AudioConstants.FOOTSTEP_MIN_VOLUME,
+      Math.min(AudioConstants.FOOTSTEP_MAX_VOLUME, volume)
+    );
+  }
+
+  stopFootsteps() {
+    if (this.footstepAudio) {
+      this.footstepAudio.stop();
+      this.footstepAudio = null;
+    }
+    this.isPlayingFootsteps = false;
+    this.lastMovementState = null;
+  }
+
+  // 歩行音の自動管理（基底クラス共通処理）
+  updateFootsteps() {
+    const movementInfo = this.getMovementInfo();
+
+    if (!movementInfo.shouldPlay) {
+      this.stopFootsteps();
+      return;
+    }
+
+    if (movementInfo.state !== this.lastMovementState) {
+      this.stopFootsteps();
+      this.startFootsteps(movementInfo.state);
+      this.lastMovementState = movementInfo.state;
+    }
+
+    if (!this.isPlayingFootsteps) {
+      this.startFootsteps(movementInfo.state);
+    }
+
+    // 再生中の歩行音の音量を距離に応じて動的に更新
+    this.updateFootstepVolume();
+  }
+
+  // 再生中の歩行音の音量を動的に更新
+  updateFootstepVolume() {
+    if (this.footstepAudio && this.isPlayingFootsteps) {
+      const newVolume = this.calculateFootstepVolume();
+
+      // 音量が0の場合は音を停止
+      if (newVolume === 0) {
+        this.stopFootsteps();
+        return;
+      }
+
+      // 音量を更新
+      this.footstepAudio.setVolume(newVolume);
+    }
+  }
+
+  // 移動情報取得（子クラスでオーバーライド）
+  getMovementInfo() {
+    // デフォルト実装：移動していない
+    return { shouldPlay: false, state: null };
   }
 
   // 共通エフェクトメソッド（子クラスで使用可能）

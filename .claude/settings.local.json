@@ -21,7 +21,10 @@
       "mcp__serena__activate_project",
       "mcp__serena__find_symbol",
       "mcp__serena__get_symbols_overview",
-      "mcp__serena__replace_regex"
+      "mcp__serena__replace_regex",
+      "Bash(npx http-server:*)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_handle_dialog"
     ]
   },
   "enableAllProjectMcpServers": true
