@@ -15,8 +15,8 @@ export class Environment extends BaseEntity {
     const texture = game.assetLoader.getTexture(textureName);
 
     let geometry, material;
-    // envIdからタイプを取得（現在はIDとタイプが同じだが、将来的に分離可能）
-    const envType = envId; // 暫定的にIDをタイプとして使用
+    // Get environment type from data (now properly separated from ID)
+    const envType = envData.type;
 
     switch (envType) {
       case EnvironmentTypes.CLOUD:

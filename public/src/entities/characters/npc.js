@@ -75,15 +75,15 @@ export class Npc extends Character {
   }
 
   update(deltaTime) {
-    // 親クラスの更新処理を呼び出し（物理演算、アニメーション等）
+    // Call parent class update (physics, animations, etc.)
     super.update(deltaTime);
 
     if (!this.data || !this.game.player) return;
-    const distance = this.mesh.position.distanceTo(
+    const distanceSq = this.mesh.position.distanceToSquared(
       this.game.player.mesh.position
     );
     const interactionRange = this.data.interactionRange;
-    this.interactionPrompt.visible = distance < interactionRange;
+    this.interactionPrompt.visible = distanceSq < interactionRange * interactionRange;
   }
 
   interact() {
@@ -96,17 +96,12 @@ export class Npc extends Character {
   }
 
   dispose() {
-    if (this.mesh.geometry) {
-      this.mesh.geometry.dispose();
-    }
-    if (this.mesh.material) {
-      this.mesh.material.dispose();
-    }
     if (this.interactionPrompt) {
       const sprite = this.interactionPrompt.children[0];
       sprite?.material?.map?.dispose();
       sprite?.material?.dispose();
     }
+    super.dispose(); // ensures deep disposal for Group meshes
     this.currentDialogueIndex = 0;
     this.dialogue = null;
     this.data = null;

@@ -19,12 +19,12 @@ export class Projectile extends Skill {
     this.damage = skillData.damage || 30;
 
     this.mesh.position.copy(startPosition);
-    this.mesh.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0),
-      direction.normalize()
-    );
 
-    this.direction = direction.clone().normalize();
+    const unitDir = direction && direction.lengthSq() > 1e-8
+      ? direction.clone().normalize()
+      : new THREE.Vector3(0, 0, -1);
+    this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), unitDir);
+    this.direction = unitDir;
   }
 
   update(deltaTime) {

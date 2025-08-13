@@ -1,6 +1,6 @@
 {
   "holyBlessing": {
-    "name": "聞なる祝福",
+    "name": "聖なる祝福",
     "type": "buff",
     "model": "skills/buff.glb",
     "texture": "skills/buff.png",
