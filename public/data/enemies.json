@@ -1,6 +1,7 @@
 {
-  "grunt": {
-    "name": "雑魚敵",
+  "forestGoblin": {
+    "name": "森のゴブリン",
+    "type": "grunt",
     "model": "enemies/enemy.glb",
     "texture": "enemies/enemy.png",
     "description": "基本的な敵",
@@ -21,8 +22,9 @@
       "probability": 0.25
     }
   },
-  "boss": {
-    "name": "ボス",
+  "dragonKing": {
+    "name": "竜の王",
+    "type": "boss",
     "model": "enemies/boss.glb",
     "texture": "enemies/boss.png",
     "description": "強力な敵のボス",
@@ -41,6 +43,20 @@
       "cooldown": 3.5,
       "castTime": 0.8,
       "probability": 0.35
+    },
+    "skills": {
+      "holyBlessing": {
+        "cooldown": 15.0,
+        "probability": 0.1
+      },
+      "magicMissile": {
+        "cooldown": 4.0,
+        "probability": 0.3
+      },
+      "holyExplosion": {
+        "cooldown": 8.0,
+        "probability": 0.2
+      }
     }
   }
 }

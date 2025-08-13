@@ -14,15 +14,5 @@
     "image": "items/fp-potion.png",
     "description": "FPを回復するポーション",
     "fpHealAmount": 30
-  },
-  "generic": {
-    "name": "アイテム",
-    "model": "items/item.glb",
-    "texture": "items/item.png",
-    "image": "items/item.png",
-    "description": "一般的なアイテム",
-    "pickupRange": 2.0,
-    "sphereRadius": 0.2,
-    "geometrySegments": 8
   }
 }

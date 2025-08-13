@@ -1,16 +1,19 @@
 import * as THREE from 'three';
 import { BaseEntity } from '../base-entity.js';
 import { PhysicsComponent } from '../../core/components/physics-component.js';
+import { AreaAttack } from '../skills/area-attack.js';
+import { Projectile } from '../skills/projectile.js';
 import {
   EffectColors,
   Fall,
   AnimationNames,
   AssetPaths,
+  SkillTypes,
 } from '../../utils/constants.js';
 
 export class Character extends BaseEntity {
-  constructor(game, type, data, geometryOrModel, material, options = {}) {
-    super(game, type, data, geometryOrModel, material, options);
+  constructor(game, id, data, geometryOrModel, material, options = {}) {
+    super(game, id, data, geometryOrModel, material, options);
 
     if (geometryOrModel instanceof THREE.Group) {
       this.mixer = new THREE.AnimationMixer(this.mesh);
@@ -35,6 +38,9 @@ export class Character extends BaseEntity {
 
     this.originalColors = new Map();
     this.effectTimeout = null;
+
+    // スキルパフォーマンス状態（キャラクター共通）
+    this.skillPerformanceStates = {};
 
     this.mesh.traverse((object) => {
       if (object.isMesh && object.material) {
@@ -175,6 +181,11 @@ export class Character extends BaseEntity {
       newAction.reset().fadeIn(0.2).play();
       this.currentAction = newAction;
       this.currentAnimationName = name;
+    } else {
+      console.warn(
+        `${this.constructor.name} animation clip not found for:`,
+        name
+      );
     }
   }
 
@@ -208,6 +219,138 @@ export class Character extends BaseEntity {
       this.hp = 0;
       this.isDead = true;
       this.onDeath();
+    }
+
+    // 必要に応じて子クラスで追加のアップデートを実行
+  }
+
+  // キャラクターの前方向を取得（共通処理）
+  getForwardDirection() {
+    const direction = new THREE.Vector3(0, 0, 1).applyQuaternion(
+      this.mesh.quaternion
+    );
+    direction.y = 0; // Y軸方向は無視して水平方向のみ
+    direction.normalize();
+    return direction;
+  }
+
+  // 共通エフェクトメソッド（子クラスで使用可能）
+  createProjectile(skillId) {
+    const startPosition = this.mesh.position.clone();
+    startPosition.y += 1.5;
+
+    const projectileDirection = this.getForwardDirection();
+    startPosition.add(projectileDirection.clone().multiplyScalar(0.5));
+
+    const projectile = new Projectile(
+      this.game,
+      skillId,
+      startPosition,
+      projectileDirection,
+      this
+    );
+
+    this.game.projectiles.push(projectile);
+    this.game.sceneManager.add(projectile.mesh);
+    return projectile;
+  }
+
+  createAreaAttack(skillId) {
+    console.log('Character createAreaAttack called with skillId:', skillId);
+    const areaAttack = new AreaAttack(
+      this.game,
+      skillId,
+      this.mesh.position.clone(),
+      this
+    );
+
+    if (!this.game.areaAttacks) {
+      this.game.areaAttacks = [];
+    }
+    this.game.areaAttacks.push(areaAttack);
+    this.game.sceneManager.add(areaAttack.mesh);
+    console.log('Area attack created and added to scene');
+    return areaAttack;
+  }
+
+  // 共通バフ処理
+  applyAttackBuff(skillData) {
+    this.attackBuffMultiplier = skillData.attackBuffMultiplier || 1.5;
+  }
+
+  removeAttackBuff() {
+    this.attackBuffMultiplier = 1.0;
+  }
+
+  applyDefenseBuff(skillData) {
+    this.defenseBuffMultiplier = skillData.defenseBuffMultiplier || 1.5;
+  }
+
+  removeDefenseBuff() {
+    this.defenseBuffMultiplier = 1.0;
+  }
+
+  // 基本スキル実行メソッド（アニメーション付き）
+  executeBuffSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    // 共通のアニメーション実行
+    this.playAnimation(this.getSkillAnimation(SkillTypes.BUFF));
+
+    setTimeout(() => {
+      this.applyAttackBuff(skillData);
+      this.applyDefenseBuff(skillData);
+
+      setTimeout(() => {
+        this.removeAttackBuff();
+        this.removeDefenseBuff();
+      }, skillData.duration || 5000);
+    }, skillData.castTime || 0);
+  }
+
+  executeProjectileSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    // 共通のアニメーション実行
+    this.playAnimation(this.getSkillAnimation(SkillTypes.PROJECTILE));
+
+    setTimeout(() => {
+      if (!this.isDead) {
+        this.createProjectile(skillId);
+      }
+    }, skillData.castTime || 200);
+  }
+
+  executeAreaAttackSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    // 共通のアニメーション実行
+    this.playAnimation(this.getSkillAnimation(SkillTypes.AREA_ATTACK));
+
+    setTimeout(() => {
+      if (!this.isDead) {
+        this.createAreaAttack(skillId);
+      }
+    }, skillData.castTime || 200);
+  }
+
+  // スキルアニメーション名を取得
+  getSkillAnimation(skillType) {
+    switch (skillType) {
+      case SkillTypes.BUFF:
+        return AnimationNames.USE_SKILL_BUFF;
+      case SkillTypes.PROJECTILE:
+        return AnimationNames.USE_SKILL_PROJECTILE;
+      case SkillTypes.AREA_ATTACK:
+        return AnimationNames.USE_SKILL_AREA_ATTACK;
+      default:
+        console.warn(
+          `Unknown skill type: ${skillType}, falling back to idle animation`
+        );
+        return AnimationNames.IDLE;
     }
   }
 

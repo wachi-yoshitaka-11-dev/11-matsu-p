@@ -14,7 +14,7 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { AssetPaths, GameState } from '../utils/constants.js';
+import { AssetPaths, GameState, ItemConstants } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 
@@ -222,14 +222,14 @@ export class Game {
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
-    const enemy = new Enemy(this, 'grunt', new THREE.Vector3(5, 0, 0), {
+    const enemy = new Enemy(this, 'forestGoblin', new THREE.Vector3(5, 0, 0), {
       player: this.player,
     });
 
     this.enemies.push(enemy);
     this.sceneManager.add(enemy.mesh);
 
-    const boss = new Boss(this, 'boss', new THREE.Vector3(10, 0.5, 10), {
+    const boss = new Boss(this, 'dragonKing', new THREE.Vector3(10, 0.5, 10), {
       player: this.player,
     });
     this.boss = boss;
@@ -549,13 +549,13 @@ export class Game {
           const distance = this.player?.mesh.position.distanceTo(
             item.mesh.position
           );
-          if (distance < (this.data.items?.generic?.pickupRange || 0.5)) {
+          if (distance < ItemConstants.PICKUP_RANGE) {
             // Skip if player is already picking up an item
             if (this.player?.isPickingUp) {
               continue;
             }
 
-            this.player?.inventory.push(item.type);
+            this.player?.inventory.push(item.id);
             this.player?.playPickUpAnimation();
             this.sceneManager.remove(item.mesh);
             this.items.splice(i, 1);
@@ -572,18 +572,32 @@ export class Game {
           }
 
           if (!shouldRemove) {
-            for (const enemy of this.enemies) {
-              // 敵の胴体部分（中心から上に0.5ユニット）で当たり判定
-              const enemyHitPosition = enemy.mesh.position.clone();
-              enemyHitPosition.y += 0.5;
+            const hitRange = this.data.skills[projectile.id]?.hitRange || 1.0;
 
-              const distance =
-                projectile.mesh.position.distanceTo(enemyHitPosition);
-              const hitRange = this.data.skills?.projectile?.hitRange || 1.0;
-              if (distance < hitRange) {
-                enemy.takeDamage(projectile.damage);
+            if (projectile.caster !== this.player) {
+              // 敵の攻撃：プレイヤーとの衝突判定
+              const playerHitPosition = this.player.mesh.position.clone();
+              playerHitPosition.y += 1.0;
+              if (
+                projectile.mesh.position.distanceTo(playerHitPosition) <
+                hitRange
+              ) {
+                this.player.takeDamage(projectile.damage);
                 shouldRemove = true;
-                break;
+              }
+            } else {
+              // プレイヤーの攻撃：敵との衝突判定
+              for (const enemy of this.enemies) {
+                const enemyHitPosition = enemy.mesh.position.clone();
+                enemyHitPosition.y += 0.5;
+                if (
+                  projectile.mesh.position.distanceTo(enemyHitPosition) <
+                  hitRange
+                ) {
+                  enemy.takeDamage(projectile.damage);
+                  shouldRemove = true;
+                  break;
+                }
               }
             }
           }
@@ -605,7 +619,7 @@ export class Game {
         }
 
         this.npcs.forEach((npc) => {
-          npc.update(this.player?.mesh.position);
+          npc.update(deltaTime);
         });
       }
     }

@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import { Character } from './character.js';
-import { Projectile } from '../skills/projectile.js';
-import { AreaAttack } from '../skills/area-attack.js';
 import {
   AnimationNames,
   SkillTypes,
@@ -10,16 +8,16 @@ import {
 } from '../../utils/constants.js';
 
 export class Player extends Character {
-  constructor(game, playerType, options = {}) {
-    const playerData = game.data[playerType];
+  constructor(game, playerId, options = {}) {
+    const playerData = game.data[playerId];
     if (!playerData) {
-      throw new Error(`Player type "${playerType}" not found in game data`);
+      throw new Error(`Player ID "${playerId}" not found in game data`);
     }
     const modelName = playerData.model.replace('.glb', '');
     const loadedModel = game.assetLoader.getModel(modelName);
 
     if (loadedModel instanceof THREE.Group) {
-      super(game, playerType, playerData, loadedModel, null, {
+      super(game, playerId, playerData, loadedModel, null, {
         hp: playerData.maxHp,
         modelName: modelName,
         textureName: playerData.texture.replace('.png', ''),
@@ -27,7 +25,7 @@ export class Player extends Character {
     } else {
       const geometry = new THREE.BoxGeometry(0.5, 1.0, 0.5);
       const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-      super(game, playerType, playerData, geometry, material, {
+      super(game, playerId, playerData, geometry, material, {
         hp: playerData.maxHp,
       });
     }
@@ -38,8 +36,9 @@ export class Player extends Character {
     this.stamina = this.maxStamina;
 
     this.level = playerData.initialLevel;
-    this.experience = playerData.initialExperience;
-    this.experienceToNextLevel = playerData.initialExpToNextLevel;
+    this.totalExperience = playerData.initialExperience; // 累積経験値
+    this.experience = playerData.initialExperience; // 現在レベルでの経験値
+    this.experienceToNextLevel = playerData.initialExpToNextLevel; // 次のレベルに必要な経験値
     this.statusPoints = playerData.initialStatusPoints;
     this.inventory = playerData.initialInventory || [];
 
@@ -146,7 +145,8 @@ export class Player extends Character {
       this.isAttackingStrong ||
       this.isRolling ||
       this.isBackStepping ||
-      this.isPickingUp
+      this.isPickingUp ||
+      this.isUsingSkill
     ) {
       return;
     }
@@ -170,7 +170,10 @@ export class Player extends Character {
       newAnimation = AnimationNames.WALK;
     }
 
-    this.playAnimation(newAnimation);
+    // 現在のアニメーションと同じ場合は再実行しない
+    if (this.currentAnimationName !== newAnimation) {
+      this.playAnimation(newAnimation);
+    }
   }
 
   onDeath() {
@@ -180,7 +183,7 @@ export class Player extends Character {
   }
 
   takeDamage(amount) {
-    if (this.isInvincible) return;
+    if (this.isInvincible || this.isRolling) return;
 
     let finalDamage = amount / this.defenseBuffMultiplier;
 
@@ -212,7 +215,8 @@ export class Player extends Character {
   }
 
   addExperience(amount) {
-    this.experience += amount;
+    this.totalExperience += amount; // 累積経験値に加算
+    this.experience += amount; // 現在レベルでの経験値に加算
     if (this.experience >= this.experienceToNextLevel) {
       this.levelUp();
     }
@@ -220,62 +224,25 @@ export class Player extends Character {
 
   levelUp() {
     this.level++;
+    // 現在レベルでの経験値をリセットし、余剰分を次に繰り越し
     this.experience -= this.experienceToNextLevel;
+    // 次のレベルに必要な経験値を増加
     this.experienceToNextLevel = Math.floor(
       this.experienceToNextLevel * this.data.levelUpExpMultiplier
     );
     this.statusPoints += this.data.statusPointsPerLevel;
     this.game.playSound(AssetPaths.SFX_LEVEL_UP);
-  }
 
-  useItem(index) {
-    if (this.inventory.length > index) {
-      const itemType = this.inventory[index];
-      const itemData = this.game.data.items[itemType];
-
-      if (!itemData) {
-        console.warn(`Unknown item type: ${itemType}`);
-        return;
-      }
-
-      if (itemData.healAmount) {
-        this.hp += itemData.healAmount;
-        if (this.hp > this.maxHp) this.hp = this.maxHp;
-      }
-
-      if (itemData.fpHealAmount) {
-        this.fp += itemData.fpHealAmount;
-        if (this.fp > this.maxFp) this.fp = this.maxFp;
-      }
-      this.playAnimation(AnimationNames.USE_ITEM);
-      this.game.playSound(AssetPaths.SFX_USE_ITEM);
-
-      this.inventory.splice(index, 1);
+    // 連続レベルアップのチェック
+    if (this.experience >= this.experienceToNextLevel) {
+      this.levelUp();
     }
-  }
-
-  applyAttackBuff() {
-    const currentSkill = this.getCurrentSkill();
-    this.attackBuffMultiplier = currentSkill.attackBuffMultiplier;
-  }
-
-  removeAttackBuff() {
-    this.attackBuffMultiplier = 1.0;
-  }
-
-  applyDefenseBuff() {
-    const currentSkill = this.getCurrentSkill();
-    this.defenseBuffMultiplier = currentSkill.defenseBuffMultiplier;
-  }
-
-  removeDefenseBuff() {
-    this.defenseBuffMultiplier = 1.0;
   }
 
   getCurrentShield() {
     if (this.shields.length === 0) return null;
-    const shieldType = this.shields[this.currentShieldIndex];
-    return this.game.data.shields[shieldType];
+    const shieldId = this.shields[this.currentShieldIndex];
+    return this.game.data.shields[shieldId];
   }
 
   switchShield() {
@@ -293,8 +260,8 @@ export class Player extends Character {
 
   getCurrentSkill() {
     if (this.skills.length === 0) return null;
-    const skillType = this.skills[this.currentSkillIndex];
-    return this.game.data.skills[skillType];
+    const skillId = this.skills[this.currentSkillIndex];
+    return this.game.data.skills[skillId];
   }
 
   switchSkill() {
@@ -307,8 +274,8 @@ export class Player extends Character {
 
   getCurrentWeapon() {
     if (this.weapons.length === 0) return null;
-    const weaponType = this.weapons[this.currentWeaponIndex];
-    return this.game.data.weapons[weaponType];
+    const weaponId = this.weapons[this.currentWeaponIndex];
+    return this.game.data.weapons[weaponId];
   }
 
   switchWeapon() {
@@ -391,95 +358,88 @@ export class Player extends Character {
       return false;
     }
 
-    const skillType = this.skills[this.currentSkillIndex];
+    const skillType = currentSkill.type; // 実行タイプ（JSONの"type"フィールド）
+
+    // FP消費
+    this.fp -= currentSkill.fpCost;
+
+    // プレイヤー固有のスキル実行（FPベース、タイプ別）
+    this.isUsingSkill = true;
 
     if (skillType === SkillTypes.BUFF) {
-      return this.useBuffSkill(currentSkill);
+      this.executeBuffSkill(this.skills[this.currentSkillIndex]);
     } else if (skillType === SkillTypes.PROJECTILE) {
-      return this.useProjectileSkill(currentSkill);
+      this.executeProjectileSkill(this.skills[this.currentSkillIndex]);
     } else if (skillType === SkillTypes.AREA_ATTACK) {
-      return this.useAreaAttackSkill(currentSkill);
+      this.executeAreaAttackSkill(this.skills[this.currentSkillIndex]);
     }
 
-    return false;
-  }
-
-  useProjectileSkill(skillData) {
-    this.isUsingSkill = true;
-    this.fp -= skillData.fpCost;
-    this.showSkillProjectileEffect();
-    this.playAnimation(AnimationNames.USE_SKILL_PROJECTILE);
-    this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
-
-    const direction = new THREE.Vector3();
-    this.mesh.getWorldDirection(direction);
-    const skillType = this.skills[this.currentSkillIndex];
-
-    // 胸の高さ（Y座標+1.5）から前方（direction方向に0.5）に発射位置を設定
-    const startPosition = this.mesh.position.clone();
-    startPosition.y += 1.5; // 胸の高さ
-    startPosition.add(direction.clone().multiplyScalar(0.5)); // 前方に少し出す
-
-    const projectile = new Projectile(
-      this.game,
-      skillType,
-      startPosition,
-      direction
-    );
-    this.game.projectiles.push(projectile);
-    this.game.sceneManager.add(projectile.mesh);
-
-    setTimeout(() => {
-      this.isUsingSkill = false;
-    }, skillData.duration);
-
-    return true;
-  }
-
-  useBuffSkill(skillData) {
-    this.isUsingSkill = true;
-    this.fp -= skillData.fpCost;
-    this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
-    this.showSkillBuffEffect();
-    this.playAnimation(AnimationNames.USE_SKILL_BUFF);
-    this.applyAttackBuff();
-    this.applyDefenseBuff();
-
-    setTimeout(() => {
-      this.removeAttackBuff();
-      this.removeDefenseBuff();
-      this.isUsingSkill = false;
-    }, skillData.duration);
-
-    return true;
-  }
-
-  useAreaAttackSkill(skillData) {
-    this.isUsingSkill = true;
-    this.fp -= skillData.fpCost;
-    this.playAnimation(AnimationNames.USE_SKILL_AREA_ATTACK);
-    this.game.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
-
-    // AreaAttackオブジェクトを作成
-    const skillType = this.skills[this.currentSkillIndex];
-    const areaAttack = new AreaAttack(
-      this.game,
-      skillType,
-      this.mesh.position.clone()
-    );
-
-    // ゲームの範囲攻撃配列に追加（projectilesと同様の管理）
-    if (!this.game.areaAttacks) {
-      this.game.areaAttacks = [];
+    // スキルタイプごとに適切なアニメーション時間を設定
+    let skillAnimationDuration;
+    if (skillType === SkillTypes.BUFF) {
+      // バフスキルは短時間でアニメーション終了
+      skillAnimationDuration = (currentSkill.castTime || 0) + 1000;
+    } else {
+      // その他のスキルは従来通り
+      skillAnimationDuration = Math.max(
+        (currentSkill.castTime || 0) + 1000,
+        currentSkill.duration || 1000
+      );
     }
-    this.game.areaAttacks.push(areaAttack);
-    this.game.sceneManager.add(areaAttack.mesh);
 
     setTimeout(() => {
       this.isUsingSkill = false;
-    }, skillData.duration);
+    }, skillAnimationDuration);
 
     return true;
+  }
+
+  // プレイヤー固有のバフスキル（エフェクトと音響効果）
+  executeBuffSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    // 親クラスの共通処理（アニメーション + バフ適用）
+    super.executeBuffSkill(skillId);
+
+    // Player固有の処理（音響 + エフェクト）
+    setTimeout(() => {
+      this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
+      this.showSkillBuffEffect();
+    }, skillData.castTime || 0);
+  }
+
+  // プレイヤー固有のプロジェクタイルスキル（音響効果付き）
+  executeProjectileSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    // 親クラスの共通処理（アニメーション + プロジェクタイル生成）
+    super.executeProjectileSkill(skillId);
+
+    // Player固有の処理（音響 + エフェクト）
+    setTimeout(() => {
+      if (!this.isDead) {
+        this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
+        this.showSkillProjectileEffect();
+      }
+    }, skillData.castTime || 0);
+  }
+
+  // プレイヤー固有の範囲攻撃スキル（音響効果付き）
+  executeAreaAttackSkill(skillId) {
+    const skillData = this.game.data.skills[skillId];
+    if (!skillData) return;
+
+    // 親クラスの共通処理（アニメーション + エリア攻撃生成）
+    super.executeAreaAttackSkill(skillId);
+
+    // Player固有の処理（音響効果）
+    setTimeout(() => {
+      if (!this.isDead) {
+        this.game.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
+      }
+    }, skillData.castTime || 0);
   }
 
   updateFootsteps() {

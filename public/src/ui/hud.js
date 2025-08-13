@@ -364,7 +364,7 @@ export class Hud {
 
   updateExperienceDisplay() {
     this.totalExperienceValue.textContent =
-      this.player.experience.toLocaleString();
+      this.player.totalExperience.toLocaleString();
   }
 
   // ================================================================

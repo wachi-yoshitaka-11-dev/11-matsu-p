@@ -18,15 +18,15 @@ export class InputController {
 
     this.shiftPressTime = 0;
     this.isShiftPressed = false;
-    this.shortPressThreshold = 250; // milliseconds for short press
+    this.shortPressThreshold = 400; // milliseconds for short press
     this.movementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
     this.setupEventListeners();
   }
 
   _getWeaponParams() {
-    const weaponType = this.player.weapons[this.player.currentWeaponIndex];
-    const weaponData = this.game.data.weapons[weaponType];
+    const weaponId = this.player.weapons[this.player.currentWeaponIndex];
+    const weaponData = this.game.data.weapons[weaponId];
     if (weaponData) {
       return {
         attackRange: weaponData.attackRange,
@@ -313,11 +313,6 @@ export class InputController {
       const cameraOffset = new THREE.Vector3(0, 2, 5);
       cameraOffset.applyQuaternion(this.camera.quaternion);
       this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
-    }
-
-    if (this.keys['Digit1']) {
-      this.player.useItem(0);
-      this.keys['Digit1'] = false;
     }
 
     if (this.keys['KeyE']) {

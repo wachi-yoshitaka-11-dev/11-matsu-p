@@ -3,8 +3,8 @@ import { Skill } from './skill.js';
 import { EffectColors } from '../../utils/constants.js';
 
 export class AreaAttack extends Skill {
-  constructor(game, areaAttackType, centerPosition) {
-    const skillData = game.data.skills[areaAttackType];
+  constructor(game, areaAttackId, centerPosition, caster) {
+    const skillData = game.data.skills[areaAttackId];
 
     // 範囲攻撃の視覚的エフェクト用のリングジオメトリ
     const geometry = new THREE.RingGeometry(0.5, skillData.range || 4.0, 16);
@@ -15,7 +15,9 @@ export class AreaAttack extends Skill {
       side: THREE.DoubleSide,
     });
 
-    super(game, areaAttackType, geometry, material);
+    super(game, areaAttackId, geometry, material);
+
+    this.caster = caster;
 
     this.range = skillData.range || 4.0;
     this.damage = skillData.damage || 50;
@@ -60,15 +62,26 @@ export class AreaAttack extends Skill {
   dealDamage() {
     const centerPosition = this.mesh.position;
 
-    // プレイヤー周囲の敵にダメージを与える
-    this.game.enemies.forEach((enemy) => {
-      const distance = centerPosition.distanceTo(enemy.mesh.position);
+    if (this.caster !== this.game.player) {
+      // 敵の攻撃：プレイヤーにダメージを与える
+      const distance = centerPosition.distanceTo(
+        this.game.player.mesh.position
+      );
       if (distance <= this.range) {
-        enemy.takeDamage(this.damage);
-        // 個別ダメージエフェクトを表示
-        this.showDamageEffect(enemy.mesh.position);
+        this.game.player.takeDamage(this.damage);
+        this.showDamageEffect(this.game.player.mesh.position);
       }
-    });
+    } else {
+      // プレイヤーの攻撃：敵にダメージを与える
+      this.game.enemies.forEach((enemy) => {
+        const distance = centerPosition.distanceTo(enemy.mesh.position);
+        if (distance <= this.range) {
+          enemy.takeDamage(this.damage);
+          // 個別ダメージエフェクトを表示
+          this.showDamageEffect(enemy.mesh.position);
+        }
+      });
+    }
   }
 
   showDamageEffect(position) {

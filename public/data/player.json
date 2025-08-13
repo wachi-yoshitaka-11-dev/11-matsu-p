@@ -12,7 +12,7 @@
   "initialInventory": ["potion", "fpPotion"],
   "initialWeapons": ["sword", "claws"],
   "initialShields": ["woodenShield", "ironShield"],
-  "initialSkills": ["buff", "projectile", "areaAttack"],
+  "initialSkills": ["holyBlessing", "magicMissile", "holyExplosion"],
 
   "initialSpawnPoint": { "x": 0, "y": 0, "z": 0 },
   "respawnDelay": 3000,

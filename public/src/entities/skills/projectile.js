@@ -2,16 +2,18 @@ import * as THREE from 'three';
 import { Skill } from './skill.js';
 
 export class Projectile extends Skill {
-  constructor(game, projectileType, startPosition, direction) {
+  constructor(game, projectileId, startPosition, direction, caster) {
     const geometry = new THREE.SphereGeometry(0.3, 16, 16);
     const material = new THREE.MeshStandardMaterial({
       color: 0xffff00,
       emissive: 0xffff00,
     });
 
-    super(game, projectileType, geometry, material);
+    super(game, projectileId, geometry, material);
 
-    const skillData = game.data.skills[projectileType];
+    this.caster = caster;
+
+    const skillData = game.data.skills[projectileId];
     this.speed = skillData.speed || 10;
     this.lifespan = skillData.lifespan || 2; // seconds
     this.damage = skillData.damage || 30;

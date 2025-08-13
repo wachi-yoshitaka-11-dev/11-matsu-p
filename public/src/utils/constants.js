@@ -28,6 +28,20 @@ export const SkillTypes = {
   AREA_ATTACK: 'areaAttack',
 };
 
+export const EnemyTypes = {
+  GRUNT: 'grunt',
+  BOSS: 'boss',
+};
+
+export const AttackTypes = {
+  WEAK: 'weak',
+  STRONG: 'strong',
+};
+
+export const ItemConstants = {
+  PICKUP_RANGE: 2.0,
+};
+
 export const AssetPaths = {
   LOGO_IMAGE: 'sequences/logo.png',
   LOGO_VIDEO: 'sequences/logo.mp4',
@@ -88,7 +102,7 @@ export const AnimationNames = {
   GUARD: 'holding-right',
   TALK: 'interact-left',
   USE_ITEM: 'interact-right',
-  USE_SKILL_BUFF: 'interact-left',
+  USE_SKILL_BUFF: 'holding-left',
   USE_SKILL_PROJECTILE: 'holding-right',
   USE_SKILL_AREA_ATTACK: 'holding-both',
   PICK_UP: 'pick-up',

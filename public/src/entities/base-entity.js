@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class BaseEntity {
-  constructor(game, type, data, geometryOrModel, material, options = {}) {
+  constructor(game, id, data, geometryOrModel, material, options = {}) {
     this.game = game;
-    this.type = type;
+    this.id = id;
     this.data = data;
 
     if (geometryOrModel instanceof THREE.Object3D) {

@@ -26,22 +26,22 @@ export class Npc extends Character {
     return { texture: new THREE.CanvasTexture(canvas), canvas: canvas };
   }
 
-  constructor(game, npcType, position, options = {}) {
-    const npcData = game.data.npcs[npcType];
+  constructor(game, npcId, position, options = {}) {
+    const npcData = game.data.npcs[npcId];
     if (!npcData) {
-      throw new Error(`NPC type "${npcType}" not found in npcs data`);
+      throw new Error(`NPC ID "${npcId}" not found in npcs data`);
     }
     const modelName = npcData.model.replace('.glb', '');
     const model = game.assetLoader.getModel(modelName);
     if (model) {
-      super(game, npcType, npcData, model.clone(), null, {
+      super(game, npcId, npcData, model.clone(), null, {
         modelName: modelName,
         textureName: npcData.texture.replace('.png', ''),
       });
     } else {
       const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 4, 8);
       const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-      super(game, npcType, npcData, geometry, material, {});
+      super(game, npcId, npcData, geometry, material, {});
     }
 
     this.dialogue = npcData.dialogue || ['...'];
@@ -74,9 +74,14 @@ export class Npc extends Character {
     return prompt;
   }
 
-  update(playerPosition) {
-    if (!this.data) return;
-    const distance = this.mesh.position.distanceTo(playerPosition);
+  update(deltaTime) {
+    // 親クラスの更新処理を呼び出し（物理演算、アニメーション等）
+    super.update(deltaTime);
+
+    if (!this.data || !this.game.player) return;
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
     const interactionRange = this.data.interactionRange;
     this.interactionPrompt.visible = distance < interactionRange;
   }

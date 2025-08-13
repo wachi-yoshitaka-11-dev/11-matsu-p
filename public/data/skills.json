@@ -1,30 +1,35 @@
 {
-  "buff": {
-    "name": "強化",
+  "holyBlessing": {
+    "name": "聞なる祝福",
+    "type": "buff",
     "model": "skills/buff.glb",
     "texture": "skills/buff.png",
     "image": "skills/buff.png",
     "description": "攻撃力と防御力を一時的に強化",
     "fpCost": 30,
     "duration": 10000,
+    "castTime": 0,
     "attackBuffMultiplier": 1.5,
     "defenseBuffMultiplier": 1.5
   },
-  "projectile": {
-    "name": "魔法弾",
+  "magicMissile": {
+    "name": "魔法の矢",
+    "type": "projectile",
     "model": "skills/projectile.glb",
     "texture": "skills/projectile.png",
     "image": "skills/projectile.png",
     "description": "魔力を込めた遠距離攻撃",
     "fpCost": 20,
     "duration": 1000,
+    "castTime": 200,
     "speed": 10,
     "lifespan": 2000,
     "damage": 30,
     "hitRange": 1.0
   },
-  "areaAttack": {
-    "name": "魔法爆発",
+  "holyExplosion": {
+    "name": "聖なる爆発",
+    "type": "areaAttack",
     "model": "skills/area-attack.glb",
     "texture": "skills/area-attack.png",
     "image": "skills/area-attack.png",
@@ -33,6 +38,6 @@
     "damage": 50,
     "range": 4.0,
     "duration": 1500,
-    "castTime": 800
+    "castTime": 300
   }
 }
