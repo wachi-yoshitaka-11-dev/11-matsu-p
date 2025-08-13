@@ -37,7 +37,7 @@ export class Player extends Character {
 
     this.level = playerData.initialLevel;
     this.totalExperience = playerData.initialExperience; // Cumulative experience
-    this.experience = playerData.initialExperience; // Experience at current level
+    this.currentLevelExperience = playerData.initialExperience; // Experience at current level
     this.experienceToNextLevel = playerData.initialExpToNextLevel; // Experience needed for next level
     this.statusPoints = playerData.initialStatusPoints;
     this.inventory = playerData.initialInventory || [];
@@ -214,8 +214,8 @@ export class Player extends Character {
 
   addExperience(amount) {
     this.totalExperience += amount;
-    this.experience += amount;
-    if (this.experience >= this.experienceToNextLevel) {
+    this.currentLevelExperience += amount;
+    if (this.currentLevelExperience >= this.experienceToNextLevel) {
       this.levelUp();
     }
   }
@@ -223,7 +223,7 @@ export class Player extends Character {
   levelUp() {
     this.level++;
     // Reset current level experience and carry over excess to next level
-    this.experience -= this.experienceToNextLevel;
+    this.currentLevelExperience -= this.experienceToNextLevel;
     // Increase experience needed for next level
     this.experienceToNextLevel = Math.floor(
       this.experienceToNextLevel * this.data.levelUpExpMultiplier
@@ -232,7 +232,7 @@ export class Player extends Character {
     this.game.playSound(AssetPaths.SFX_LEVEL_UP);
 
     // Check for consecutive level-ups
-    if (this.experience >= this.experienceToNextLevel) {
+    if (this.currentLevelExperience >= this.experienceToNextLevel) {
       this.levelUp();
     }
   }

@@ -20,10 +20,15 @@ export class Projectile extends Skill {
 
     this.mesh.position.copy(startPosition);
 
-    const unitDir = direction && direction.lengthSq() > 1e-8
-      ? direction.clone().normalize()
-      : new THREE.Vector3(0, 0, -1);
-    this.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), unitDir);
+    const unitDir =
+      direction && direction.lengthSq() > 1e-8
+        ? direction.clone().normalize()
+        : new THREE.Vector3(0, 0, -1);
+    // Map -Z (forward) to unitDir instead of Y-up for consistent orientation
+    this.mesh.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 0, -1),
+      unitDir
+    );
     this.direction = unitDir;
   }
 

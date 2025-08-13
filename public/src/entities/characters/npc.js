@@ -83,7 +83,8 @@ export class Npc extends Character {
       this.game.player.mesh.position
     );
     const interactionRange = this.data.interactionRange;
-    this.interactionPrompt.visible = distanceSq < interactionRange * interactionRange;
+    this.interactionPrompt.visible =
+      distanceSq < interactionRange * interactionRange;
   }
 
   interact() {

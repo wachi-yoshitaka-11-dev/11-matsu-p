@@ -7,7 +7,7 @@ export class Skill extends BaseEntity {
       throw new Error(`Skill ID "${skillId}" not found in skills data`);
     }
 
-    // サブクラスから受け取ったジオメトリとマテリアルをBaseEntityに渡す
+    // Pass geometry and material received from subclass to BaseEntity
     super(game, skillId, skillData, geometry, material, options);
   }
 }

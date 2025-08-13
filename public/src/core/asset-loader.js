@@ -7,15 +7,15 @@ export class AssetLoader {
     this.audioLoader = new THREE.AudioLoader();
     this.textureLoader = new THREE.TextureLoader();
 
-    // データ系
+    // Data assets
     this.json = {};
 
-    // 3Dアセット系
+    // 3D assets related
     this.models = {};
     this.animations = {};
     this.textures = {};
 
-    // オーディオ系
+    // Audio related
     this.audio = {};
   }
 

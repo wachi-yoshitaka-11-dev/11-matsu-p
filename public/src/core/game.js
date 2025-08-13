@@ -69,7 +69,7 @@ export class Game {
 
   setupBeforeUnloadHandler() {
     window.addEventListener('beforeunload', (e) => {
-      // 実際のゲームプレイ中のみ防止
+      // Prevent only during actual gameplay
       if (
         this.player &&
         !this.player.isDead &&
@@ -579,7 +579,7 @@ export class Game {
             const hitRange = this.data.skills[projectile.id]?.hitRange || 1.0;
 
             if (projectile.caster !== this.player) {
-              // 敵の攻撃：プレイヤーとの衝突判定
+              // Enemy attack: collision detection with player
               const playerHitPosition = this.player.mesh.position.clone();
               playerHitPosition.y += 1.0;
               if (
@@ -590,7 +590,7 @@ export class Game {
                 shouldRemove = true;
               }
             } else {
-              // プレイヤーの攻撃：敵との衝突判定
+              // Player attack: collision detection with enemies
               for (const enemy of this.enemies) {
                 const enemyHitPosition = enemy.mesh.position.clone();
                 enemyHitPosition.y += 0.5;

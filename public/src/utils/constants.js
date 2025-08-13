@@ -1,6 +1,4 @@
-// ========================================
-// 基本ゲーム定数
-// ========================================
+// Basic game constants
 
 export const GameConstants = {
   GAME_SPEED: 1.0,
@@ -12,9 +10,7 @@ export const Fall = {
   MAX_FALL_DEPTH: -1000,
 };
 
-// ========================================
-// タイプ定義（Enum相当）
-// ========================================
+// Type definitions (equivalent to Enum)
 
 export const GameState = {
   SPLASH_SCREEN: 'splashScreen',
@@ -60,9 +56,7 @@ export const SequenceStep = {
   SHOWING_FIN: 'showingFin',
 };
 
-// ========================================
-// アセットパス定義
-// ========================================
+// Asset path definitions
 
 export const AssetPaths = {
   LOGO_IMAGE: 'sequences/logo.png',
@@ -131,9 +125,7 @@ export const AnimationNames = {
   PICK_UP: 'pick-up',
 };
 
-// ========================================
-// 機能別定数
-// ========================================
+// Feature-specific constants
 
 export const EffectColors = {
   DAMAGE: 0xff0000,
@@ -145,25 +137,22 @@ export const EffectColors = {
 };
 
 export const AudioConstants = {
-  FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // この距離以上では音が聞こえない
-  FOOTSTEP_MIN_VOLUME: 0.05, // 最小音量
-  FOOTSTEP_MAX_VOLUME: 0.3, // 最大音量（近距離）
-  PLAYER_FOOTSTEP_VOLUME: 0.3, // プレイヤーの歩行音量
+  FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // Sound is not audible beyond this distance
+  FOOTSTEP_MIN_VOLUME: 0.05, // Minimum volume
+  FOOTSTEP_MAX_VOLUME: 0.3, // Maximum volume (close range)
+  PLAYER_FOOTSTEP_VOLUME: 0.3,
 };
 
 export const ItemConstants = {
   PICKUP_RANGE: 2.0,
 };
 
-// ========================================
-// ヘルパー定数・ユーティリティ
-// ========================================
+// Helper constants and utilities
 
 export const HTMLTags = {
   BR: '<br>',
 };
 
-// BGM Level constants array for easier management
 export const LevelBGM = [
   AssetPaths.BGM_LEVEL_01_01,
   AssetPaths.BGM_LEVEL_01_02,

@@ -6,7 +6,7 @@ export class AreaAttack extends Skill {
   constructor(game, areaAttackId, centerPosition, caster) {
     const skillData = game.data.skills[areaAttackId];
 
-    // 範囲攻撃の視覚的エフェクト用のリングジオメトリ
+    // Ring geometry for visual effect of area attack
     const geometry = new THREE.RingGeometry(0.5, skillData.range || 4.0, 16);
     const material = new THREE.MeshBasicMaterial({
       color: EffectColors.SKILL_AREA_ATTACK,
@@ -24,36 +24,37 @@ export class AreaAttack extends Skill {
     this.castTime = skillData.castTime || 800; // ms
     this.duration = skillData.duration || 1500; // ms
 
-    // エフェクトの開始時刻
-    this.startTime = Date.now();
+    // Elapsed time for the effect
+    this.elapsedTime = 0;
     this.hasDealtDamage = false;
 
-    // 位置設定
+    // Position setting
     this.mesh.position.copy(centerPosition);
-    this.mesh.position.y += 0.1; // 地面より少し上に表示
-    this.mesh.rotation.x = -Math.PI / 2; // 水平に回転
+    this.mesh.position.y += 0.1; // Display slightly above ground
+    this.mesh.rotation.x = -Math.PI / 2; // Rotate horizontally
 
-    // 初期スケールを0に設定（アニメーションで拡大）
+    // Set initial scale to 0 (enlarge with animation)
     this.mesh.scale.setScalar(0);
   }
 
   update(deltaTime) {
     super.update(deltaTime);
 
-    const elapsed = Date.now() - this.startTime;
+    this.elapsedTime += deltaTime * 1000;
+    const elapsed = this.elapsedTime;
     const progress = Math.min(elapsed / this.duration, 1);
 
-    // キャストタイムが経過したらダメージを与える
+    // Deal damage after cast time has elapsed
     if (elapsed >= this.castTime && !this.hasDealtDamage) {
       this.dealDamage();
       this.hasDealtDamage = true;
     }
 
-    // エフェクトのアニメーション
+    // Effect animation
     this.mesh.scale.setScalar(progress);
     this.mesh.material.opacity = 0.6 * (1 - progress);
 
-    // 持続時間が終了したら削除マーク
+    // Mark for removal when duration ends
     if (progress >= 1) {
       this.lifespan = 0;
     }
@@ -63,7 +64,7 @@ export class AreaAttack extends Skill {
     const centerPosition = this.mesh.position;
 
     if (this.caster !== this.game.player) {
-      // 敵の攻撃：プレイヤーにダメージを与える
+      // Enemy attack: deal damage to player
       const distance = centerPosition.distanceTo(
         this.game.player.mesh.position
       );
@@ -72,12 +73,11 @@ export class AreaAttack extends Skill {
         this.showDamageEffect(this.game.player.mesh.position);
       }
     } else {
-      // プレイヤーの攻撃：敵にダメージを与える
       this.game.enemies.forEach((enemy) => {
         const distance = centerPosition.distanceTo(enemy.mesh.position);
         if (distance <= this.range) {
           enemy.takeDamage(this.damage);
-          // 個別ダメージエフェクトを表示
+          // Display individual damage effect
           this.showDamageEffect(enemy.mesh.position);
         }
       });
@@ -85,7 +85,7 @@ export class AreaAttack extends Skill {
   }
 
   showDamageEffect(position) {
-    // ダメージエフェクトの表示
+    // Display damage effect
     const effectGeometry = new THREE.SphereGeometry(0.3, 8, 8);
     const effectMaterial = new THREE.MeshBasicMaterial({
       color: EffectColors.DAMAGE,
@@ -99,15 +99,19 @@ export class AreaAttack extends Skill {
 
     this.game.sceneManager.add(effectMesh);
 
-    // アニメーション
-    let elapsed = 0;
+    // Animation
+    let lastTime = performance.now();
     const duration = 500;
+    let elapsed = 0;
     const animate = () => {
-      elapsed += 16;
+      const currentTime = performance.now();
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      elapsed += deltaTime;
       const progress = elapsed / duration;
 
       if (progress < 1) {
-        effectMesh.position.y += 0.02;
+        effectMesh.position.y += 0.02 * (deltaTime / 16);
         effectMaterial.opacity = 0.8 * (1 - progress);
         requestAnimationFrame(animate);
       } else {
