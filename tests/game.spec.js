@@ -2,6 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 // GameState constants for testing
 const GameState = {
+  SPLASH_SCREEN: 'splash_screen',
   OPENING: 'opening',
   TITLE: 'title',
   PLAYING: 'playing',

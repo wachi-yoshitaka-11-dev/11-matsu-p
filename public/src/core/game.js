@@ -45,7 +45,7 @@ export class Game {
     this.initAudio();
     this.setupBeforeUnloadHandler();
 
-    this.gameState = GameState.OPENING;
+    this.gameState = GameState.SPLASH_SCREEN;
     this.titleScreen = new TitleScreen(
       () => this.startGame(),
       () => this.skipSplashScreenDelay()
@@ -114,7 +114,6 @@ export class Game {
 
     this.loadEntities();
 
-    // All initialization complete - now handle splash screen timing
     const elapsedTime = Date.now() - loadStartTime;
     const minDisplayTime = 10000;
     const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
@@ -124,7 +123,10 @@ export class Game {
     } else {
       this.minDisplayTimeTimeoutId = setTimeout(() => {
         this.minDisplayTimeTimeoutId = null;
-        this.playOpeningSequence();
+
+        if (!this.splashSkipped) {
+          this.playOpeningSequence();
+        }
       }, remainingTime);
     }
   }
@@ -508,6 +510,7 @@ export class Game {
 
   _updateLoop(deltaTime) {
     if (
+      this.gameState === GameState.SPLASH_SCREEN ||
       this.gameState === GameState.OPENING ||
       this.gameState === GameState.ENDING
     ) {
@@ -649,15 +652,20 @@ export class Game {
   };
 
   skipSplashScreenDelay() {
+    if (this.splashSkipped) return;
     this.splashSkipped = true;
+
     if (this.minDisplayTimeTimeoutId) {
       clearTimeout(this.minDisplayTimeTimeoutId);
       this.minDisplayTimeTimeoutId = null;
+
+      this.playOpeningSequence();
     }
   }
 
   playOpeningSequence() {
     this.gameState = GameState.OPENING;
+
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
     this.sequenceManager.startOpeningSequence(() => {
@@ -679,7 +687,6 @@ export class Game {
   playEndingSequence() {
     this.gameState = GameState.ENDING;
 
-    // Hide HUD immediately when ending starts
     this.hud?.hide();
 
     this.sceneManager.fadeOutCanvas(1000, () => {

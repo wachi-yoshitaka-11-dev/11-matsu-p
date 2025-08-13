@@ -379,7 +379,6 @@ export class Character extends BaseEntity {
   }
 
   createAreaAttack(skillId) {
-    console.log('Character createAreaAttack called with skillId:', skillId);
     const areaAttack = new AreaAttack(
       this.game,
       skillId,
@@ -392,7 +391,6 @@ export class Character extends BaseEntity {
     }
     this.game.areaAttacks.push(areaAttack);
     this.game.sceneManager.add(areaAttack.mesh);
-    console.log('Area attack created and added to scene');
     return areaAttack;
   }
 

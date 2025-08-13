@@ -249,7 +249,6 @@ export class Enemy extends Character {
   }
 
   onDeath() {
-    console.log('Enemy onDeath called, experience:', this.experience);
     this.playAnimation(AnimationNames.DIE);
     this.game.playSound(AssetPaths.SFX_KILL);
 
