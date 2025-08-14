@@ -127,6 +127,22 @@ export const EffectColors = {
   CHARGE: 0xff00ff,
 };
 
+export const SkillShape = {
+  BOX: 'box',
+  CAPSULE: 'capsule',
+  CONE: 'cone',
+  CYLINDER: 'cylinder',
+  DODECAHEDRON: 'dodecahedron',
+  ICOSAHEDRON: 'icosahedron',
+  OCTAHEDRON: 'octahedron',
+  PLANE: 'plane',
+  RING: 'ring',
+  SPHERE: 'sphere',
+  TETRAHEDRON: 'tetrahedron',
+  TORUS: 'torus',
+  TORUS_KNOT: 'torusKnot',
+};
+
 export const AudioConstants = {
   FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // Sound is not audible beyond this distance
   FOOTSTEP_MIN_VOLUME: 0.05, // Minimum volume

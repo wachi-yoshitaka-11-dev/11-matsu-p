@@ -4,20 +4,11 @@ import { EffectColors } from '../../utils/constants.js';
 
 export class AreaAttack extends Skill {
   constructor(game, areaAttackId, centerPosition, caster) {
-    const skillData = game.data.skills[areaAttackId];
-
-    // Ring geometry for visual effect of area attack
-    const geometry = new THREE.RingGeometry(0.5, skillData.range || 4.0, 16);
-    const material = new THREE.MeshBasicMaterial({
-      color: EffectColors.SKILL_AREA_ATTACK,
-      transparent: true,
-      opacity: 0.6,
-      side: THREE.DoubleSide,
-    });
-
-    super(game, areaAttackId, geometry, material);
+    super(game, areaAttackId); // geometry, materialを削除
 
     this.caster = caster;
+
+    const skillData = game.data.skills[areaAttackId];
 
     this.range = skillData.range || 4.0;
     this.damage = skillData.damage || 50;
@@ -52,7 +43,11 @@ export class AreaAttack extends Skill {
 
     // Effect animation
     this.mesh.scale.setScalar(progress);
-    this.mesh.material.opacity = 0.6 * (1 - progress);
+    // AreaAttackのmaterialはSkillクラスで生成されるので、そのopacityを操作する
+    if (this.mesh.material) {
+      this.mesh.material.opacity =
+        (this.data.effect.opacity || 0.6) * (1 - progress);
+    }
 
     // Mark for removal when duration ends
     if (progress >= 1) {
