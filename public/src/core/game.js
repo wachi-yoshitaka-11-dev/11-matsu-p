@@ -10,6 +10,7 @@ import { Item } from '../entities/items/item.js';
 import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
+import { LoadingScreen } from '../ui/loading-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
@@ -50,6 +51,7 @@ export class Game {
       () => this.startGame(),
       () => this.skipSplashScreenDelay()
     );
+    this.loadingScreen = new LoadingScreen();
 
     // UI components will be initialized after localization is loaded
     this.pauseMenu = null;
@@ -89,30 +91,11 @@ export class Game {
     const loadStartTime = Date.now();
 
     await this.loadGameData();
-    await this.loadAudio();
-    await this.loadModels();
-
-    this.field = new Field(this);
-    this.sceneManager.add(this.field.mesh);
-
-    this.player = new Player(this, 'player');
-    this.sceneManager.add(this.player.mesh);
-
-    this.hud = new Hud(this, this.player);
+    await this.loadBasicAudio();
+    await this.loadBasicModels();
 
     // Update UI text after localization is loaded
     this.updateUITexts();
-    this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
-    this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
-
-    this.inputController = new InputController(
-      this.player,
-      this.sceneManager.camera,
-      this,
-      this.sceneManager.renderer.domElement
-    );
-
-    this.loadEntities();
 
     const elapsedTime = Date.now() - loadStartTime;
     const minDisplayTime = 10000;
@@ -166,7 +149,7 @@ export class Game {
     }
   }
 
-  async loadAudio() {
+  async loadBasicAudio() {
     const audioAssets = [
       AssetPaths.BGM_ENDING,
       AssetPaths.BGM_OPENING,
@@ -244,16 +227,55 @@ export class Game {
     this.sceneManager.add(npc.mesh);
   }
 
-  async loadModels() {
-    const assetsToLoad = [];
+  async loadModelsFromAssets(assetsToLoad) {
+    for (const asset of assetsToLoad) {
+      try {
+        if (asset.model) {
+          await this.assetLoader.loadGLTF(
+            asset.model.replace('.glb', ''),
+            `assets/models/${asset.model}`
+          );
+        }
+        if (asset.texture) {
+          try {
+            await this.assetLoader.loadTexture(
+              asset.texture.replace('.png', ''),
+              `assets/textures/${asset.texture}`
+            );
+          } catch (error) {
+            console.warn(
+              `Texture for ${asset.model || asset.texture} not found. Using default material.`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Could not load model ${asset.model}. A placeholder will be used.`,
+          error
+        );
+      }
+    }
+  }
+
+  async loadBasicModels() {
+    // Load only player assets during startup
+    const basicAssetsToLoad = [];
 
     // Player assets
-    assetsToLoad.push({
+    basicAssetsToLoad.push({
       model: this.data.player.model,
       texture: this.data.player.texture,
     });
 
-    // Collect all assets from JSON data
+    await this.loadModelsFromAssets(basicAssetsToLoad);
+  }
+
+  async loadStageModels() {
+    // Load stage-related models during stage loading
+    const assetsToLoad = [];
+
+    // Collect all assets from JSON data except player (already loaded)
     const collections = [
       this.data.terrains,
       this.data.npcs,
@@ -288,53 +310,65 @@ export class Game {
       }
     }
 
-    for (const asset of assetsToLoad) {
-      try {
-        if (asset.model) {
-          await this.assetLoader.loadGLTF(
-            asset.model.replace('.glb', ''),
-            `assets/models/${asset.model}`
-          );
-        }
-        if (asset.texture) {
-          try {
-            await this.assetLoader.loadTexture(
-              asset.texture.replace('.png', ''),
-              `assets/textures/${asset.texture}`
-            );
-          } catch (error) {
-            console.warn(
-              `Texture for ${asset.model || asset.texture} not found. Using default material.`,
-              error
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          `Could not load model ${asset.model}. A placeholder will be used.`,
-          error
-        );
-      }
-    }
+    await this.loadModelsFromAssets(assetsToLoad);
   }
 
   async startGame() {
     if (this.gameState !== GameState.TITLE) return;
 
-    this.gameState = GameState.PLAYING;
-    this.sceneManager.showCanvas();
-    this.hud?.show();
+    // Show loading state
+    this.gameState = GameState.LOADING;
 
     if (this.titleScreen) {
       this.titleScreen.hideAll();
     }
+    this.loadingScreen.show();
     if (this.bgmAudios[AssetPaths.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetPaths.BGM_TITLE].stop();
     }
-    // Start current level BGM
-    await this.startLevelBGM();
-    this.playSound(AssetPaths.SFX_START);
-    this.sceneManager.renderer.domElement.requestPointerLock();
+
+    try {
+      // Load stage-related assets
+      await this.loadStageModels();
+
+      // Initialize game objects now
+      this.field = new Field(this);
+      this.sceneManager.add(this.field.mesh);
+
+      this.player = new Player(this, 'player');
+      this.sceneManager.add(this.player.mesh);
+
+      this.hud = new Hud(this, this.player);
+      this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
+      this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
+
+      this.inputController = new InputController(
+        this.player,
+        this.sceneManager.camera,
+        this,
+        this.sceneManager.renderer.domElement
+      );
+
+      // Load entities
+      this.loadEntities();
+
+      // Hide loading and start gameplay
+      this.loadingScreen.hide();
+      this.sceneManager.showCanvas();
+      this.gameState = GameState.PLAYING;
+      this.hud?.show();
+
+      this.sceneManager.renderer.domElement.requestPointerLock();
+
+      this.playSound(AssetPaths.SFX_START);
+      await this.startLevelBGM();
+    } catch (error) {
+      console.error('Failed to start game:', error);
+      // Handle error - could show error message and return to title
+      this.loadingScreen.hide();
+      this.gameState = GameState.TITLE;
+      this.titleScreen.showMenu();
+    }
   }
 
   isTextureAppliedToModel(modelName) {
@@ -502,6 +536,10 @@ export class Game {
       this.gameState === GameState.ENDING
     ) {
       this.sequenceManager.update(deltaTime);
+    } else if (this.gameState === GameState.LOADING) {
+      // During loading, just render the scene (might be empty or loading screen)
+      this.sceneManager.render();
+      return;
     } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
       this.inputController?.update(deltaTime);
