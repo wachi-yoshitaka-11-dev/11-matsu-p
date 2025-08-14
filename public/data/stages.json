@@ -10,7 +10,6 @@
     "startingPlains": {
       "name": "始まりの地",
       "model": "stages/starting-plains.glb",
-      "texture": "stages/starting-plains.png",
       "image": "stages/starting-plains.png",
       "description": "穏やかな平原と小さな遺跡。基本的な操作を学ぶ安全なエリア。",
       "bgm": [

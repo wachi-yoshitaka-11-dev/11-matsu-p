@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { SceneManager } from './scene-manager.js';
 import { AssetLoader } from './asset-loader.js';
+import { StageManager } from './stage-manager.js';
 import { Field } from '../world/field.js';
 import { Player } from '../entities/characters/player.js';
 import { Enemy } from '../entities/characters/enemy.js';
@@ -23,6 +24,7 @@ export class Game {
   constructor() {
     this.sceneManager = new SceneManager();
     this.assetLoader = new AssetLoader();
+    this.stageManager = new StageManager(this);
     this.clock = new THREE.Clock();
 
     this.field = null;
@@ -116,16 +118,17 @@ export class Game {
 
   async loadGameData() {
     const dataFiles = [
-      'skills',
-      'items',
-      'weapons',
-      'shields',
+      'localization',
       'player',
       'enemies',
       'npcs',
-      'localization',
+      'items',
+      'weapons',
+      'shields',
+      'skills',
       'terrains',
       'environments',
+      'stages',
     ];
     for (const fileName of dataFiles) {
       const data = await this.assetLoader.loadJSON(
@@ -328,8 +331,17 @@ export class Game {
     }
 
     try {
+      // Load current stage
+      await this.stageManager.loadStage(this.currentLevel);
+
       // Load stage-related assets
       await this.loadStageModels();
+
+      // Load stage BGM
+      const stageData = this.stageManager.getCurrentStageData();
+      if (stageData) {
+        await this.stageManager.loadStageBGM(stageData);
+      }
 
       // Initialize game objects now
       this.field = new Field(this);
@@ -361,7 +373,9 @@ export class Game {
       this.sceneManager.renderer.domElement.requestPointerLock();
 
       this.playSound(AssetPaths.SFX_START);
-      await this.startLevelBGM();
+
+      // Start stage BGM after everything is loaded
+      this.stageManager.playDefaultBGM();
     } catch (error) {
       console.error('Failed to start game:', error);
       // Handle error - could show error message and return to title
@@ -404,37 +418,6 @@ export class Game {
 
   reloadGame() {
     location.reload();
-  }
-
-  // Level BGM lazy loading
-  async loadLevelBGM(level) {
-    const bgmName = this.getLevelBGMName(level);
-    if (!bgmName) return null;
-
-    if (this.bgmAudios[bgmName]) {
-      return bgmName;
-    }
-
-    try {
-      const buffer = await this.assetLoader.loadAudio(
-        bgmName,
-        `assets/audio/${bgmName}`
-      );
-
-      this.bgmAudios[bgmName] = new THREE.Audio(this.listener);
-      this.bgmAudios[bgmName].setBuffer(buffer);
-      this.bgmAudios[bgmName].setLoop(true);
-      this.bgmAudios[bgmName].setVolume(0.4);
-
-      return bgmName;
-    } catch (error) {
-      console.warn(`Failed to load level BGM: ${bgmName}`, error);
-      return null;
-    }
-  }
-
-  getLevelBGMName(level) {
-    return `stages/starting-plains/default.mp3`;
   }
 
   // BGM management methods
@@ -480,14 +463,6 @@ export class Game {
       if (!audio.isPlaying) {
         audio.play();
       }
-    }
-  }
-
-  async startLevelBGM(level = null) {
-    const targetLevel = level || this.currentLevel;
-    const bgmName = await this.loadLevelBGM(targetLevel);
-    if (bgmName) {
-      this.playBGM(bgmName);
     }
   }
 

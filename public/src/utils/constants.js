@@ -48,6 +48,11 @@ export const EnvironmentTypes = {
   GROUND: 'ground',
 };
 
+export const StageBGMConditions = {
+  DEFAULT: 'default',
+  COMBAT: 'combat',
+};
+
 export const SequenceStep = {
   IDLE: 'idle',
   TEXT_COMPLETE: 'textComplete',
