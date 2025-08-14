@@ -16,6 +16,7 @@ export const GameState = {
   SPLASH_SCREEN: 'splashScreen',
   OPENING: 'opening',
   TITLE: 'title',
+  LOADING: 'loading',
   PLAYING: 'playing',
   PAUSED: 'paused',
   ENDING: 'ending',
@@ -65,17 +66,7 @@ export const AssetPaths = {
   BGM_TITLE: 'sequences/bgm-title.mp3',
   BGM_OPENING: 'sequences/bgm-opening.mp3',
   BGM_ENDING: 'sequences/bgm-ending.mp3',
-  BGM_LEVEL_PREFIX: 'bgm/bgm-level-',
-  BGM_LEVEL_01_01: 'bgm/bgm-level-01_01.mp3',
-  BGM_LEVEL_01_02: 'bgm/bgm-level-01_02.mp3',
-  BGM_LEVEL_02_01: 'bgm/bgm-level-02_01.mp3',
-  BGM_LEVEL_02_02: 'bgm/bgm-level-02_02.mp3',
-  BGM_LEVEL_03_01: 'bgm/bgm-level-03_01.mp3',
-  BGM_LEVEL_03_02: 'bgm/bgm-level-03_02.mp3',
-  BGM_LEVEL_04_01: 'bgm/bgm-level-04_01.mp3',
-  BGM_LEVEL_04_02: 'bgm/bgm-level-04_02.mp3',
-  BGM_LEVEL_05_01: 'bgm/bgm-level-05_01.mp3',
-  BGM_LEVEL_05_02: 'bgm/bgm-level-05_02.mp3',
+
   SFX_ATTACK_STRONG: 'sfx/attack-strong.mp3',
   SFX_ATTACK_WEAK: 'sfx/attack-weak.mp3',
   SFX_CLICK: 'sfx/click.mp3',
@@ -152,16 +143,3 @@ export const ItemConstants = {
 export const HTMLTags = {
   BR: '<br>',
 };
-
-export const LevelBGM = [
-  AssetPaths.BGM_LEVEL_01_01,
-  AssetPaths.BGM_LEVEL_01_02,
-  AssetPaths.BGM_LEVEL_02_01,
-  AssetPaths.BGM_LEVEL_02_02,
-  AssetPaths.BGM_LEVEL_03_01,
-  AssetPaths.BGM_LEVEL_03_02,
-  AssetPaths.BGM_LEVEL_04_01,
-  AssetPaths.BGM_LEVEL_04_02,
-  AssetPaths.BGM_LEVEL_05_01,
-  AssetPaths.BGM_LEVEL_05_02,
-];

@@ -225,14 +225,14 @@ export class Game {
     this.items.push(item);
     this.sceneManager.add(item.mesh);
 
-    const enemy = new Enemy(this, 'forestGoblin', new THREE.Vector3(5, 0, 0), {
+    const enemy = new Enemy(this, 'mouse', new THREE.Vector3(5, 0, 0), {
       player: this.player,
     });
 
     this.enemies.push(enemy);
     this.sceneManager.add(enemy.mesh);
 
-    const boss = new Boss(this, 'dragonKing', new THREE.Vector3(10, 0.5, 10), {
+    const boss = new Boss(this, 'dog', new THREE.Vector3(10, 0.5, 10), {
       player: this.player,
     });
     this.boss = boss;
@@ -373,8 +373,8 @@ export class Game {
   }
 
   // Level BGM lazy loading
-  async loadLevelBGM(level, progress = null) {
-    const bgmName = this.getLevelBGMName(level, progress);
+  async loadLevelBGM(level) {
+    const bgmName = this.getLevelBGMName(level);
     if (!bgmName) return null;
 
     if (this.bgmAudios[bgmName]) {
@@ -399,13 +399,8 @@ export class Game {
     }
   }
 
-  getLevelBGMName(level, progress = null) {
-    const currentProgress = progress || this.currentLevelProgress;
-
-    const progressString = currentProgress.toString().padStart(2, '0');
-    const bgmKey = `BGM_LEVEL_${level.toString().padStart(2, '0')}_${progressString}`;
-
-    return AssetPaths[bgmKey] || null;
+  getLevelBGMName(level) {
+    return `stages/starting-plains/default.mp3`;
   }
 
   // BGM management methods
@@ -454,19 +449,11 @@ export class Game {
     }
   }
 
-  async startLevelBGM(level = null, progress = null) {
+  async startLevelBGM(level = null) {
     const targetLevel = level || this.currentLevel;
-    const bgmName = await this.loadLevelBGM(targetLevel, progress);
+    const bgmName = await this.loadLevelBGM(targetLevel);
     if (bgmName) {
       this.playBGM(bgmName);
-    }
-  }
-
-  // Method to change level progress and switch BGM accordingly
-  async setLevelProgress(progress) {
-    if (progress !== this.currentLevelProgress) {
-      this.currentLevelProgress = progress;
-      await this.startLevelBGM(this.currentLevel, progress);
     }
   }
 

@@ -1,0 +1,163 @@
+{
+  "stageOrder": [
+    "startingPlains",
+    "cursedForest",
+    "ancientRuins",
+    "snowyPeaks",
+    "abyssCavern"
+  ],
+  "stages": {
+    "startingPlains": {
+      "name": "始まりの地",
+      "model": "stages/starting-plains.glb",
+      "texture": "stages/starting-plains.png",
+      "image": "stages/starting-plains.png",
+      "description": "穏やかな平原と小さな遺跡。基本的な操作を学ぶ安全なエリア。",
+      "bgm": [
+        {
+          "file": "stages/starting-plains/default.mp3",
+          "condition": "default",
+          "loop": true
+        },
+        {
+          "file": "stages/starting-plains/combat.mp3",
+          "condition": "combat",
+          "loop": true
+        }
+      ],
+      "world": {
+        "field": {
+          "size": 100,
+          "segments": 50,
+          "heightVariation": {
+            "amplitude": 2,
+            "frequency": 0.1
+          }
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#87CEEB",
+            "intensity": 0.5
+          },
+          {
+            "type": "directional",
+            "color": "#FFF8DC",
+            "intensity": 0.8,
+            "position": [10, 50, 10]
+          }
+        ],
+        "terrains": [
+          {
+            "id": "tree",
+            "count": 20,
+            "minScale": 2.0,
+            "maxScale": 6.0,
+            "areas": ["scattered"]
+          },
+          {
+            "id": "rock",
+            "count": 40,
+            "minScale": 2.0,
+            "maxScale": 10.0,
+            "areas": ["ruins"]
+          },
+          {
+            "id": "grass",
+            "count": 1000,
+            "minScale": 0.5,
+            "maxScale": 4.0,
+            "areas": ["plains"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "cloud",
+            "count": 100,
+            "minScale": 5.0,
+            "maxScale": 50.0,
+            "opacity": 0.4,
+            "height": {
+              "min": 40,
+              "max": 70
+            }
+          }
+        ]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "mouse",
+            "placements": [
+              { "area": "plains", "count": 2 },
+              { "area": "ruins", "count": 1 }
+            ]
+          },
+          {
+            "id": "crow",
+            "placements": [{ "area": "ruins", "count": 2 }]
+          },
+          {
+            "id": "weasel",
+            "placements": [
+              { "area": "plains", "count": 1 },
+              { "area": "ruins", "count": 1 }
+            ]
+          },
+          {
+            "id": "dog",
+            "placements": [{ "position": [25, 0, 25] }]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "guide",
+            "placements": [{ "position": [-5, 0.5, -5] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "potion",
+            "placements": [
+              { "area": "plains", "count": 2 },
+              { "area": "scattered", "count": 1 }
+            ]
+          },
+          {
+            "id": "fpPotion",
+            "placements": [{ "area": "ruins", "count": 2 }]
+          }
+        ]
+      },
+      "areas": {
+        "plains": {
+          "center": [0, 0, 0],
+          "radius": 35,
+          "description": "中央の穏やかな平原エリア"
+        },
+        "ruins": {
+          "center": [0, 0, 15],
+          "radius": 20,
+          "description": "古い石造建築群のある遺跡エリア"
+        },
+        "scattered": {
+          "center": [0, 0, 0],
+          "radius": 45,
+          "description": "フィールド全体にランダム配置"
+        }
+      },
+      "objectives": {
+        "tutorial": {
+          "description": "基本操作を覚えよう",
+          "steps": [
+            "移動（WASD）を試してみよう",
+            "視点移動（マウス）を試してみよう",
+            "ジャンプ（スペース）を試してみよう",
+            "案内人と話してみよう",
+            "敵を1匹倒してみよう"
+          ]
+        }
+      }
+    }
+  }
+}
