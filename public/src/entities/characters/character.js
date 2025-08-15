@@ -358,7 +358,7 @@ export class Character extends BaseEntity {
       this
     );
 
-    this.game.projectiles.push(projectile);
+    this.game.entities.skills.projectiles.push(projectile);
     this.game.sceneManager.add(projectile.mesh);
     return projectile;
   }
@@ -376,10 +376,10 @@ export class Character extends BaseEntity {
       this
     );
 
-    if (!this.game.areaAttacks) {
-      this.game.areaAttacks = [];
+    if (!this.game.entities.skills.areaAttacks) {
+      this.game.entities.skills.areaAttacks = [];
     }
-    this.game.areaAttacks.push(areaAttack);
+    this.game.entities.skills.areaAttacks.push(areaAttack);
     this.game.sceneManager.add(areaAttack.mesh);
     return areaAttack;
   }

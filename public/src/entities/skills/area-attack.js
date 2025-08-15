@@ -70,7 +70,7 @@ export class AreaAttack extends Skill {
         this.showDamageEffect(this.game.player.mesh.position);
       }
     } else {
-      this.game.enemies.forEach((enemy) => {
+      this.game.entities.characters.enemies.forEach((enemy) => {
         const distance = centerPosition.distanceTo(enemy.mesh.position);
         if (distance <= this.range) {
           enemy.takeDamage(this.damage);

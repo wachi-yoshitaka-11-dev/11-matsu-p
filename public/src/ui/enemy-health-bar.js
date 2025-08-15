@@ -101,7 +101,7 @@ export class EnemyHealthBar {
     }
 
     // Create health bars for new enemies within range
-    for (const enemy of this.game.enemies) {
+    for (const enemy of this.game.entities.characters.enemies) {
       if (!this.healthBars.has(enemy) && !enemy.isDead) {
         const distance = playerPos.distanceTo(enemy.mesh.position);
 

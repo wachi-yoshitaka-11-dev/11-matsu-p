@@ -141,8 +141,7 @@ export class StageManager {
         const terrain = new Terrain(this.game, terrainConfig.id, position);
         this.game.sceneManager.add(terrain.mesh);
         // Store reference for cleanup
-        if (!this.game.terrains) this.game.terrains = [];
-        this.game.terrains.push(terrain);
+        this.game.entities.world.terrains.push(terrain);
       }
     }
   }
@@ -160,8 +159,7 @@ export class StageManager {
         const environment = new Environment(this.game, envConfig.id, position);
         this.game.sceneManager.add(environment.mesh);
         // Store reference for cleanup
-        if (!this.game.environments) this.game.environments = [];
-        this.game.environments.push(environment);
+        this.game.entities.world.environments.push(environment);
       }
     }
   }
@@ -261,12 +259,12 @@ export class StageManager {
         let enemy;
         if (enemyData.type === 'boss') {
           enemy = new Boss(this.game, enemyConfig.id, position);
-          this.game.boss = enemy;
+          this.game.entities.characters.boss = enemy;
         } else {
           enemy = new Enemy(this.game, enemyConfig.id, position);
         }
 
-        this.game.enemies.push(enemy);
+        this.game.entities.characters.enemies.push(enemy);
         this.game.sceneManager.add(enemy.mesh);
       }
     }
@@ -283,7 +281,7 @@ export class StageManager {
 
       for (const position of positions) {
         const npc = new Npc(this.game, npcConfig.id, position);
-        this.game.npcs.push(npc);
+        this.game.entities.characters.npcs.push(npc);
         this.game.sceneManager.add(npc.mesh);
       }
     }
@@ -300,7 +298,7 @@ export class StageManager {
 
       for (const position of positions) {
         const item = new Item(this.game, itemConfig.id, position);
-        this.game.items.push(item);
+        this.game.entities.items.push(item);
         this.game.sceneManager.add(item.mesh);
       }
     }
@@ -336,44 +334,44 @@ export class StageManager {
     }
 
     // Clean up terrains
-    if (this.game.terrains) {
-      this.game.terrains.forEach((terrain) => {
+    if (this.game.entities.world.terrains) {
+      this.game.entities.world.terrains.forEach((terrain) => {
         this.game.sceneManager.remove(terrain.mesh);
       });
-      this.game.terrains = [];
+      this.game.entities.world.terrains.length = 0;
     }
 
     // Clean up environments
-    if (this.game.environments) {
-      this.game.environments.forEach((environment) => {
+    if (this.game.entities.world.environments) {
+      this.game.entities.world.environments.forEach((environment) => {
         this.game.sceneManager.remove(environment.mesh);
       });
-      this.game.environments = [];
+      this.game.entities.world.environments.length = 0;
     }
 
     // Clean up stage-loaded enemies
-    if (this.game.enemies) {
-      this.game.enemies.forEach((enemy) => {
+    if (this.game.entities.characters.enemies) {
+      this.game.entities.characters.enemies.forEach((enemy) => {
         this.game.sceneManager.remove(enemy.mesh);
       });
-      this.game.enemies = [];
-      this.game.boss = null;
+      this.game.entities.characters.enemies.length = 0;
+      this.game.entities.characters.boss = null;
     }
 
     // Clean up stage-loaded NPCs
-    if (this.game.npcs) {
-      this.game.npcs.forEach((npc) => {
+    if (this.game.entities.characters.npcs) {
+      this.game.entities.characters.npcs.forEach((npc) => {
         this.game.sceneManager.remove(npc.mesh);
       });
-      this.game.npcs = [];
+      this.game.entities.characters.npcs.length = 0;
     }
 
     // Clean up stage-loaded items
-    if (this.game.items) {
-      this.game.items.forEach((item) => {
+    if (this.game.entities.items) {
+      this.game.entities.items.forEach((item) => {
         this.game.sceneManager.remove(item.mesh);
       });
-      this.game.items = [];
+      this.game.entities.items.length = 0;
     }
 
     // Clear loaded stage assets

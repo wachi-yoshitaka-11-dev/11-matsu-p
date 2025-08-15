@@ -29,15 +29,23 @@ export class Game {
     this.hud = null;
     this.enemyHealthBar = null;
 
-    this.enemies = [];
-    this.items = [];
-    this.projectiles = [];
-    this.areaAttacks = [];
-    this.terrains = [];
-    this.environments = [];
-
-    this.boss = null;
-    this.npcs = [];
+    // 階層化されたエンティティ管理
+    this.entities = {
+      characters: {
+        enemies: [],
+        npcs: [],
+        boss: null,
+      },
+      items: [],
+      skills: {
+        projectiles: [],
+        areaAttacks: [],
+      },
+      world: {
+        terrains: [],
+        environments: [],
+      },
+    };
     this.data = {};
 
     this.minDisplayTimeTimeoutId = null;
@@ -533,20 +541,20 @@ export class Game {
 
       if (this.gameState === GameState.PLAYING) {
         this.enemyHealthBar?.update();
-        for (let i = this.enemies.length - 1; i >= 0; i--) {
-          const enemy = this.enemies[i];
+        for (let i = this.entities.characters.enemies.length - 1; i >= 0; i--) {
+          const enemy = this.entities.characters.enemies[i];
           enemy.update(deltaTime);
 
           if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
             // If the removed enemy is the boss, trigger ending flow
-            if (enemy === this.boss) {
-              this.boss = null;
+            if (enemy === this.entities.characters.boss) {
+              this.entities.characters.boss = null;
               this.endingTimer = 1;
               this.isEndingSequenceReady = false;
             }
-            this.enemies.splice(i, 1);
+            this.entities.characters.enemies.splice(i, 1);
           }
         }
 
@@ -560,8 +568,8 @@ export class Game {
           }
         }
 
-        for (let i = this.items.length - 1; i >= 0; i--) {
-          const item = this.items[i];
+        for (let i = this.entities.items.length - 1; i >= 0; i--) {
+          const item = this.entities.items[i];
           const distance = this.player?.mesh.position.distanceTo(
             item.mesh.position
           );
@@ -574,12 +582,12 @@ export class Game {
             this.player?.inventory.push(item.id);
             this.player?.playPickUpAnimation();
             this.sceneManager.remove(item.mesh);
-            this.items.splice(i, 1);
+            this.entities.items.splice(i, 1);
           }
         }
 
-        for (let i = this.projectiles.length - 1; i >= 0; i--) {
-          const projectile = this.projectiles[i];
+        for (let i = this.entities.skills.projectiles.length - 1; i >= 0; i--) {
+          const projectile = this.entities.skills.projectiles[i];
           projectile.update(deltaTime);
           let shouldRemove = false;
 
@@ -603,7 +611,7 @@ export class Game {
               }
             } else {
               // Player attack: collision detection with enemies
-              for (const enemy of this.enemies) {
+              for (const enemy of this.entities.characters.enemies) {
                 const enemyHitPosition = enemy.mesh.position.clone();
                 enemyHitPosition.y += 0.5;
                 if (
@@ -620,21 +628,21 @@ export class Game {
 
           if (shouldRemove) {
             this.sceneManager.remove(projectile.mesh);
-            this.projectiles.splice(i, 1);
+            this.entities.skills.projectiles.splice(i, 1);
           }
         }
 
-        for (let i = this.areaAttacks.length - 1; i >= 0; i--) {
-          const areaAttack = this.areaAttacks[i];
+        for (let i = this.entities.skills.areaAttacks.length - 1; i >= 0; i--) {
+          const areaAttack = this.entities.skills.areaAttacks[i];
           areaAttack.update(deltaTime);
 
           if (areaAttack.lifespan <= 0) {
             this.sceneManager.remove(areaAttack.mesh);
-            this.areaAttacks.splice(i, 1);
+            this.entities.skills.areaAttacks.splice(i, 1);
           }
         }
 
-        this.npcs.forEach((npc) => {
+        this.entities.characters.npcs.forEach((npc) => {
           npc.update(deltaTime);
         });
       }
