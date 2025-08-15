@@ -177,4 +177,26 @@ export class Skill extends BaseEntity {
     }
     return { geometry, material };
   }
+
+  // skills.jsonの回転設定をキャラクターの向き基準で適用
+  applyRotation(casterQuaternion) {
+    const skillData = this.data;
+
+    if (skillData.effect?.rotation) {
+      const skillRotation = new THREE.Euler(
+        skillData.effect.rotation.x || 0,
+        skillData.effect.rotation.y || 0,
+        skillData.effect.rotation.z || 0
+      );
+      const skillQuaternion = new THREE.Quaternion().setFromEuler(
+        skillRotation
+      );
+
+      // キャラクターの向き + スキルの回転
+      this.mesh.quaternion.copy(casterQuaternion).multiply(skillQuaternion);
+    } else {
+      // 回転設定がない場合はキャラクターの向きをそのまま適用
+      this.mesh.quaternion.copy(casterQuaternion);
+    }
+  }
 }

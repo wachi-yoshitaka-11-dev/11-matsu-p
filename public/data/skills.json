@@ -35,6 +35,11 @@
         "color": "#DDA0DD",
         "length": 2.0,
         "opacity": 0.8
+      },
+      "rotation": {
+        "x": 1.5708,
+        "y": 0,
+        "z": 0
       }
     },
     "fpCost": 20,
@@ -43,7 +48,7 @@
     "speed": 10,
     "lifespan": 2000,
     "damage": 30,
-    "hitRange": 1.0
+    "hitRange": 3.0
   },
   "holyExplosion": {
     "name": "聖なる爆発",
@@ -104,6 +109,11 @@
         "color": "#DEB887",
         "length": 1.8,
         "opacity": 0.7
+      },
+      "rotation": {
+        "x": 1.5708,
+        "y": 0.3,
+        "z": 0
       }
     },
     "fpCost": 0,
@@ -112,7 +122,7 @@
     "speed": 12,
     "lifespan": 2500,
     "damage": 18,
-    "hitRange": 1.2
+    "hitRange": 3.5
   },
   "barkBlast": {
     "name": "吠え爆風",

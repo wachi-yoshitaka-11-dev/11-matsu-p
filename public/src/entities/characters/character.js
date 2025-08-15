@@ -364,10 +364,15 @@ export class Character extends BaseEntity {
   }
 
   createAreaAttack(skillId) {
+    // Get character's forward direction
+    const direction = new THREE.Vector3(0, 0, -1);
+    direction.applyQuaternion(this.mesh.quaternion);
+
     const areaAttack = new AreaAttack(
       this.game,
       skillId,
       this.mesh.position.clone(),
+      direction,
       this
     );
 

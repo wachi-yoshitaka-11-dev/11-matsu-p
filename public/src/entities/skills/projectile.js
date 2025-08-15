@@ -18,11 +18,10 @@ export class Projectile extends Skill {
       direction && direction.lengthSq() > 1e-8
         ? direction.clone().normalize()
         : new THREE.Vector3(0, 0, -1);
-    // Map -Z (forward) to unitDir instead of Y-up for consistent orientation
-    this.mesh.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 0, -1),
-      unitDir
-    );
+
+    // skills.jsonの回転設定をキャスターの向き基準で適用
+    this.applyRotation(caster.mesh.quaternion);
+
     this.direction = unitDir;
   }
 

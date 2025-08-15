@@ -3,8 +3,8 @@ import { Skill } from './skill.js';
 import { EffectColors } from '../../utils/constants.js';
 
 export class AreaAttack extends Skill {
-  constructor(game, areaAttackId, centerPosition, caster) {
-    super(game, areaAttackId); // geometry, materialを削除
+  constructor(game, areaAttackId, centerPosition, direction, caster) {
+    super(game, areaAttackId);
 
     this.caster = caster;
 
@@ -22,7 +22,9 @@ export class AreaAttack extends Skill {
     // Position setting
     this.mesh.position.copy(centerPosition);
     this.mesh.position.y += 0.1; // Display slightly above ground
-    this.mesh.rotation.x = -Math.PI / 2; // Rotate horizontally
+
+    // skills.jsonの回転設定をキャスターの向き基準で適用
+    this.applyRotation(caster.mesh.quaternion);
 
     // Set initial scale to 0 (enlarge with animation)
     this.mesh.scale.setScalar(0);
