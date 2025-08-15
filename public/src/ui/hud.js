@@ -2,9 +2,8 @@ import { GameState, AssetPaths } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
-  constructor(game, player) {
+  constructor(game) {
     this.game = game;
-    this.player = player;
     this.container = document.createElement('div');
     this.container.id = 'hud';
     this.container.classList.add('hidden');
@@ -33,8 +32,8 @@ export class Hud {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
-    this.playerPortrait = this.createPlayerPortrait();
-    container.appendChild(this.playerPortrait);
+    this.game.playerPortrait = this.createPlayerPortrait();
+    container.appendChild(this.game.playerPortrait);
 
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
@@ -126,17 +125,17 @@ export class Hud {
     const hpButton = this.createStatButton(
       'hp',
       `HP +${statusPointsPerLevel}`,
-      () => (this.player.maxHp += statusPointsPerLevel)
+      () => (this.game.player.maxHp += statusPointsPerLevel)
     );
     const fpButton = this.createStatButton(
       'fp',
       `FP +${statusPointsPerLevel}`,
-      () => (this.player.maxFp += statusPointsPerLevel)
+      () => (this.game.player.maxFp += statusPointsPerLevel)
     );
     const staminaButton = this.createStatButton(
       'stamina',
       `Stamina +${statusPointsPerLevel}`,
-      () => (this.player.maxStamina += statusPointsPerLevel)
+      () => (this.game.player.maxStamina += statusPointsPerLevel)
     );
 
     menu.appendChild(hpButton);
@@ -150,15 +149,15 @@ export class Hud {
     const button = document.createElement('button');
     button.textContent = text;
     button.addEventListener('click', () => {
-      if (this.player.statusPoints > 0) {
+      if (this.game.player.statusPoints > 0) {
         onClick();
-        this.player.statusPoints--;
+        this.game.player.statusPoints--;
         this.game.playSound(AssetPaths.SFX_CLICK);
 
-        if (this.player.statusPoints === 0) {
-          this.player.hp = this.player.maxHp;
-          this.player.fp = this.player.maxFp;
-          this.player.stamina = this.player.maxStamina;
+        if (this.game.player.statusPoints === 0) {
+          this.game.player.hp = this.game.player.maxHp;
+          this.game.player.fp = this.game.player.maxFp;
+          this.game.player.stamina = this.game.player.maxStamina;
 
           this.game.togglePause();
           this.game.setPauseMenuVisibility(false);
@@ -245,15 +244,15 @@ export class Hud {
   }
 
   update() {
-    this.hpBar.fill.style.width = `${(this.player.hp / this.player.maxHp) * 100}%`;
-    this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
-    this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
+    this.hpBar.fill.style.width = `${(this.game.player.hp / this.game.player.maxHp) * 100}%`;
+    this.fpBar.fill.style.width = `${(this.game.player.fp / this.game.player.maxFp) * 100}%`;
+    this.staminaBar.fill.style.width = `${(this.game.player.stamina / this.game.player.maxStamina) * 100}%`;
 
-    this.hpBar.background.style.width = `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
-    this.fpBar.background.style.width = `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
-    this.staminaBar.background.style.width = `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+    this.hpBar.background.style.width = `${(this.game.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.background.style.width = `${(this.game.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.background.style.width = `${(this.game.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
 
-    if (this.player.statusPoints > 0) {
+    if (this.game.player.statusPoints > 0) {
       this.levelUpMenu.element.classList.remove('hidden');
       this.levelUpMenu.element.classList.add('visible');
       this._updateStatusPointsDisplay();
@@ -269,7 +268,7 @@ export class Hud {
 
     this.updateExperienceDisplay();
 
-    if (this.player.isDead) {
+    if (this.game.player.isDead) {
       this.deathOverlay.element.classList.remove('hidden');
       this.deathOverlay.element.classList.add('visible-flex');
     } else {
@@ -281,20 +280,20 @@ export class Hud {
   updateEquipmentDisplay() {
     if (!this.equipmentWeapon) return;
 
-    const currentWeapon = this.player.getCurrentWeapon();
+    const currentWeapon = this.game.player.getCurrentWeapon();
     this.updateEquipmentSlot(this.equipmentWeapon, currentWeapon);
 
-    const currentShield = this.player.getCurrentShield();
+    const currentShield = this.game.player.getCurrentShield();
     this.updateEquipmentSlot(this.equipmentShield, currentShield);
 
-    const currentItem = this.player.getCurrentItem();
+    const currentItem = this.game.player.getCurrentItem();
     let itemData = null;
     if (currentItem) {
       itemData = this.game.data.items[currentItem];
     }
     this.updateEquipmentSlot(this.equipmentItem, itemData, currentItem);
 
-    const currentSkill = this.player.getCurrentSkill();
+    const currentSkill = this.game.player.getCurrentSkill();
     this.updateEquipmentSlot(this.equipmentSkill, currentSkill);
   }
 
@@ -341,7 +340,7 @@ export class Hud {
 
   updateExperienceDisplay() {
     this.totalExperienceValue.textContent =
-      this.player.totalExperience.toLocaleString();
+      this.game.player.totalExperience.toLocaleString();
   }
 
   showFpInsufficientEffect() {
@@ -366,6 +365,6 @@ export class Hud {
   }
 
   _updateStatusPointsDisplay() {
-    this.levelUpMenu.points.textContent = `${localization.getText('ui.statusPoints')}: ${this.player.statusPoints}`;
+    this.levelUpMenu.points.textContent = `${localization.getText('ui.statusPoints')}: ${this.game.player.statusPoints}`;
   }
 }

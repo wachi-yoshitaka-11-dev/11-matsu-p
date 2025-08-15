@@ -4,10 +4,6 @@ import { AssetLoader } from './asset-loader.js';
 import { StageManager } from './stage-manager.js';
 import { Field } from '../world/field.js';
 import { Player } from '../entities/characters/player.js';
-import { Enemy } from '../entities/characters/enemy.js';
-import { Boss } from '../entities/characters/boss.js';
-import { Npc } from '../entities/characters/npc.js';
-import { Item } from '../entities/items/item.js';
 import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
@@ -37,6 +33,8 @@ export class Game {
     this.items = [];
     this.projectiles = [];
     this.areaAttacks = [];
+    this.terrains = [];
+    this.environments = [];
 
     this.boss = null;
     this.npcs = [];
@@ -206,30 +204,6 @@ export class Game {
     }
   }
 
-  loadEntities() {
-    const item = new Item(this, 'potion', new THREE.Vector3(0, 2, -5));
-    this.items.push(item);
-    this.sceneManager.add(item.mesh);
-
-    const enemy = new Enemy(this, 'mouse', new THREE.Vector3(5, 0, 0), {
-      player: this.player,
-    });
-
-    this.enemies.push(enemy);
-    this.sceneManager.add(enemy.mesh);
-
-    const boss = new Boss(this, 'dog', new THREE.Vector3(10, 0.5, 10), {
-      player: this.player,
-    });
-    this.boss = boss;
-    this.enemies.push(boss);
-    this.sceneManager.add(boss.mesh);
-
-    const npc = new Npc(this, 'guide', new THREE.Vector3(-5, 0.5, -5));
-    this.npcs.push(npc);
-    this.sceneManager.add(npc.mesh);
-  }
-
   async loadModelsFromAssets(assetsToLoad) {
     for (const asset of assetsToLoad) {
       try {
@@ -275,40 +249,75 @@ export class Game {
   }
 
   async loadStageModels() {
-    // Load stage-related models during stage loading
+    // Load only models that are actually used in the current stage
+    const stageData = this.stageManager.getCurrentStageData();
+    if (!stageData) return;
+
     const assetsToLoad = [];
 
-    // Collect all assets from JSON data except player (already loaded)
-    const collections = [
-      this.data.terrains,
-      this.data.npcs,
-      this.data.enemies,
-      this.data.items,
-      this.data.weapons,
-      this.data.shields,
-      this.data.skills,
-    ];
-
-    for (const collection of collections) {
-      if (collection) {
-        for (const item of Object.values(collection)) {
-          if (item.model || item.texture) {
-            assetsToLoad.push({
-              model: item.model,
-              texture: item.texture,
-            });
-          }
+    // Collect terrain models used in current stage
+    if (stageData.world?.terrains) {
+      for (const terrainConfig of stageData.world.terrains) {
+        const terrainData = this.data.terrains?.[terrainConfig.id];
+        if (terrainData && (terrainData.model || terrainData.texture)) {
+          assetsToLoad.push({
+            model: terrainData.model,
+            texture: terrainData.texture,
+          });
         }
       }
     }
 
-    // Environment textures
-    if (this.data.environments) {
-      for (const envData of Object.values(this.data.environments)) {
-        if (envData.texture) {
+    // Collect environment assets used in current stage
+    if (stageData.world?.environments) {
+      for (const envConfig of stageData.world.environments) {
+        const envData = this.data.environments?.[envConfig.id];
+        if (envData && envData.texture) {
           assetsToLoad.push({
             texture: envData.texture,
           });
+        }
+      }
+    }
+
+    // Collect entity models used in current stage
+    if (stageData.entities) {
+      // Enemies
+      if (stageData.entities.enemies) {
+        for (const enemyConfig of stageData.entities.enemies) {
+          const enemyData = this.data.enemies?.[enemyConfig.id];
+          if (enemyData && (enemyData.model || enemyData.texture)) {
+            assetsToLoad.push({
+              model: enemyData.model,
+              texture: enemyData.texture,
+            });
+          }
+        }
+      }
+
+      // NPCs
+      if (stageData.entities.npcs) {
+        for (const npcConfig of stageData.entities.npcs) {
+          const npcData = this.data.npcs?.[npcConfig.id];
+          if (npcData && (npcData.model || npcData.texture)) {
+            assetsToLoad.push({
+              model: npcData.model,
+              texture: npcData.texture,
+            });
+          }
+        }
+      }
+
+      // Items
+      if (stageData.entities.items) {
+        for (const itemConfig of stageData.entities.items) {
+          const itemData = this.data.items?.[itemConfig.id];
+          if (itemData && (itemData.model || itemData.texture)) {
+            assetsToLoad.push({
+              model: itemData.model,
+              texture: itemData.texture,
+            });
+          }
         }
       }
     }
@@ -331,15 +340,16 @@ export class Game {
     }
 
     try {
-      // Load current stage
+      // Step 1: Load stage configuration (sets stageData)
       await this.stageManager.loadStage(this.currentLevel);
 
-      // Load stage-related assets
+      // Step 2: Load stage-related assets
       await this.loadStageModels();
 
-      // Load stage BGM
+      // Step 3: Load stage world with assets available
       const stageData = this.stageManager.getCurrentStageData();
       if (stageData) {
+        await this.stageManager.loadStageWorld(stageData);
         await this.stageManager.loadStageBGM(stageData);
       }
 
@@ -350,7 +360,12 @@ export class Game {
       this.player = new Player(this, 'player');
       this.sceneManager.add(this.player.mesh);
 
-      this.hud = new Hud(this, this.player);
+      // Load stage entities after player is created
+      if (stageData) {
+        await this.stageManager.loadStageEntities(stageData);
+      }
+
+      this.hud = new Hud(this);
       this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
       this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
 
@@ -360,9 +375,6 @@ export class Game {
         this,
         this.sceneManager.renderer.domElement
       );
-
-      // Load entities
-      this.loadEntities();
 
       // Hide loading and start gameplay
       this.loadingScreen.hide();

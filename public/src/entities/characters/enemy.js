@@ -13,9 +13,6 @@ export class Enemy extends Character {
     if (!position || position.x === undefined || position.z === undefined) {
       throw new Error('Valid position with x and z coordinates is required');
     }
-    if (!options.player) {
-      throw new Error('Player parameter is required in options for Enemy');
-    }
 
     const enemyData = game.data.enemies[enemyId];
     if (!enemyData) {
@@ -39,7 +36,7 @@ export class Enemy extends Character {
       });
     }
 
-    this.player = options.player;
+    // Player reference will be accessed via this.game.player when needed
 
     this.placeOnGround(position.x, position.z);
 
@@ -97,7 +94,9 @@ export class Enemy extends Character {
 
     this.updateAnimation();
 
-    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
     const minAttackRange = Math.min(
       this.data.weakAttack.range,
       this.data.strongAttack.range
@@ -105,13 +104,13 @@ export class Enemy extends Character {
 
     if (distance > minAttackRange) {
       const direction = new THREE.Vector3()
-        .subVectors(this.player.mesh.position, this.mesh.position)
+        .subVectors(this.game.player.mesh.position, this.mesh.position)
         .normalize();
       this.mesh.position.x += direction.x * this.speed * deltaTime;
       this.mesh.position.z += direction.z * this.speed * deltaTime;
     }
 
-    this.mesh.lookAt(this.player.mesh.position);
+    this.mesh.lookAt(this.game.player.mesh.position);
 
     this.weakAttackCooldown = Math.max(0, this.weakAttackCooldown - deltaTime);
     this.strongAttackCooldown = Math.max(
@@ -127,7 +126,9 @@ export class Enemy extends Character {
       return;
     }
 
-    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
     const minAttackRange = Math.min(
       this.data.weakAttack.range,
       this.data.strongAttack.range
@@ -203,18 +204,20 @@ export class Enemy extends Character {
 
   dealDamageToPlayer(damage) {
     const toEnemy = new THREE.Vector3()
-      .subVectors(this.mesh.position, this.player.mesh.position)
+      .subVectors(this.mesh.position, this.game.player.mesh.position)
       .normalize();
-    const playerForward = this.player.getForwardDirection();
+    const playerForward = this.game.player.getForwardDirection();
     const angle = toEnemy.angleTo(playerForward);
 
-    const isGuarded = this.player.isGuarding && angle < Math.PI / 2;
+    const isGuarded = this.game.player.isGuarding && angle < Math.PI / 2;
 
     if (isGuarded) {
-      this.player.takeStaminaDamage(this.game.data.player.staminaCostGuard);
+      this.game.player.takeStaminaDamage(
+        this.game.data.player.staminaCostGuard
+      );
       this.game.playSound(AssetPaths.SFX_GUARD);
     } else {
-      this.player.takeDamage(damage);
+      this.game.player.takeDamage(damage);
     }
   }
 
@@ -343,7 +346,9 @@ export class Enemy extends Character {
       return { shouldPlay: false, state: null };
     }
 
-    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
     const minAttackRange = Math.min(
       this.data.weakAttack.range,
       this.data.strongAttack.range

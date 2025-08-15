@@ -51,6 +51,18 @@ export const EnvironmentTypes = {
 export const StageBGMConditions = {
   DEFAULT: 'default',
   COMBAT: 'combat',
+  BOSS: 'boss',
+  VICTORY: 'victory',
+  DANGER: 'danger',
+};
+
+export const LightTypes = {
+  AMBIENT: 'ambient',
+  DIRECTIONAL: 'directional',
+  POINT: 'point',
+  SPOT: 'spot',
+  HEMISPHERE: 'hemisphere',
+  RECT_AREA: 'rectArea',
 };
 
 export const SequenceStep = {

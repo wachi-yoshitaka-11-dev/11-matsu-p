@@ -30,7 +30,9 @@ export class Boss extends Enemy {
 
     this.updateBossAnimation();
 
-    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
     // Movement judgment based on basic attack range (skills have their own range checks)
     const basicAttackRange = Math.min(
       this.data.weakAttack.range,
@@ -39,13 +41,13 @@ export class Boss extends Enemy {
 
     if (distance > basicAttackRange) {
       const direction = new THREE.Vector3()
-        .subVectors(this.player.mesh.position, this.mesh.position)
+        .subVectors(this.game.player.mesh.position, this.mesh.position)
         .normalize();
       this.mesh.position.x += direction.x * this.speed * deltaTime;
       this.mesh.position.z += direction.z * this.speed * deltaTime;
     }
 
-    this.mesh.lookAt(this.player.mesh.position);
+    this.mesh.lookAt(this.game.player.mesh.position);
 
     this.weakAttackCooldown = Math.max(0, this.weakAttackCooldown - deltaTime);
     this.strongAttackCooldown = Math.max(
@@ -128,7 +130,9 @@ export class Boss extends Enemy {
       return; // Maintain current animation during skill execution
     }
 
-    const distance = this.mesh.position.distanceTo(this.player.mesh.position);
+    const distance = this.mesh.position.distanceTo(
+      this.game.player.mesh.position
+    );
 
     const basicAttackRange = Math.min(
       this.data.weakAttack.range,
