@@ -17,12 +17,14 @@ export class Hud {
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
+    this.stageDisplay = this.createStageDisplay();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
 
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
     this.container.appendChild(this.experienceDisplay);
+    this.container.appendChild(this.stageDisplay);
     this.container.appendChild(this.levelUpMenu.element);
 
     document.body.appendChild(this.deathOverlay.element);
@@ -74,7 +76,17 @@ export class Hud {
       }
     };
 
+    // Add level display overlay on top of portrait
+    const levelOverlay = document.createElement('div');
+    levelOverlay.classList.add('level-overlay');
+    levelOverlay.textContent = '1';
+
     portraitContainer.appendChild(portraitImage);
+    portraitContainer.appendChild(levelOverlay);
+
+    // Store reference to level overlay for updates
+    this.levelOverlay = levelOverlay;
+
     return portraitContainer;
   }
 
@@ -208,6 +220,27 @@ export class Hud {
     return container;
   }
 
+  createStageDisplay() {
+    const container = document.createElement('div');
+    container.id = 'stage-display';
+
+    const stageLabel = document.createElement('div');
+    stageLabel.classList.add('stage-label');
+    stageLabel.textContent = localization.getText('ui.stage');
+
+    const stageName = document.createElement('div');
+    stageName.id = 'current-stage-name';
+    stageName.classList.add('stage-name');
+    stageName.textContent = '';
+
+    container.appendChild(stageLabel);
+    container.appendChild(stageName);
+
+    this.stageNameElement = stageName;
+
+    return container;
+  }
+
   createEquipmentSlot(type) {
     const element = document.createElement('div');
     element.classList.add('equipment-slot', type);
@@ -267,6 +300,10 @@ export class Hud {
     this.updateEquipmentDisplay();
 
     this.updateExperienceDisplay();
+
+    this.updateLevelDisplay();
+
+    this.updateStageDisplay();
 
     if (this.game.player.isDead) {
       this.deathOverlay.element.classList.remove('hidden');
@@ -341,6 +378,27 @@ export class Hud {
   updateExperienceDisplay() {
     this.totalExperienceValue.textContent =
       this.game.player.totalExperience.toLocaleString();
+  }
+
+  updateLevelDisplay() {
+    if (!this.levelOverlay) return;
+
+    if (this.game.player && this.game.player.level !== undefined) {
+      this.levelOverlay.textContent = this.game.player.level.toString();
+    } else {
+      this.levelOverlay.textContent = '1';
+    }
+  }
+
+  updateStageDisplay() {
+    if (!this.stageNameElement) return;
+
+    const stageData = this.game.stageManager?.getCurrentStageData();
+    if (stageData && stageData.name) {
+      this.stageNameElement.textContent = stageData.name;
+    } else {
+      this.stageNameElement.textContent = '';
+    }
   }
 
   showFpInsufficientEffect() {
