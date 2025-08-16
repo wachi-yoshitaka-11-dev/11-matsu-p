@@ -457,19 +457,12 @@
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.9);
-  padding: 2px 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 14px;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 140px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+  max-width: 300px;
   pointer-events: auto;
 }
 
@@ -487,6 +480,21 @@
   text-align: right;
 }
 
+/* Stage header container (label + name) */
+.stage-name-box {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
 #stage-display .stage-label {
   font-weight: 600;
   opacity: 0.9;
@@ -500,6 +508,29 @@
   flex: 1;
   text-align: right;
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Stage description container */
+.stage-description-box {
+  padding: 2px 10px 2px 10px;
+  font-size: 12px;
+}
+
+#current-stage-description {
+  font-weight: normal;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: left;
+  line-height: 1.5;
+  white-space: pre-line;
+  word-wrap: break-word;
+  hyphens: auto;
+  margin: 0;
+  text-shadow:
+    -1px -1px 0 rgba(0, 0, 0, 0.8),
+    1px -1px 0 rgba(0, 0, 0, 0.8),
+    -1px 1px 0 rgba(0, 0, 0, 0.8),
+    1px 1px 0 rgba(0, 0, 0, 0.8),
+    0 0 4px rgba(0, 0, 0, 0.6);
 }
 
 /* 装備UI - 十字配置 */

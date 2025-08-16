@@ -41,6 +41,11 @@
       "gamePaused": "ポーズ中",
       "gameOver": "ゲームオーバー"
     },
+    "stages": {
+      "startingPlains": {
+        "description": "・穏やかな平原と小さな遺跡。\n・基本的な操作を学ぶ安全なエリア。\n・すべての敵を倒してステージをクリアしよう。"
+      }
+    },
     "items": {
       "potion": "ポーション",
       "fpPotion": "FPポーション",
@@ -133,6 +138,11 @@
       "gameStart": "Game Start",
       "gamePaused": "Paused",
       "gameOver": "Game Over"
+    },
+    "stages": {
+      "startingPlains": {
+        "description": ":・A peaceful plain with small ruins.\n・A safe area to learn basic controls.\n・Defeat all enemies to clear the stage."
+      }
     },
     "items": {
       "potion": "Potion",

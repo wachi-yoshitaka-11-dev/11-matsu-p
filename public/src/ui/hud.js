@@ -243,6 +243,9 @@ export class Hud {
     const container = document.createElement('div');
     container.id = 'stage-display';
 
+    // Stage header container (label + name)
+    const stageHeaderContainer = document.createElement('div');
+    stageHeaderContainer.classList.add('stage-name-box');
     const stageLabel = document.createElement('div');
     stageLabel.classList.add('stage-label');
     stageLabel.textContent = localization.getText('ui.stage');
@@ -252,10 +255,25 @@ export class Hud {
     stageName.classList.add('stage-name');
     stageName.textContent = '';
 
-    container.appendChild(stageLabel);
-    container.appendChild(stageName);
+    stageHeaderContainer.appendChild(stageLabel);
+    stageHeaderContainer.appendChild(stageName);
+
+    // Stage description container
+    const stageDescriptionContainer = document.createElement('div');
+    stageDescriptionContainer.classList.add('stage-description-box');
+
+    const stageDescription = document.createElement('div');
+    stageDescription.id = 'current-stage-description';
+    stageDescription.classList.add('stage-description');
+    stageDescription.textContent = '';
+
+    stageDescriptionContainer.appendChild(stageDescription);
+
+    container.appendChild(stageHeaderContainer);
+    container.appendChild(stageDescriptionContainer);
 
     this.stageNameElement = stageName;
+    this.stageDescriptionElement = stageDescription;
 
     return container;
   }
@@ -444,13 +462,22 @@ export class Hud {
   }
 
   updateStageDisplay() {
-    if (!this.stageNameElement) return;
+    if (!this.stageNameElement || !this.stageDescriptionElement) return;
 
     const stageData = this.game.stageManager?.getCurrentStageData();
     if (stageData && stageData.name) {
       this.stageNameElement.textContent = stageData.name;
+
+      // Get localized description
+      if (stageData.description) {
+        const description = localization.getText(stageData.description);
+        this.stageDescriptionElement.textContent = description;
+      } else {
+        this.stageDescriptionElement.textContent = '';
+      }
     } else {
       this.stageNameElement.textContent = '';
+      this.stageDescriptionElement.textContent = '';
     }
   }
 
