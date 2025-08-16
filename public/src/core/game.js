@@ -11,7 +11,12 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { AssetPaths, GameState, ItemConstants } from '../utils/constants.js';
+import {
+  AssetPaths,
+  GameState,
+  ItemConstants,
+  StageMessageTypes,
+} from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 
@@ -35,6 +40,7 @@ export class Game {
       },
       items: [],
       skills: {
+        buffs: [],
         projectiles: [],
         areaAttacks: [],
       },
@@ -80,7 +86,9 @@ export class Game {
       if (
         this.player &&
         !this.player.isDead &&
-        this.gameState === GameState.PLAYING
+        (this.gameState === GameState.LOADING ||
+          this.gameState === GameState.PLAYING ||
+          this.gameState === GameState.PAUSED)
       ) {
         e.preventDefault();
         e.returnValue = '';
@@ -176,7 +184,8 @@ export class Game {
       AssetPaths.SFX_PAUSE,
       AssetPaths.SFX_PICKUP_ITEM,
       AssetPaths.SFX_ROLLING,
-      AssetPaths.SFX_START,
+      AssetPaths.SFX_STAGE_START,
+      AssetPaths.SFX_STAGE_CLEAR,
       AssetPaths.SFX_SWITCH_ITEM,
       AssetPaths.SFX_SWITCH_SHIELD,
       AssetPaths.SFX_SWITCH_SKILL,
@@ -361,15 +370,6 @@ export class Game {
       // Field is now handled through environments system
 
       this.player = new Player(this, 'player');
-
-      // Set player position from stage configuration
-      const playerStartPos = stageData.player?.startPosition || [0, 1, 0];
-      this.player.mesh.position.set(
-        playerStartPos[0],
-        playerStartPos[1],
-        playerStartPos[2]
-      );
-
       this.sceneManager.add(this.player.mesh);
 
       // Load stage entities after player is created
@@ -396,10 +396,8 @@ export class Game {
 
       this.sceneManager.renderer.domElement.requestPointerLock();
 
-      this.playSound(AssetPaths.SFX_START);
-
-      // Start stage BGM after everything is loaded
-      this.stageManager.playDefaultBGM();
+      // Initialize stage (position, BGM, sound, message) via StageManager
+      this.stageManager.initializeStage();
     } catch (error) {
       console.error('Failed to start game:', error);
       // Handle error - could show error message and return to title
@@ -545,6 +543,9 @@ export class Game {
 
       if (this.gameState === GameState.PLAYING) {
         this.enemyHealthBar?.update();
+
+        // Update stage progress (check for clear conditions)
+        this.stageManager?.updateStageProgress();
         for (let i = this.entities.characters.enemies.length - 1; i >= 0; i--) {
           const enemy = this.entities.characters.enemies[i];
           enemy.update(deltaTime);
@@ -552,23 +553,11 @@ export class Game {
           if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
-            // If the removed enemy is the boss, trigger ending flow
+            // Clear boss reference if this was the boss
             if (enemy === this.entities.characters.boss) {
               this.entities.characters.boss = null;
-              this.endingTimer = 1;
-              this.isEndingSequenceReady = false;
             }
             this.entities.characters.enemies.splice(i, 1);
-          }
-        }
-
-        if (this.endingTimer > 0) {
-          if (this.player?.statusPoints === 0) {
-            this.endingTimer -= deltaTime;
-          }
-          if (this.endingTimer <= 0 && !this.isEndingSequenceReady) {
-            this.playEndingSequence();
-            this.isEndingSequenceReady = true;
           }
         }
 
@@ -633,6 +622,16 @@ export class Game {
           if (shouldRemove) {
             this.sceneManager.remove(projectile.mesh);
             this.entities.skills.projectiles.splice(i, 1);
+          }
+        }
+
+        for (let i = this.entities.skills.buffs.length - 1; i >= 0; i--) {
+          const buff = this.entities.skills.buffs[i];
+          buff.update(deltaTime);
+
+          if (buff.duration <= 0) {
+            this.sceneManager.remove(buff.mesh);
+            this.entities.skills.buffs.splice(i, 1);
           }
         }
 

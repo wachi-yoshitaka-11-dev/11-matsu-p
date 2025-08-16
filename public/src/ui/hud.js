@@ -1,4 +1,8 @@
-import { GameState, AssetPaths } from '../utils/constants.js';
+import {
+  GameState,
+  AssetPaths,
+  StageMessageTypes,
+} from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
@@ -20,6 +24,7 @@ export class Hud {
     this.stageDisplay = this.createStageDisplay();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
+    this.stageMessageOverlay = this.createStageMessageOverlay();
 
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
@@ -28,6 +33,7 @@ export class Hud {
     this.container.appendChild(this.levelUpMenu.element);
 
     document.body.appendChild(this.deathOverlay.element);
+    document.body.appendChild(this.stageMessageOverlay.element);
   }
 
   createStatusBarsContainer() {
@@ -113,7 +119,20 @@ export class Hud {
 
     const message = document.createElement('div');
     message.id = 'death-message';
-    message.textContent = localization.getText('ui.youDied');
+    message.textContent = localization.getText('ui.death');
+
+    overlay.appendChild(message);
+
+    return { element: overlay, message };
+  }
+
+  createStageMessageOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'stage-message-overlay';
+    overlay.classList.add('transparent'); // Start hidden
+
+    const message = document.createElement('div');
+    message.id = 'stage-message';
 
     overlay.appendChild(message);
 
@@ -274,6 +293,40 @@ export class Hud {
   hideDeathScreen() {
     this.deathOverlay.element.classList.add('transparent');
     this.deathOverlay.element.classList.remove('opaque');
+  }
+
+  showStageMessage(messageText, messageType, duration = 3000) {
+    this.stageMessageOverlay.message.textContent = messageText;
+
+    // Reset classes
+    this.stageMessageOverlay.element.classList.remove(
+      'transparent',
+      'stage-start',
+      'stage-clear'
+    );
+
+    // Add type-specific class
+    switch (messageType) {
+      case StageMessageTypes.CLEAR:
+        this.stageMessageOverlay.element.classList.add('stage-clear');
+        break;
+      case StageMessageTypes.START:
+      default:
+        this.stageMessageOverlay.element.classList.add('stage-start');
+        break;
+    }
+
+    this.stageMessageOverlay.element.classList.add('opaque');
+
+    // Auto-hide after duration
+    setTimeout(() => {
+      this.hideStageMessage();
+    }, duration);
+  }
+
+  hideStageMessage() {
+    this.stageMessageOverlay.element.classList.add('transparent');
+    this.stageMessageOverlay.element.classList.remove('opaque');
   }
 
   update() {

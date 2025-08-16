@@ -253,10 +253,23 @@
 }
 
 #death-message {
-  font-size: 5em;
+  font-family: serif;
+  font-size: 3em;
   color: #8b0000;
   text-align: center;
   text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.6);
+}
+
+#stage-message {
+  font-family: serif;
+  font-size: 3em;
+  color: #ffffff;
+  text-align: center;
+  text-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+  white-space: pre-line;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
 #death-overlay {
@@ -271,6 +284,69 @@
   opacity: 0;
   transition: opacity 1s;
   z-index: 100;
+}
+
+#stage-message-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.5s;
+  z-index: 90;
+  pointer-events: none;
+}
+
+/* ステージ開始メッセージ（現在のスタイル） */
+#stage-message-overlay.stage-start {
+  width: 30%;
+  background-color: rgba(0, 0, 0, 0.7);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, black 30%, black 70%, transparent),
+    linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, black 30%, black 70%, transparent),
+    linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+  mask-composite: intersect;
+}
+
+/* ステージクリアメッセージ（横幅100%、黄色文字） */
+#stage-message-overlay.stage-clear {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 5%,
+    black 95%,
+    transparent
+  );
+  mask-composite: intersect;
+}
+
+#stage-message-overlay.stage-clear #stage-message {
+  color: #ffd700;
+}
+
+#stage-message-overlay.transparent {
+  opacity: 0;
+}
+
+#stage-message-overlay.opaque {
+  opacity: 1;
 }
 
 #level-up-menu {

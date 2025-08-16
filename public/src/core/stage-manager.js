@@ -1,9 +1,21 @@
 import * as THREE from 'three';
+
 import {
   StageBGMConditions,
   Fall,
   EnvironmentTypes,
+  StageClearConditionTypes,
+  EnemyTypes,
+  AssetPaths,
+  StageMessageTypes,
 } from '../utils/constants.js';
+import { localization } from '../utils/localization.js';
+import { Boss } from '../entities/characters/boss.js';
+import { Grunt } from '../entities/characters/grunt.js';
+import { Npc } from '../entities/characters/npc.js';
+import { Item } from '../entities/items/item.js';
+import { Environment } from '../entities/world/environment.js';
+import { Terrain } from '../entities/world/terrain.js';
 
 export class StageManager {
   constructor(game) {
@@ -13,6 +25,9 @@ export class StageManager {
     this.loadedStageAssets = new Set();
     this.stageBaseModel = null;
     this.raycaster = new THREE.Raycaster();
+
+    // Stage progress tracking
+    this.isStageCleared = false;
   }
 
   async loadStage(level) {
@@ -37,6 +52,9 @@ export class StageManager {
     // Set current level
     this.currentLevel = level;
     this.currentStageData = stageData;
+
+    // Reset stage progress tracking
+    this.resetStageProgress();
 
     return stageData;
   }
@@ -229,8 +247,6 @@ export class StageManager {
   }
 
   async loadTerrains(terrains, areas) {
-    const { Terrain } = await import('../entities/world/terrain.js');
-
     for (const terrainConfig of terrains) {
       const terrainData = this.game.data.terrains?.[terrainConfig.id];
       if (!terrainData) continue;
@@ -259,8 +275,6 @@ export class StageManager {
   }
 
   async loadEnvironments(environments, areas) {
-    const { Environment } = await import('../entities/world/environment.js');
-
     for (const envConfig of environments) {
       const envData = this.game.data.environments?.[envConfig.id];
       if (!envData) continue;
@@ -412,9 +426,6 @@ export class StageManager {
   }
 
   async loadEnemies(enemies, areas) {
-    const { Enemy } = await import('../entities/characters/enemy.js');
-    const { Boss } = await import('../entities/characters/boss.js');
-
     for (const enemyConfig of enemies) {
       const enemyData = this.game.data.enemies?.[enemyConfig.id];
       if (!enemyData) continue;
@@ -426,11 +437,11 @@ export class StageManager {
         const adjustedPosition = position.clone();
 
         let enemy;
-        if (enemyData.type === 'boss') {
+        if (enemyData.type === EnemyTypes.BOSS) {
           enemy = new Boss(this.game, enemyConfig.id, adjustedPosition);
           this.game.entities.characters.boss = enemy;
         } else {
-          enemy = new Enemy(this.game, enemyConfig.id, adjustedPosition);
+          enemy = new Grunt(this.game, enemyConfig.id, adjustedPosition);
         }
 
         this.game.entities.characters.enemies.push(enemy);
@@ -440,8 +451,6 @@ export class StageManager {
   }
 
   async loadNPCs(npcs, areas) {
-    const { Npc } = await import('../entities/characters/npc.js');
-
     for (const npcConfig of npcs) {
       const npcData = this.game.data.npcs?.[npcConfig.id];
       if (!npcData) continue;
@@ -457,8 +466,6 @@ export class StageManager {
   }
 
   async loadItems(items, areas) {
-    const { Item } = await import('../entities/items/item.js');
-
     for (const itemConfig of items) {
       const itemData = this.game.data.items?.[itemConfig.id];
       if (!itemData) continue;
@@ -494,19 +501,33 @@ export class StageManager {
     // Stop current BGM
     this.game.stopBGM();
 
+    // Force stop all character footsteps
+    const allCharacters = [
+      this.game.player,
+      ...this.game.entities.characters.enemies,
+      ...this.game.entities.characters.npcs,
+    ].filter((char) => char); // Remove null/undefined
+
+    allCharacters.forEach((character) => {
+      if (character.stopFootsteps) {
+        character.stopFootsteps();
+      }
+      // Force clear footstep audio
+      if (character.footstepAudio) {
+        character.footstepAudio.stop();
+        character.footstepAudio = null;
+      }
+      character.isPlayingFootsteps = false;
+    });
+
     // Clean up stage base model
     if (this.stageBaseModel) {
       this.game.sceneManager.remove(this.stageBaseModel);
       this.stageBaseModel = null;
     }
 
-    // Clean up stage lights
-    if (this.game.stageLights) {
-      this.game.stageLights.forEach((light) => {
-        this.game.sceneManager.remove(light);
-      });
-      this.game.stageLights = [];
-    }
+    // Clean up stage lights (lights are managed by SceneManager.light)
+    // No specific cleanup needed as lights are reset when new stage loads
 
     // Clean up terrains
     if (this.game.entities.world.terrains) {
@@ -533,6 +554,23 @@ export class StageManager {
       this.game.entities.characters.boss = null;
     }
 
+    // Clear enemy health bars
+    if (this.game.enemyHealthBar) {
+      // Remove all health bar elements but keep the instance
+      for (const [, element] of this.game.enemyHealthBar.healthBars) {
+        element.remove();
+      }
+      this.game.enemyHealthBar.healthBars.clear();
+    }
+
+    // Clear player lock-on target
+    if (this.game.player) {
+      this.game.player.lockedTarget = null;
+    }
+    if (this.game.lockOnUI) {
+      this.game.lockOnUI.hideLockOnTarget();
+    }
+
     // Clean up stage-loaded NPCs
     if (this.game.entities.characters.npcs) {
       this.game.entities.characters.npcs.forEach((npc) => {
@@ -547,6 +585,28 @@ export class StageManager {
         this.game.sceneManager.remove(item.mesh);
       });
       this.game.entities.items.length = 0;
+    }
+
+    // Clean up skills
+    if (this.game.entities.skills.buffs) {
+      this.game.entities.skills.buffs.forEach((buff) => {
+        this.game.sceneManager.remove(buff.mesh);
+      });
+      this.game.entities.skills.buffs.length = 0;
+    }
+
+    if (this.game.entities.skills.projectiles) {
+      this.game.entities.skills.projectiles.forEach((projectile) => {
+        this.game.sceneManager.remove(projectile.mesh);
+      });
+      this.game.entities.skills.projectiles.length = 0;
+    }
+
+    if (this.game.entities.skills.areaAttacks) {
+      this.game.entities.skills.areaAttacks.forEach((areaAttack) => {
+        this.game.sceneManager.remove(areaAttack.mesh);
+      });
+      this.game.entities.skills.areaAttacks.length = 0;
     }
 
     // Clear loaded stage assets
@@ -614,5 +674,325 @@ export class StageManager {
     }
 
     return highestY;
+  }
+
+  /**
+   * Initialize stage (common logic for game start and stage transitions)
+   */
+  initializeStage() {
+    // Set player position from stage configuration
+    if (this.game.player && this.currentStageData.player?.startPosition) {
+      const startPos = this.currentStageData.player.startPosition;
+      this.game.player.mesh.position.set(startPos[0], startPos[1], startPos[2]);
+
+      // Always adjust Y position to ground level for consistency
+      this.game.player.mesh.position.y =
+        this.getHeightAt(startPos[0], startPos[2]) + 1;
+    }
+
+    // Start BGM
+    this.playDefaultBGM();
+
+    // Play stage start sound and show message
+    this.game.playSound(AssetPaths.SFX_STAGE_START);
+
+    if (this.game.hud && this.currentStageData) {
+      const stageName =
+        this.currentStageData.name || `Level ${this.currentLevel}`;
+      this.game.hud.showStageMessage(stageName, StageMessageTypes.START, 3000);
+    }
+  }
+
+  /**
+   * Switch to a different stage
+   * @param {number} targetLevel - The target stage level to switch to
+   * @returns {Promise<boolean>} - Returns true if switch was successful
+   */
+  async switchStage(targetLevel) {
+    // Validate target level
+    if (!this.isValidLevel(targetLevel)) {
+      console.warn(`Invalid stage level: ${targetLevel}`);
+      return false;
+    }
+
+    // Don't switch if already on target level
+    if (this.currentLevel === targetLevel) {
+      console.log(`Already on stage level ${targetLevel}`);
+      return true;
+    }
+
+    try {
+      // Show loading screen during transition
+      if (this.game.loadingScreen) {
+        this.game.loadingScreen.show();
+      }
+
+      // Stop BGM for transition
+      this.game.stopBGM();
+
+      // Load the new stage
+      await this.loadStage(targetLevel);
+
+      // Load stage world and entities (same as in Game.js startGame)
+      await this.loadStageWorld(this.currentStageData);
+      await this.loadStageEntities(this.currentStageData);
+
+      // Load stage BGM
+      await this.loadStageBGM(this.currentStageData);
+
+      // Update HUD stage display
+      if (this.game.hud) {
+        this.game.hud.updateStageDisplay();
+      }
+
+      // Hide loading screen
+      if (this.game.loadingScreen) {
+        this.game.loadingScreen.hide();
+      }
+
+      // Initialize stage (position, BGM, sound, message)
+      this.initializeStage();
+
+      console.log(`Successfully switched to stage level ${targetLevel}`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to switch to stage level ${targetLevel}:`, error);
+
+      // Hide loading screen on error
+      if (this.game.loadingScreen) {
+        this.game.loadingScreen.hide();
+      }
+
+      return false;
+    }
+  }
+
+  /**
+   * Check if a level is valid and available
+   * @param {number} level - The level to validate
+   * @returns {boolean} - True if level is valid
+   */
+  isValidLevel(level) {
+    const stageOrder = this.game.data.stages?.stageOrder;
+    return stageOrder && level >= 1 && level <= stageOrder.length;
+  }
+
+  /**
+   * Get the maximum available level
+   * @returns {number} - The maximum level available
+   */
+  getMaxLevel() {
+    const stageOrder = this.game.data.stages?.stageOrder;
+    return stageOrder ? stageOrder.length : 1;
+  }
+
+  /**
+   * Check if there is a next stage available
+   * @returns {boolean} - True if next stage exists
+   */
+  hasNextStage() {
+    return this.currentLevel && this.currentLevel < this.getMaxLevel();
+  }
+
+  /**
+   * Get the next stage level
+   * @returns {number|null} - The next level, or null if no next stage
+   */
+  getNextLevel() {
+    return this.hasNextStage() ? this.currentLevel + 1 : null;
+  }
+
+  /**
+   * Check if current stage clear conditions are met
+   * @returns {boolean} - True if stage is cleared
+   */
+  checkStageClearConditions() {
+    if (!this.currentStageData?.clearConditions) {
+      return false;
+    }
+
+    const conditions = this.currentStageData.clearConditions;
+
+    switch (conditions.type) {
+      case StageClearConditionTypes.KILL_ALL:
+        return this.checkKillAllCondition(conditions);
+      default:
+        console.warn(`Unknown clear condition type: ${conditions.type}`);
+        return false;
+    }
+  }
+
+  /**
+   * Check kill all enemies condition
+   * @param {Object} conditions - The clear conditions
+   * @returns {boolean} - True if all required enemies are defeated
+   */
+  checkKillAllCondition(conditions) {
+    const targets = conditions.targets || [EnemyTypes.GRUNT];
+
+    for (const target of targets) {
+      switch (target) {
+        case EnemyTypes.GRUNT: {
+          // Count only living grunt enemies (type === EnemyTypes.GRUNT && !isDead)
+          const gruntEnemies = this.game.entities.characters.enemies.filter(
+            (enemy) => enemy.data.type === EnemyTypes.GRUNT && !enemy.isDead
+          );
+          if (gruntEnemies.length > 0) {
+            return false;
+          }
+          break;
+        }
+        case EnemyTypes.BOSS: {
+          // Count only living boss enemies (type === EnemyTypes.BOSS && !isDead)
+          const bossEnemies = this.game.entities.characters.enemies.filter(
+            (enemy) => enemy.data.type === EnemyTypes.BOSS && !enemy.isDead
+          );
+          if (bossEnemies.length > 0) {
+            return false;
+          }
+          break;
+        }
+        default:
+          console.warn(`Unknown kill target: ${target}`);
+          return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Process stage clear (called when conditions are met)
+   * @returns {boolean} - True if processing was successful
+   */
+  processStageClear() {
+    if (!this.currentStageData?.clearConditions) {
+      return false;
+    }
+
+    const conditions = this.currentStageData.clearConditions;
+    const reward = conditions.reward || {};
+
+    // Mark stage as cleared
+    this.isStageCleared = true;
+
+    // Play stage clear sound
+    this.game.playSound(AssetPaths.SFX_STAGE_CLEAR);
+
+    // Show stage clear message
+    if (this.game.hud) {
+      this.game.hud.showStageMessage(
+        localization.getText('ui.stageClear'),
+        StageMessageTypes.CLEAR,
+        3000
+      );
+    }
+
+    // Give experience reward after a delay to avoid text overlap
+    setTimeout(() => {
+      if (reward.experience && this.game.player) {
+        this.game.player.addExperience(reward.experience);
+      }
+    }, 3000);
+
+    // Check if next stage should be unlocked
+    if (reward.unlockNextStage && this.hasNextStage()) {
+      // For now, just log. In future, this could update save data
+      console.log(`Next stage (level ${this.getNextLevel()}) unlocked!`);
+    }
+
+    // Trigger stage clear UI or transition
+    this.onStageClear();
+
+    return true;
+  }
+
+  /**
+   * Handle stage clear event
+   */
+  onStageClear() {
+    console.log(`Stage ${this.currentLevel} cleared!`);
+
+    // Show stage clear message
+    if (this.game.hud) {
+      // Could show a stage clear dialog here
+      console.log('Stage Clear!');
+    }
+
+    // Auto-transition to next stage after delay, but wait for level up processing
+    if (this.hasNextStage()) {
+      this.startStageTransitionTimer();
+    } else {
+      console.log('All stages completed!');
+      // Start ending sequence after delay
+      this.startEndingSequenceTimer();
+    }
+  }
+
+  /**
+   * Start the timer for stage transition, checking for level up completion
+   */
+  startStageTransitionTimer() {
+    const checkTransition = async () => {
+      // Wait for player to finish allocating status points
+      if (this.game.player && this.game.player.statusPoints > 0) {
+        // Still has status points to allocate, check again in 1 second
+        setTimeout(checkTransition, 1000);
+        return;
+      }
+
+      // No status points remaining, proceed with stage transition
+      const nextLevel = this.getNextLevel();
+      if (nextLevel) {
+        const success = await this.switchStage(nextLevel);
+        if (!success) {
+          console.error('Failed to transition to next stage');
+        }
+      }
+    };
+
+    // Initial delay before checking
+    setTimeout(checkTransition, 5000);
+  }
+
+  /**
+   * Start the timer for ending sequence, checking for level up completion
+   */
+  startEndingSequenceTimer() {
+    const checkEnding = () => {
+      // Wait for player to finish allocating status points
+      if (this.game.player && this.game.player.statusPoints > 0) {
+        // Still has status points to allocate, check again in 1 second
+        setTimeout(checkEnding, 1000);
+        return;
+      }
+
+      // No status points remaining, proceed with ending sequence
+      this.game.playEndingSequence();
+    };
+
+    // Initial delay before checking
+    setTimeout(checkEnding, 3000);
+  }
+
+  /**
+   * Update stage progress (should be called in game loop)
+   */
+  updateStageProgress() {
+    if (!this.currentStageData || this.isStageCleared) {
+      return;
+    }
+
+    // Check clear conditions
+    if (this.checkStageClearConditions()) {
+      this.processStageClear();
+    }
+  }
+
+  /**
+   * Reset stage progress tracking
+   */
+  resetStageProgress() {
+    this.isStageCleared = false;
   }
 }

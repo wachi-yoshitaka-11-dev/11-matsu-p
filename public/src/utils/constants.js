@@ -22,6 +22,15 @@ export const GameState = {
   ENDING: 'ending',
 };
 
+export const StageClearConditionTypes = {
+  KILL_ALL: 'killAll',
+};
+
+export const StageMessageTypes = {
+  START: 'start',
+  CLEAR: 'clear',
+};
+
 export const MovementState = {
   WALK: 'walk',
   DASH: 'dash',
@@ -99,7 +108,8 @@ export const AssetPaths = {
   SFX_ROLLING: 'sfx/rolling.mp3',
   SFX_BACK_STEP: 'sfx/back-step.mp3',
   SFX_DASH: 'sfx/dash.mp3',
-  SFX_START: 'sfx/start.mp3',
+  SFX_STAGE_START: 'sfx/stage-start.mp3',
+  SFX_STAGE_CLEAR: 'sfx/stage-clear.mp3',
   SFX_SWITCH_WEAPON: 'sfx/switch-weapon.mp3',
   SFX_SWITCH_SHIELD: 'sfx/switch-shield.mp3',
   SFX_SWITCH_ITEM: 'sfx/switch-item.mp3',

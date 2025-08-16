@@ -1,11 +1,5 @@
 {
-  "stageOrder": [
-    "startingPlains",
-    "cursedForest",
-    "ancientRuins",
-    "snowyPeaks",
-    "abyssCavern"
-  ],
+  "stageOrder": ["startingPlains"],
   "stages": {
     "startingPlains": {
       "name": "始まりの地",
@@ -147,35 +141,29 @@
       "areas": {
         "plains": {
           "center": [0, 0, 0],
-          "radius": 35,
-          "description": "中央の穏やかな平原エリア"
+          "radius": 35
         },
         "ruins": {
           "center": [0, 0, 15],
-          "radius": 20,
-          "description": "古い石造建築群のある遺跡エリア"
+          "radius": 20
         },
         "field": {
           "center": [0, 0, 0],
-          "radius": 50,
-          "description": "フィールド全体にランダム配置"
+          "radius": 50
         },
         "sky": {
           "center": [0, 0, 0],
-          "radius": 200,
-          "description": "空全体に雲を配置するための広範囲エリア"
+          "radius": 200
         }
       },
-      "objectives": {
-        "tutorial": {
-          "description": "基本操作を覚えよう",
-          "steps": [
-            "移動（WASD）を試してみよう",
-            "視点移動（マウス）を試してみよう",
-            "ジャンプ（スペース）を試してみよう",
-            "案内人と話してみよう",
-            "敵を1匹倒してみよう"
-          ]
+      "clearConditions": {
+        "type": "killAll",
+        "description": "すべての敵を倒してステージをクリアしよう",
+        "targets": ["grunt"],
+        "optional": false,
+        "reward": {
+          "experience": 100,
+          "unlockNextStage": true
         }
       }
     }

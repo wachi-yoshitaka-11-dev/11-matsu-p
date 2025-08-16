@@ -1,9 +1,15 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import * as THREE from 'three';
 
 export class AssetLoader {
   constructor() {
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+      'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/gltf/'
+    );
     this.gltfLoader = new GLTFLoader();
+    this.gltfLoader.setDRACOLoader(dracoLoader);
     this.audioLoader = new THREE.AudioLoader();
     this.textureLoader = new THREE.TextureLoader();
 

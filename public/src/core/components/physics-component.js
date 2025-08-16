@@ -40,13 +40,7 @@ export class PhysicsComponent {
       );
     }
 
-    // If stage GLB has no surface, check field as fallback
-    if (groundHeight === Fall.MAX_FALL_DEPTH && this.game.field) {
-      groundHeight = this.game.field.getHeightAt(
-        this.object.position.x,
-        this.object.position.z
-      );
-    }
+    // StageManager provides comprehensive height detection for all stage elements
 
     // Apply ground collision if surface exists
     if (groundHeight > Fall.MAX_FALL_DEPTH) {
