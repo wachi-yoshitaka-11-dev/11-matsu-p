@@ -18,9 +18,7 @@ export class Light {
 
     const terrainSize = this.field?.TERRAIN_SIZE || 100;
     const light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.position
-      .set(terrainSize / 2, terrainSize / 2 + 10, -terrainSize / 2)
-      .normalize();
+    light.position.set(terrainSize / 2, terrainSize / 2 + 10, -terrainSize / 2);
     this.addLight(light);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -70,6 +68,7 @@ export class Light {
         }
         if (lightConfig.target) {
           light.target.position.set(...lightConfig.target);
+          this.scene.add(light.target);
         }
       } else if (lightConfig.type === LightTypes.HEMISPHERE) {
         light = new THREE.HemisphereLight(
@@ -96,6 +95,9 @@ export class Light {
   clearLights() {
     for (const light of this.lights) {
       this.scene.remove(light);
+      if (light.target && light.target.parent === this.scene) {
+        this.scene.remove(light.target);
+      }
     }
     this.lights = [];
   }

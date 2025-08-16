@@ -141,7 +141,7 @@
     },
     "stages": {
       "startingPlains": {
-        "description": ":・A peaceful plain with small ruins.\n・A safe area to learn basic controls.\n・Defeat all enemies to clear the stage."
+        "description": "・A peaceful plain with small ruins.\n・A safe area to learn basic controls.\n・Defeat all enemies to clear the stage."
       }
     },
     "items": {

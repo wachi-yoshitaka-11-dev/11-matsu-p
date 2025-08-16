@@ -316,7 +316,8 @@ export class InputController {
     }
 
     if (this.keys['KeyE']) {
-      this.game.entities.characters.npcs.forEach((npc) => {
+      const npcs = this.game.entities?.characters?.npcs ?? [];
+      npcs.forEach((npc) => {
         if (
           this.player.mesh.position.distanceTo(npc.mesh.position) <
           npc.data.interactionRange
@@ -503,9 +504,8 @@ export class InputController {
     }
     this.lastWheelTime = now;
 
-    const enemies = this.game.entities.characters.enemies.filter(
-      (enemy) => !enemy.isDead
-    );
+    const allEnemies = this.game.entities?.characters?.enemies ?? [];
+    const enemies = allEnemies.filter((enemy) => !enemy.isDead);
     if (enemies.length <= 1) return;
 
     const currentIndex = enemies.indexOf(this.player.lockedTarget);
@@ -533,7 +533,8 @@ export class InputController {
     let nearestDistance = Infinity;
     const maxLockOnDistance = 15; // Maximum distance for lock-on
 
-    for (const enemy of this.game.entities.characters.enemies) {
+    const enemies = this.game.entities?.characters?.enemies ?? [];
+    for (const enemy of enemies) {
       if (enemy.isDead) continue;
 
       const distance = this.player.mesh.position.distanceTo(
@@ -549,7 +550,8 @@ export class InputController {
   }
 
   performAttack(damage, range) {
-    this.game.entities.characters.enemies.forEach((enemy) => {
+    const enemies = this.game.entities?.characters?.enemies ?? [];
+    enemies.forEach((enemy) => {
       if (this.player.mesh.position.distanceTo(enemy.mesh.position) < range) {
         const finalDamage = damage * this.player.attackBuffMultiplier;
 
