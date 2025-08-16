@@ -3,6 +3,7 @@
 ============================================================= */
 @import 'components/_base.css';
 @import 'components/_hud.css';
+@import 'components/_level-up-ui.css';
 @import 'components/_pause-menu.css';
 @import 'components/_dialog-box.css';
 @import 'components/_title-screen.css';

@@ -11,12 +11,7 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import {
-  AssetPaths,
-  GameState,
-  ItemConstants,
-  StageMessageTypes,
-} from '../utils/constants.js';
+import { AssetPaths, GameState, ItemConstants } from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 

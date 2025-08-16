@@ -717,7 +717,6 @@ export class StageManager {
 
     // Don't switch if already on target level
     if (this.currentLevel === targetLevel) {
-      console.log(`Already on stage level ${targetLevel}`);
       return true;
     }
 
@@ -753,7 +752,6 @@ export class StageManager {
       // Initialize stage (position, BGM, sound, message)
       this.initializeStage();
 
-      console.log(`Successfully switched to stage level ${targetLevel}`);
       return true;
     } catch (error) {
       console.error(`Failed to switch to stage level ${targetLevel}:`, error);
@@ -897,8 +895,7 @@ export class StageManager {
 
     // Check if next stage should be unlocked
     if (reward.unlockNextStage && this.hasNextStage()) {
-      // For now, just log. In future, this could update save data
-      console.log(`Next stage (level ${this.getNextLevel()}) unlocked!`);
+      // For now, just note unlock. In future, this could update save data
     }
 
     // Trigger stage clear UI or transition
@@ -911,19 +908,15 @@ export class StageManager {
    * Handle stage clear event
    */
   onStageClear() {
-    console.log(`Stage ${this.currentLevel} cleared!`);
-
     // Show stage clear message
     if (this.game.hud) {
       // Could show a stage clear dialog here
-      console.log('Stage Clear!');
     }
 
     // Auto-transition to next stage after delay, but wait for level up processing
     if (this.hasNextStage()) {
       this.startStageTransitionTimer();
     } else {
-      console.log('All stages completed!');
       // Start ending sequence after delay
       this.startEndingSequenceTimer();
     }
