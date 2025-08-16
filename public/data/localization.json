@@ -3,6 +3,7 @@
     "ui": {
       "clickToStart": "タッチしてはじめる",
       "continue": "つづきから（準備中）",
+      "controls": "操作方法",
       "experience": "経験値:",
       "levelUp": "レベルアップ！",
       "newGame": "はじめから",
@@ -11,11 +12,12 @@
       "resume": "再開",
       "shield": "盾",
       "skill": "スキル",
+      "stage": "ステージ:",
+      "stageClear": "ENEMY FELLED",
       "statusPoints": "Status Points",
       "title": "もふもふアドベンチャー",
       "weapon": "武器",
-      "youDied": "YOU DIED",
-      "controls": "操作方法"
+      "death": "YOU DIED"
     },
     "equipment": {
       "weapon": "武器",
@@ -38,6 +40,11 @@
       "gameStart": "ゲーム開始",
       "gamePaused": "ポーズ中",
       "gameOver": "ゲームオーバー"
+    },
+    "stages": {
+      "startingPlains": {
+        "description": "・穏やかな平原と小さな遺跡。\n・基本的な操作を学ぶ安全なエリア。\n・すべての敵を倒してステージをクリアしよう。"
+      }
     },
     "items": {
       "potion": "ポーション",
@@ -94,6 +101,7 @@
     "ui": {
       "clickToStart": "Click to Start",
       "continue": "Continue (Coming Soon)",
+      "controls": "Controls",
       "experience": "Experience:",
       "levelUp": "Level Up!",
       "newGame": "New Game",
@@ -102,11 +110,12 @@
       "resume": "Resume",
       "shield": "Shield",
       "skill": "Skill",
+      "stage": "Stage:",
+      "stageClear": "ENEMY FELLED",
       "statusPoints": "Status Points",
       "title": "Mofumofu Adventure",
       "weapon": "Weapon",
-      "youDied": "YOU DIED",
-      "controls": "Controls"
+      "death": "YOU DIED"
     },
     "equipment": {
       "weapon": "Weapon",
@@ -129,6 +138,11 @@
       "gameStart": "Game Start",
       "gamePaused": "Paused",
       "gameOver": "Game Over"
+    },
+    "stages": {
+      "startingPlains": {
+        "description": "・A peaceful plain with small ruins.\n・A safe area to learn basic controls.\n・Defeat all enemies to clear the stage."
+      }
     },
     "items": {
       "potion": "Potion",

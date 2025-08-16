@@ -1,10 +1,13 @@
-import { GameState, AssetPaths } from '../utils/constants.js';
+import {
+  GameState,
+  AssetPaths,
+  StageMessageTypes,
+} from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
 export class Hud {
-  constructor(game, player) {
+  constructor(game) {
     this.game = game;
-    this.player = player;
     this.container = document.createElement('div');
     this.container.id = 'hud';
     this.container.classList.add('hidden');
@@ -18,23 +21,27 @@ export class Hud {
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
+    this.stageDisplay = this.createStageDisplay();
     this.levelUpMenu = this.createLevelUpMenu();
     this.deathOverlay = this.createDeathOverlay();
+    this.stageMessageOverlay = this.createStageMessageOverlay();
 
     this.container.appendChild(this.statusBarsContainer);
     this.container.appendChild(this.equipmentContainer);
     this.container.appendChild(this.experienceDisplay);
+    this.container.appendChild(this.stageDisplay);
     this.container.appendChild(this.levelUpMenu.element);
 
     document.body.appendChild(this.deathOverlay.element);
+    document.body.appendChild(this.stageMessageOverlay.element);
   }
 
   createStatusBarsContainer() {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
-    this.playerPortrait = this.createPlayerPortrait();
-    container.appendChild(this.playerPortrait);
+    this.game.playerPortrait = this.createPlayerPortrait();
+    container.appendChild(this.game.playerPortrait);
 
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
@@ -75,7 +82,17 @@ export class Hud {
       }
     };
 
+    // Add level display overlay on top of portrait
+    const levelOverlay = document.createElement('div');
+    levelOverlay.classList.add('level-overlay');
+    levelOverlay.textContent = '1';
+
     portraitContainer.appendChild(portraitImage);
+    portraitContainer.appendChild(levelOverlay);
+
+    // Store reference to level overlay for updates
+    this.levelOverlay = levelOverlay;
+
     return portraitContainer;
   }
 
@@ -102,7 +119,20 @@ export class Hud {
 
     const message = document.createElement('div');
     message.id = 'death-message';
-    message.textContent = localization.getText('ui.youDied');
+    message.textContent = localization.getText('ui.death');
+
+    overlay.appendChild(message);
+
+    return { element: overlay, message };
+  }
+
+  createStageMessageOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'stage-message-overlay';
+    overlay.classList.add('transparent'); // Start hidden
+
+    const message = document.createElement('div');
+    message.id = 'stage-message';
 
     overlay.appendChild(message);
 
@@ -126,17 +156,17 @@ export class Hud {
     const hpButton = this.createStatButton(
       'hp',
       `HP +${statusPointsPerLevel}`,
-      () => (this.player.maxHp += statusPointsPerLevel)
+      () => (this.game.player.maxHp += statusPointsPerLevel)
     );
     const fpButton = this.createStatButton(
       'fp',
       `FP +${statusPointsPerLevel}`,
-      () => (this.player.maxFp += statusPointsPerLevel)
+      () => (this.game.player.maxFp += statusPointsPerLevel)
     );
     const staminaButton = this.createStatButton(
       'stamina',
       `Stamina +${statusPointsPerLevel}`,
-      () => (this.player.maxStamina += statusPointsPerLevel)
+      () => (this.game.player.maxStamina += statusPointsPerLevel)
     );
 
     menu.appendChild(hpButton);
@@ -150,15 +180,15 @@ export class Hud {
     const button = document.createElement('button');
     button.textContent = text;
     button.addEventListener('click', () => {
-      if (this.player.statusPoints > 0) {
+      if (this.game.player.statusPoints > 0) {
         onClick();
-        this.player.statusPoints--;
+        this.game.player.statusPoints--;
         this.game.playSound(AssetPaths.SFX_CLICK);
 
-        if (this.player.statusPoints === 0) {
-          this.player.hp = this.player.maxHp;
-          this.player.fp = this.player.maxFp;
-          this.player.stamina = this.player.maxStamina;
+        if (this.game.player.statusPoints === 0) {
+          this.game.player.hp = this.game.player.maxHp;
+          this.game.player.fp = this.game.player.maxFp;
+          this.game.player.stamina = this.game.player.maxStamina;
 
           this.game.togglePause();
           this.game.setPauseMenuVisibility(false);
@@ -209,6 +239,45 @@ export class Hud {
     return container;
   }
 
+  createStageDisplay() {
+    const container = document.createElement('div');
+    container.id = 'stage-display';
+
+    // Stage header container (label + name)
+    const stageHeaderContainer = document.createElement('div');
+    stageHeaderContainer.classList.add('stage-name-box');
+    const stageLabel = document.createElement('div');
+    stageLabel.classList.add('stage-label');
+    stageLabel.textContent = localization.getText('ui.stage');
+
+    const stageName = document.createElement('div');
+    stageName.id = 'current-stage-name';
+    stageName.classList.add('stage-name');
+    stageName.textContent = '';
+
+    stageHeaderContainer.appendChild(stageLabel);
+    stageHeaderContainer.appendChild(stageName);
+
+    // Stage description container
+    const stageDescriptionContainer = document.createElement('div');
+    stageDescriptionContainer.classList.add('stage-description-box');
+
+    const stageDescription = document.createElement('div');
+    stageDescription.id = 'current-stage-description';
+    stageDescription.classList.add('stage-description');
+    stageDescription.textContent = '';
+
+    stageDescriptionContainer.appendChild(stageDescription);
+
+    container.appendChild(stageHeaderContainer);
+    container.appendChild(stageDescriptionContainer);
+
+    this.stageNameElement = stageName;
+    this.stageDescriptionElement = stageDescription;
+
+    return container;
+  }
+
   createEquipmentSlot(type) {
     const element = document.createElement('div');
     element.classList.add('equipment-slot', type);
@@ -244,16 +313,50 @@ export class Hud {
     this.deathOverlay.element.classList.remove('opaque');
   }
 
+  showStageMessage(messageText, messageType, duration = 3000) {
+    this.stageMessageOverlay.message.textContent = messageText;
+
+    // Reset classes
+    this.stageMessageOverlay.element.classList.remove(
+      'transparent',
+      'stage-start',
+      'stage-clear'
+    );
+
+    // Add type-specific class
+    switch (messageType) {
+      case StageMessageTypes.CLEAR:
+        this.stageMessageOverlay.element.classList.add('stage-clear');
+        break;
+      case StageMessageTypes.START:
+      default:
+        this.stageMessageOverlay.element.classList.add('stage-start');
+        break;
+    }
+
+    this.stageMessageOverlay.element.classList.add('opaque');
+
+    // Auto-hide after duration
+    setTimeout(() => {
+      this.hideStageMessage();
+    }, duration);
+  }
+
+  hideStageMessage() {
+    this.stageMessageOverlay.element.classList.add('transparent');
+    this.stageMessageOverlay.element.classList.remove('opaque');
+  }
+
   update() {
-    this.hpBar.fill.style.width = `${(this.player.hp / this.player.maxHp) * 100}%`;
-    this.fpBar.fill.style.width = `${(this.player.fp / this.player.maxFp) * 100}%`;
-    this.staminaBar.fill.style.width = `${(this.player.stamina / this.player.maxStamina) * 100}%`;
+    this.hpBar.fill.style.width = `${(this.game.player.hp / this.game.player.maxHp) * 100}%`;
+    this.fpBar.fill.style.width = `${(this.game.player.fp / this.game.player.maxFp) * 100}%`;
+    this.staminaBar.fill.style.width = `${(this.game.player.stamina / this.game.player.maxStamina) * 100}%`;
 
-    this.hpBar.background.style.width = `${(this.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
-    this.fpBar.background.style.width = `${(this.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
-    this.staminaBar.background.style.width = `${(this.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+    this.hpBar.background.style.width = `${(this.game.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.background.style.width = `${(this.game.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.background.style.width = `${(this.game.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
 
-    if (this.player.statusPoints > 0) {
+    if (this.game.player.statusPoints > 0) {
       this.levelUpMenu.element.classList.remove('hidden');
       this.levelUpMenu.element.classList.add('visible');
       this._updateStatusPointsDisplay();
@@ -269,7 +372,11 @@ export class Hud {
 
     this.updateExperienceDisplay();
 
-    if (this.player.isDead) {
+    this.updateLevelDisplay();
+
+    this.updateStageDisplay();
+
+    if (this.game.player.isDead) {
       this.deathOverlay.element.classList.remove('hidden');
       this.deathOverlay.element.classList.add('visible-flex');
     } else {
@@ -281,20 +388,20 @@ export class Hud {
   updateEquipmentDisplay() {
     if (!this.equipmentWeapon) return;
 
-    const currentWeapon = this.player.getCurrentWeapon();
+    const currentWeapon = this.game.player.getCurrentWeapon();
     this.updateEquipmentSlot(this.equipmentWeapon, currentWeapon);
 
-    const currentShield = this.player.getCurrentShield();
+    const currentShield = this.game.player.getCurrentShield();
     this.updateEquipmentSlot(this.equipmentShield, currentShield);
 
-    const currentItem = this.player.getCurrentItem();
+    const currentItem = this.game.player.getCurrentItem();
     let itemData = null;
     if (currentItem) {
       itemData = this.game.data.items[currentItem];
     }
     this.updateEquipmentSlot(this.equipmentItem, itemData, currentItem);
 
-    const currentSkill = this.player.getCurrentSkill();
+    const currentSkill = this.game.player.getCurrentSkill();
     this.updateEquipmentSlot(this.equipmentSkill, currentSkill);
   }
 
@@ -341,7 +448,37 @@ export class Hud {
 
   updateExperienceDisplay() {
     this.totalExperienceValue.textContent =
-      this.player.totalExperience.toLocaleString();
+      this.game.player.totalExperience.toLocaleString();
+  }
+
+  updateLevelDisplay() {
+    if (!this.levelOverlay) return;
+
+    if (this.game.player && this.game.player.level !== undefined) {
+      this.levelOverlay.textContent = this.game.player.level.toString();
+    } else {
+      this.levelOverlay.textContent = '1';
+    }
+  }
+
+  updateStageDisplay() {
+    if (!this.stageNameElement || !this.stageDescriptionElement) return;
+
+    const stageData = this.game.stageManager?.getCurrentStageData();
+    if (stageData && stageData.name) {
+      this.stageNameElement.textContent = stageData.name;
+
+      // Get localized description
+      if (stageData.description) {
+        const description = localization.getText(stageData.description);
+        this.stageDescriptionElement.textContent = description;
+      } else {
+        this.stageDescriptionElement.textContent = '';
+      }
+    } else {
+      this.stageNameElement.textContent = '';
+      this.stageDescriptionElement.textContent = '';
+    }
   }
 
   showFpInsufficientEffect() {
@@ -366,6 +503,6 @@ export class Hud {
   }
 
   _updateStatusPointsDisplay() {
-    this.levelUpMenu.points.textContent = `${localization.getText('ui.statusPoints')}: ${this.player.statusPoints}`;
+    this.levelUpMenu.points.textContent = `${localization.getText('ui.statusPoints')}: ${this.game.player.statusPoints}`;
   }
 }

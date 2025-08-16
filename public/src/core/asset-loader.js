@@ -1,9 +1,15 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import * as THREE from 'three';
 
 export class AssetLoader {
   constructor() {
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(
+      'https://unpkg.com/three@0.160.0/examples/jsm/libs/draco/gltf/'
+    );
     this.gltfLoader = new GLTFLoader();
+    this.gltfLoader.setDRACOLoader(dracoLoader);
     this.audioLoader = new THREE.AudioLoader();
     this.textureLoader = new THREE.TextureLoader();
 
@@ -38,15 +44,20 @@ export class AssetLoader {
     try {
       const gltf = await this.gltfLoader.loadAsync(path);
 
+      // Configure materials for better rendering
       gltf.scene.traverse((child) => {
         if (child.isMesh && child.material) {
           const materials = Array.isArray(child.material)
             ? child.material
             : [child.material];
           materials.forEach((material) => {
-            if (material.map) {
-              material.map = null;
-              material.needsUpdate = true;
+            // Keep textures for stage models, only remove for character models if needed
+            // material.map = null; // REMOVED - this was causing invisible models
+            material.needsUpdate = true;
+
+            // Ensure proper material properties
+            if (material.transparent && material.opacity === 0) {
+              material.opacity = 1.0; // Make sure not fully transparent
             }
           });
         }

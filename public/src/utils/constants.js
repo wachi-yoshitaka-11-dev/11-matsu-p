@@ -16,9 +16,19 @@ export const GameState = {
   SPLASH_SCREEN: 'splashScreen',
   OPENING: 'opening',
   TITLE: 'title',
+  LOADING: 'loading',
   PLAYING: 'playing',
   PAUSED: 'paused',
   ENDING: 'ending',
+};
+
+export const StageClearConditionTypes = {
+  KILL_ALL: 'killAll',
+};
+
+export const StageMessageTypes = {
+  START: 'start',
+  CLEAR: 'clear',
 };
 
 export const MovementState = {
@@ -47,6 +57,23 @@ export const EnvironmentTypes = {
   GROUND: 'ground',
 };
 
+export const StageBGMConditions = {
+  DEFAULT: 'default',
+  COMBAT: 'combat',
+  BOSS: 'boss',
+  VICTORY: 'victory',
+  DANGER: 'danger',
+};
+
+export const LightTypes = {
+  AMBIENT: 'ambient',
+  DIRECTIONAL: 'directional',
+  POINT: 'point',
+  SPOT: 'spot',
+  HEMISPHERE: 'hemisphere',
+  RECT_AREA: 'rectArea',
+};
+
 export const SequenceStep = {
   IDLE: 'idle',
   TEXT_COMPLETE: 'textComplete',
@@ -65,17 +92,7 @@ export const AssetPaths = {
   BGM_TITLE: 'sequences/bgm-title.mp3',
   BGM_OPENING: 'sequences/bgm-opening.mp3',
   BGM_ENDING: 'sequences/bgm-ending.mp3',
-  BGM_LEVEL_PREFIX: 'bgm/bgm-level-',
-  BGM_LEVEL_01_01: 'bgm/bgm-level-01_01.mp3',
-  BGM_LEVEL_01_02: 'bgm/bgm-level-01_02.mp3',
-  BGM_LEVEL_02_01: 'bgm/bgm-level-02_01.mp3',
-  BGM_LEVEL_02_02: 'bgm/bgm-level-02_02.mp3',
-  BGM_LEVEL_03_01: 'bgm/bgm-level-03_01.mp3',
-  BGM_LEVEL_03_02: 'bgm/bgm-level-03_02.mp3',
-  BGM_LEVEL_04_01: 'bgm/bgm-level-04_01.mp3',
-  BGM_LEVEL_04_02: 'bgm/bgm-level-04_02.mp3',
-  BGM_LEVEL_05_01: 'bgm/bgm-level-05_01.mp3',
-  BGM_LEVEL_05_02: 'bgm/bgm-level-05_02.mp3',
+
   SFX_ATTACK_STRONG: 'sfx/attack-strong.mp3',
   SFX_ATTACK_WEAK: 'sfx/attack-weak.mp3',
   SFX_CLICK: 'sfx/click.mp3',
@@ -91,7 +108,8 @@ export const AssetPaths = {
   SFX_ROLLING: 'sfx/rolling.mp3',
   SFX_BACK_STEP: 'sfx/back-step.mp3',
   SFX_DASH: 'sfx/dash.mp3',
-  SFX_START: 'sfx/start.mp3',
+  SFX_STAGE_START: 'sfx/stage-start.mp3',
+  SFX_STAGE_CLEAR: 'sfx/stage-clear.mp3',
   SFX_SWITCH_WEAPON: 'sfx/switch-weapon.mp3',
   SFX_SWITCH_SHIELD: 'sfx/switch-shield.mp3',
   SFX_SWITCH_ITEM: 'sfx/switch-item.mp3',
@@ -136,6 +154,22 @@ export const EffectColors = {
   CHARGE: 0xff00ff,
 };
 
+export const SkillShape = {
+  BOX: 'box',
+  CAPSULE: 'capsule',
+  CONE: 'cone',
+  CYLINDER: 'cylinder',
+  DODECAHEDRON: 'dodecahedron',
+  ICOSAHEDRON: 'icosahedron',
+  OCTAHEDRON: 'octahedron',
+  PLANE: 'plane',
+  RING: 'ring',
+  SPHERE: 'sphere',
+  TETRAHEDRON: 'tetrahedron',
+  TORUS: 'torus',
+  TORUS_KNOT: 'torusKnot',
+};
+
 export const AudioConstants = {
   FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // Sound is not audible beyond this distance
   FOOTSTEP_MIN_VOLUME: 0.05, // Minimum volume
@@ -152,16 +186,3 @@ export const ItemConstants = {
 export const HTMLTags = {
   BR: '<br>',
 };
-
-export const LevelBGM = [
-  AssetPaths.BGM_LEVEL_01_01,
-  AssetPaths.BGM_LEVEL_01_02,
-  AssetPaths.BGM_LEVEL_02_01,
-  AssetPaths.BGM_LEVEL_02_02,
-  AssetPaths.BGM_LEVEL_03_01,
-  AssetPaths.BGM_LEVEL_03_02,
-  AssetPaths.BGM_LEVEL_04_01,
-  AssetPaths.BGM_LEVEL_04_02,
-  AssetPaths.BGM_LEVEL_05_01,
-  AssetPaths.BGM_LEVEL_05_02,
-];

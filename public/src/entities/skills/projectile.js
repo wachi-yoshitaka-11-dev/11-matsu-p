@@ -3,13 +3,7 @@ import { Skill } from './skill.js';
 
 export class Projectile extends Skill {
   constructor(game, projectileId, startPosition, direction, caster) {
-    const geometry = new THREE.SphereGeometry(0.3, 16, 16);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xffff00,
-      emissive: 0xffff00,
-    });
-
-    super(game, projectileId, geometry, material);
+    super(game, projectileId);
 
     this.caster = caster;
 
@@ -24,11 +18,9 @@ export class Projectile extends Skill {
       direction && direction.lengthSq() > 1e-8
         ? direction.clone().normalize()
         : new THREE.Vector3(0, 0, -1);
-    // Map -Z (forward) to unitDir instead of Y-up for consistent orientation
-    this.mesh.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 0, -1),
-      unitDir
-    );
+
+    this.applyRotation(caster.mesh.quaternion);
+
     this.direction = unitDir;
   }
 

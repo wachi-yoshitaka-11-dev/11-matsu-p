@@ -3,21 +3,12 @@ import { Skill } from './skill.js';
 import { EffectColors } from '../../utils/constants.js';
 
 export class AreaAttack extends Skill {
-  constructor(game, areaAttackId, centerPosition, caster) {
-    const skillData = game.data.skills[areaAttackId];
-
-    // Ring geometry for visual effect of area attack
-    const geometry = new THREE.RingGeometry(0.5, skillData.range || 4.0, 16);
-    const material = new THREE.MeshBasicMaterial({
-      color: EffectColors.SKILL_AREA_ATTACK,
-      transparent: true,
-      opacity: 0.6,
-      side: THREE.DoubleSide,
-    });
-
-    super(game, areaAttackId, geometry, material);
+  constructor(game, areaAttackId, centerPosition, direction, caster) {
+    super(game, areaAttackId);
 
     this.caster = caster;
+
+    const skillData = game.data.skills[areaAttackId];
 
     this.range = skillData.range || 4.0;
     this.damage = skillData.damage || 50;
@@ -31,7 +22,9 @@ export class AreaAttack extends Skill {
     // Position setting
     this.mesh.position.copy(centerPosition);
     this.mesh.position.y += 0.1; // Display slightly above ground
-    this.mesh.rotation.x = -Math.PI / 2; // Rotate horizontally
+
+    // Apply rotation settings from skills.json based on caster's orientation
+    this.applyRotation(caster.mesh.quaternion);
 
     // Set initial scale to 0 (enlarge with animation)
     this.mesh.scale.setScalar(0);
@@ -52,7 +45,10 @@ export class AreaAttack extends Skill {
 
     // Effect animation
     this.mesh.scale.setScalar(progress);
-    this.mesh.material.opacity = 0.6 * (1 - progress);
+    if (this.mesh.material) {
+      this.mesh.material.opacity =
+        (this.data.effect.opacity || 0.6) * (1 - progress);
+    }
 
     // Mark for removal when duration ends
     if (progress >= 1) {
@@ -73,7 +69,7 @@ export class AreaAttack extends Skill {
         this.showDamageEffect(this.game.player.mesh.position);
       }
     } else {
-      this.game.enemies.forEach((enemy) => {
+      this.game.entities.characters.enemies.forEach((enemy) => {
         const distance = centerPosition.distanceTo(enemy.mesh.position);
         if (distance <= this.range) {
           enemy.takeDamage(this.damage);

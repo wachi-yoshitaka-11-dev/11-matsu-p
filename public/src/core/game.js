@@ -1,15 +1,12 @@
 import * as THREE from 'three';
 import { SceneManager } from './scene-manager.js';
 import { AssetLoader } from './asset-loader.js';
-import { Field } from '../world/field.js';
+import { StageManager } from './stage-manager.js';
 import { Player } from '../entities/characters/player.js';
-import { Enemy } from '../entities/characters/enemy.js';
-import { Boss } from '../entities/characters/boss.js';
-import { Npc } from '../entities/characters/npc.js';
-import { Item } from '../entities/items/item.js';
 import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
 import { TitleScreen } from '../ui/title-screen.js';
+import { LoadingScreen } from '../ui/loading-screen.js';
 import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
@@ -22,21 +19,31 @@ export class Game {
   constructor() {
     this.sceneManager = new SceneManager();
     this.assetLoader = new AssetLoader();
+    this.stageManager = new StageManager(this);
     this.clock = new THREE.Clock();
 
-    this.field = null;
     this.player = null;
     this.inputController = null;
     this.hud = null;
     this.enemyHealthBar = null;
 
-    this.enemies = [];
-    this.items = [];
-    this.projectiles = [];
-    this.areaAttacks = [];
-
-    this.boss = null;
-    this.npcs = [];
+    this.entities = {
+      characters: {
+        enemies: [],
+        npcs: [],
+        boss: null,
+      },
+      items: [],
+      skills: {
+        buffs: [],
+        projectiles: [],
+        areaAttacks: [],
+      },
+      world: {
+        terrains: [],
+        environments: [],
+      },
+    };
     this.data = {};
 
     this.minDisplayTimeTimeoutId = null;
@@ -50,6 +57,7 @@ export class Game {
       () => this.startGame(),
       () => this.skipSplashScreenDelay()
     );
+    this.loadingScreen = new LoadingScreen();
 
     // UI components will be initialized after localization is loaded
     this.pauseMenu = null;
@@ -73,7 +81,9 @@ export class Game {
       if (
         this.player &&
         !this.player.isDead &&
-        this.gameState === GameState.PLAYING
+        (this.gameState === GameState.LOADING ||
+          this.gameState === GameState.PLAYING ||
+          this.gameState === GameState.PAUSED)
       ) {
         e.preventDefault();
         e.returnValue = '';
@@ -89,30 +99,11 @@ export class Game {
     const loadStartTime = Date.now();
 
     await this.loadGameData();
-    await this.loadAudio();
-    await this.loadModels();
-
-    this.field = new Field(this);
-    this.sceneManager.add(this.field.mesh);
-
-    this.player = new Player(this, 'player');
-    this.sceneManager.add(this.player.mesh);
-
-    this.hud = new Hud(this, this.player);
+    await this.loadBasicAudio();
+    await this.loadBasicModels();
 
     // Update UI text after localization is loaded
     this.updateUITexts();
-    this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
-    this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
-
-    this.inputController = new InputController(
-      this.player,
-      this.sceneManager.camera,
-      this,
-      this.sceneManager.renderer.domElement
-    );
-
-    this.loadEntities();
 
     const elapsedTime = Date.now() - loadStartTime;
     const minDisplayTime = 10000;
@@ -133,16 +124,17 @@ export class Game {
 
   async loadGameData() {
     const dataFiles = [
-      'skills',
-      'items',
-      'weapons',
-      'shields',
+      'localization',
       'player',
       'enemies',
       'npcs',
-      'localization',
+      'items',
+      'weapons',
+      'shields',
+      'skills',
       'terrains',
       'environments',
+      'stages',
     ];
     for (const fileName of dataFiles) {
       const data = await this.assetLoader.loadJSON(
@@ -166,7 +158,7 @@ export class Game {
     }
   }
 
-  async loadAudio() {
+  async loadBasicAudio() {
     const audioAssets = [
       AssetPaths.BGM_ENDING,
       AssetPaths.BGM_OPENING,
@@ -187,7 +179,8 @@ export class Game {
       AssetPaths.SFX_PAUSE,
       AssetPaths.SFX_PICKUP_ITEM,
       AssetPaths.SFX_ROLLING,
-      AssetPaths.SFX_START,
+      AssetPaths.SFX_STAGE_START,
+      AssetPaths.SFX_STAGE_CLEAR,
       AssetPaths.SFX_SWITCH_ITEM,
       AssetPaths.SFX_SWITCH_SHIELD,
       AssetPaths.SFX_SWITCH_SKILL,
@@ -220,74 +213,7 @@ export class Game {
     }
   }
 
-  loadEntities() {
-    const item = new Item(this, 'potion', new THREE.Vector3(0, 2, -5));
-    this.items.push(item);
-    this.sceneManager.add(item.mesh);
-
-    const enemy = new Enemy(this, 'forestGoblin', new THREE.Vector3(5, 0, 0), {
-      player: this.player,
-    });
-
-    this.enemies.push(enemy);
-    this.sceneManager.add(enemy.mesh);
-
-    const boss = new Boss(this, 'dragonKing', new THREE.Vector3(10, 0.5, 10), {
-      player: this.player,
-    });
-    this.boss = boss;
-    this.enemies.push(boss);
-    this.sceneManager.add(boss.mesh);
-
-    const npc = new Npc(this, 'guide', new THREE.Vector3(-5, 0.5, -5));
-    this.npcs.push(npc);
-    this.sceneManager.add(npc.mesh);
-  }
-
-  async loadModels() {
-    const assetsToLoad = [];
-
-    // Player assets
-    assetsToLoad.push({
-      model: this.data.player.model,
-      texture: this.data.player.texture,
-    });
-
-    // Collect all assets from JSON data
-    const collections = [
-      this.data.terrains,
-      this.data.npcs,
-      this.data.enemies,
-      this.data.items,
-      this.data.weapons,
-      this.data.shields,
-      this.data.skills,
-    ];
-
-    for (const collection of collections) {
-      if (collection) {
-        for (const item of Object.values(collection)) {
-          if (item.model || item.texture) {
-            assetsToLoad.push({
-              model: item.model,
-              texture: item.texture,
-            });
-          }
-        }
-      }
-    }
-
-    // Environment textures
-    if (this.data.environments) {
-      for (const envData of Object.values(this.data.environments)) {
-        if (envData.texture) {
-          assetsToLoad.push({
-            texture: envData.texture,
-          });
-        }
-      }
-    }
-
+  async loadModelsFromAssets(assetsToLoad) {
     for (const asset of assetsToLoad) {
       try {
         if (asset.model) {
@@ -318,23 +244,162 @@ export class Game {
     }
   }
 
+  async loadBasicModels() {
+    // Load only player assets during startup
+    const basicAssetsToLoad = [];
+
+    // Player assets
+    basicAssetsToLoad.push({
+      model: this.data.player.model,
+      texture: this.data.player.texture,
+    });
+
+    await this.loadModelsFromAssets(basicAssetsToLoad);
+  }
+
+  async loadStageModels() {
+    // Load only models that are actually used in the current stage
+    const stageData = this.stageManager.getCurrentStageData();
+    if (!stageData) return;
+
+    const assetsToLoad = [];
+
+    // Collect terrain models used in current stage
+    if (stageData.world?.terrains) {
+      for (const terrainConfig of stageData.world.terrains) {
+        const terrainData = this.data.terrains?.[terrainConfig.id];
+        if (terrainData && (terrainData.model || terrainData.texture)) {
+          assetsToLoad.push({
+            model: terrainData.model,
+            texture: terrainData.texture,
+          });
+        }
+      }
+    }
+
+    // Collect environment assets used in current stage
+    if (stageData.world?.environments) {
+      for (const envConfig of stageData.world.environments) {
+        const envData = this.data.environments?.[envConfig.id];
+        if (envData && envData.texture) {
+          assetsToLoad.push({
+            texture: envData.texture,
+          });
+        }
+      }
+    }
+
+    // Collect entity models used in current stage
+    if (stageData.entities) {
+      // Enemies
+      if (stageData.entities.enemies) {
+        for (const enemyConfig of stageData.entities.enemies) {
+          const enemyData = this.data.enemies?.[enemyConfig.id];
+          if (enemyData && (enemyData.model || enemyData.texture)) {
+            assetsToLoad.push({
+              model: enemyData.model,
+              texture: enemyData.texture,
+            });
+          }
+        }
+      }
+
+      // NPCs
+      if (stageData.entities.npcs) {
+        for (const npcConfig of stageData.entities.npcs) {
+          const npcData = this.data.npcs?.[npcConfig.id];
+          if (npcData && (npcData.model || npcData.texture)) {
+            assetsToLoad.push({
+              model: npcData.model,
+              texture: npcData.texture,
+            });
+          }
+        }
+      }
+
+      // Items
+      if (stageData.entities.items) {
+        for (const itemConfig of stageData.entities.items) {
+          const itemData = this.data.items?.[itemConfig.id];
+          if (itemData && (itemData.model || itemData.texture)) {
+            assetsToLoad.push({
+              model: itemData.model,
+              texture: itemData.texture,
+            });
+          }
+        }
+      }
+    }
+
+    await this.loadModelsFromAssets(assetsToLoad);
+  }
+
   async startGame() {
     if (this.gameState !== GameState.TITLE) return;
 
-    this.gameState = GameState.PLAYING;
-    this.sceneManager.showCanvas();
-    this.hud?.show();
+    // Show loading state
+    this.gameState = GameState.LOADING;
 
     if (this.titleScreen) {
       this.titleScreen.hideAll();
     }
+    this.loadingScreen.show();
     if (this.bgmAudios[AssetPaths.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetPaths.BGM_TITLE].stop();
     }
-    // Start current level BGM
-    await this.startLevelBGM();
-    this.playSound(AssetPaths.SFX_START);
-    this.sceneManager.renderer.domElement.requestPointerLock();
+
+    try {
+      // Step 1: Load stage configuration (sets stageData)
+      await this.stageManager.loadStage(this.currentLevel);
+
+      // Step 2: Load stage-related assets
+      await this.loadStageModels();
+
+      // Step 3: Load stage world with assets available
+      const stageData = this.stageManager.getCurrentStageData();
+      if (stageData) {
+        await this.stageManager.loadStageWorld(stageData);
+        await this.stageManager.loadStageBGM(stageData);
+      }
+
+      // Field is now handled through environments system
+
+      this.player = new Player(this, 'player');
+      this.sceneManager.add(this.player.mesh);
+
+      // Load stage entities after player is created
+      if (stageData) {
+        await this.stageManager.loadStageEntities(stageData);
+      }
+
+      this.hud = new Hud(this);
+      this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
+      this.lockOnUI = new LockOnUI(this.sceneManager, this.sceneManager.camera);
+
+      this.inputController = new InputController(
+        this.player,
+        this.sceneManager.camera,
+        this,
+        this.sceneManager.renderer.domElement
+      );
+
+      // Hide loading and start gameplay
+      this.loadingScreen.hide();
+      this.sceneManager.showCanvas();
+      this.gameState = GameState.PLAYING;
+      this.hud?.show();
+
+      this.sceneManager.renderer.domElement.requestPointerLock();
+
+      // Initialize stage (position, BGM, sound, message) via StageManager
+      this.stageManager.initializeStage();
+    } catch (error) {
+      console.error('Failed to start game:', error);
+      // Handle error - could show error message and return to title
+      this.loadingScreen.hide();
+      this.gameState = GameState.TITLE;
+      this.titleScreen.showMenu();
+    }
   }
 
   isTextureAppliedToModel(modelName) {
@@ -370,42 +435,6 @@ export class Game {
 
   reloadGame() {
     location.reload();
-  }
-
-  // Level BGM lazy loading
-  async loadLevelBGM(level, progress = null) {
-    const bgmName = this.getLevelBGMName(level, progress);
-    if (!bgmName) return null;
-
-    if (this.bgmAudios[bgmName]) {
-      return bgmName;
-    }
-
-    try {
-      const buffer = await this.assetLoader.loadAudio(
-        bgmName,
-        `assets/audio/${bgmName}`
-      );
-
-      this.bgmAudios[bgmName] = new THREE.Audio(this.listener);
-      this.bgmAudios[bgmName].setBuffer(buffer);
-      this.bgmAudios[bgmName].setLoop(true);
-      this.bgmAudios[bgmName].setVolume(0.4);
-
-      return bgmName;
-    } catch (error) {
-      console.warn(`Failed to load level BGM: ${bgmName}`, error);
-      return null;
-    }
-  }
-
-  getLevelBGMName(level, progress = null) {
-    const currentProgress = progress || this.currentLevelProgress;
-
-    const progressString = currentProgress.toString().padStart(2, '0');
-    const bgmKey = `BGM_LEVEL_${level.toString().padStart(2, '0')}_${progressString}`;
-
-    return AssetPaths[bgmKey] || null;
   }
 
   // BGM management methods
@@ -454,22 +483,6 @@ export class Game {
     }
   }
 
-  async startLevelBGM(level = null, progress = null) {
-    const targetLevel = level || this.currentLevel;
-    const bgmName = await this.loadLevelBGM(targetLevel, progress);
-    if (bgmName) {
-      this.playBGM(bgmName);
-    }
-  }
-
-  // Method to change level progress and switch BGM accordingly
-  async setLevelProgress(progress) {
-    if (progress !== this.currentLevelProgress) {
-      this.currentLevelProgress = progress;
-      await this.startLevelBGM(this.currentLevel, progress);
-    }
-  }
-
   playSound(name) {
     const buffer = this.assetLoader.getAudio(name);
     if (buffer) {
@@ -515,41 +528,36 @@ export class Game {
       this.gameState === GameState.ENDING
     ) {
       this.sequenceManager.update(deltaTime);
+    } else if (this.gameState === GameState.LOADING) {
+      // During loading, stop ALL game updates - don't update any entities
+      this.sceneManager.render();
+      return;
     } else if (this.gameState !== GameState.PAUSED) {
       this.player?.update(deltaTime);
       this.inputController?.update(deltaTime);
 
       if (this.gameState === GameState.PLAYING) {
         this.enemyHealthBar?.update();
-        for (let i = this.enemies.length - 1; i >= 0; i--) {
-          const enemy = this.enemies[i];
+
+        // Update stage progress (check for clear conditions)
+        this.stageManager?.updateStageProgress();
+        for (let i = this.entities.characters.enemies.length - 1; i >= 0; i--) {
+          const enemy = this.entities.characters.enemies[i];
           enemy.update(deltaTime);
 
           if (enemy.readyForRemoval) {
             this.player?.addExperience(enemy.experience);
             this.sceneManager.remove(enemy.mesh);
-            // If the removed enemy is the boss, trigger ending flow
-            if (enemy === this.boss) {
-              this.boss = null;
-              this.endingTimer = 1;
-              this.isEndingSequenceReady = false;
+            // Clear boss reference if this was the boss
+            if (enemy === this.entities.characters.boss) {
+              this.entities.characters.boss = null;
             }
-            this.enemies.splice(i, 1);
+            this.entities.characters.enemies.splice(i, 1);
           }
         }
 
-        if (this.endingTimer > 0) {
-          if (this.player?.statusPoints === 0) {
-            this.endingTimer -= deltaTime;
-          }
-          if (this.endingTimer <= 0 && !this.isEndingSequenceReady) {
-            this.playEndingSequence();
-            this.isEndingSequenceReady = true;
-          }
-        }
-
-        for (let i = this.items.length - 1; i >= 0; i--) {
-          const item = this.items[i];
+        for (let i = this.entities.items.length - 1; i >= 0; i--) {
+          const item = this.entities.items[i];
           const distance = this.player?.mesh.position.distanceTo(
             item.mesh.position
           );
@@ -562,12 +570,12 @@ export class Game {
             this.player?.inventory.push(item.id);
             this.player?.playPickUpAnimation();
             this.sceneManager.remove(item.mesh);
-            this.items.splice(i, 1);
+            this.entities.items.splice(i, 1);
           }
         }
 
-        for (let i = this.projectiles.length - 1; i >= 0; i--) {
-          const projectile = this.projectiles[i];
+        for (let i = this.entities.skills.projectiles.length - 1; i >= 0; i--) {
+          const projectile = this.entities.skills.projectiles[i];
           projectile.update(deltaTime);
           let shouldRemove = false;
 
@@ -591,7 +599,7 @@ export class Game {
               }
             } else {
               // Player attack: collision detection with enemies
-              for (const enemy of this.enemies) {
+              for (const enemy of this.entities.characters.enemies) {
                 const enemyHitPosition = enemy.mesh.position.clone();
                 enemyHitPosition.y += 0.5;
                 if (
@@ -608,21 +616,31 @@ export class Game {
 
           if (shouldRemove) {
             this.sceneManager.remove(projectile.mesh);
-            this.projectiles.splice(i, 1);
+            this.entities.skills.projectiles.splice(i, 1);
           }
         }
 
-        for (let i = this.areaAttacks.length - 1; i >= 0; i--) {
-          const areaAttack = this.areaAttacks[i];
+        for (let i = this.entities.skills.buffs.length - 1; i >= 0; i--) {
+          const buff = this.entities.skills.buffs[i];
+          buff.update(deltaTime);
+
+          if (buff.duration <= 0) {
+            this.sceneManager.remove(buff.mesh);
+            this.entities.skills.buffs.splice(i, 1);
+          }
+        }
+
+        for (let i = this.entities.skills.areaAttacks.length - 1; i >= 0; i--) {
+          const areaAttack = this.entities.skills.areaAttacks[i];
           areaAttack.update(deltaTime);
 
           if (areaAttack.lifespan <= 0) {
             this.sceneManager.remove(areaAttack.mesh);
-            this.areaAttacks.splice(i, 1);
+            this.entities.skills.areaAttacks.splice(i, 1);
           }
         }
 
-        this.npcs.forEach((npc) => {
+        this.entities.characters.npcs.forEach((npc) => {
           npc.update(deltaTime);
         });
       }

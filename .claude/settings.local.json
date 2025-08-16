@@ -24,7 +24,9 @@
       "mcp__serena__replace_regex",
       "Bash(npx http-server:*)",
       "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_handle_dialog"
+      "mcp__playwright__browser_handle_dialog",
+      "Bash(npm run lint:*)",
+      "Bash(curl:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

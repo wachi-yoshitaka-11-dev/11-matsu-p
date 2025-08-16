@@ -1,26 +1,14 @@
 {
   "guide": {
     "name": "案内人",
-    "model": "npcs/npc.glb",
-    "texture": "npcs/npc.png",
+    "model": "npcs/guide.glb",
+    "texture": "npcs/guide.png",
     "description": "冒険の案内をしてくれる",
     "interactionRange": 5,
     "dialogue": [
       "ようこそ、冒険者よ！\nこの世界は危険に満ちている。",
       "WASDキーで移動\nマウスで視点を動かせるぞ。\n\nスペースキーでジャンプだ！",
       "敵を倒してレベルアップしよう！\n経験を積めば強くなれる。"
-    ]
-  },
-  "merchant": {
-    "name": "商人",
-    "model": "npcs/npc.glb",
-    "texture": "npcs/npc.png",
-    "description": "アイテムを売ってくれる商人",
-    "interactionRange": 5,
-    "dialogue": [
-      "いらっしゃい！\n何か必要なものはあるかい？\n\n品揃えには自信があるぞ！",
-      "良い武器や防具を揃えているよ。\n君にぴったりのものが\nきっと見つかるはずだ。",
-      "冒険に役立つアイテムもあるぞ！\nポーションや特別な道具など\n何でも揃っている。"
     ]
   }
 }

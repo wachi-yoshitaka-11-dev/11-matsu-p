@@ -26,7 +26,7 @@ export class Character extends BaseEntity {
     }
     this.currentAnimationName = null;
 
-    this.physics = new PhysicsComponent(this.mesh, this.game.field);
+    this.physics = new PhysicsComponent(this.mesh, this.game);
 
     const defaults = {
       hp: 100,
@@ -358,23 +358,28 @@ export class Character extends BaseEntity {
       this
     );
 
-    this.game.projectiles.push(projectile);
+    this.game.entities.skills.projectiles.push(projectile);
     this.game.sceneManager.add(projectile.mesh);
     return projectile;
   }
 
   createAreaAttack(skillId) {
+    // Get character's forward direction
+    const direction = new THREE.Vector3(0, 0, -1);
+    direction.applyQuaternion(this.mesh.quaternion);
+
     const areaAttack = new AreaAttack(
       this.game,
       skillId,
       this.mesh.position.clone(),
+      direction,
       this
     );
 
-    if (!this.game.areaAttacks) {
-      this.game.areaAttacks = [];
+    if (!this.game.entities.skills.areaAttacks) {
+      this.game.entities.skills.areaAttacks = [];
     }
-    this.game.areaAttacks.push(areaAttack);
+    this.game.entities.skills.areaAttacks.push(areaAttack);
     this.game.sceneManager.add(areaAttack.mesh);
     return areaAttack;
   }

@@ -74,8 +74,6 @@ test.describe('Movement System Test', () => {
       };
     });
 
-    console.log('Player state:', playerState);
-
     expect(playerState.hasIsJumping).toBe(true);
     expect(playerState.hasIsRolling).toBe(true);
     expect(playerState.hasIsBackStepping).toBe(true);
