@@ -25,6 +25,8 @@ src/
 ├── core/
 │   ├── game.js         # ゲームのメインクラス
 │   ├── scene-manager.js # シーン（舞台）の管理
+│   ├── stage-manager.js # ステージ管理（データ駆動型アーキテクチャ）
+│   ├── sequence-manager.js # オープニング・エンディングシーケンス管理
 │   ├── asset-loader.js  # アセットの読み込み
 │   └── components/     # 再利用可能なコンポーネント
 │       └── physics-component.js # 物理演算コンポーネント
@@ -34,6 +36,7 @@ src/
 │   │   ├── character.js # 全キャラクターのベースクラス（物理、HP、アニメーション管理）
 │   │   ├── player.js   # プレイヤー
 │   │   ├── enemy.js    # 敵キャラクター
+│   │   ├── grunt.js    # グラント（一般的な敵）
 │   │   ├── boss.js     # ボス（敵の特殊タイプ）
 │   │   └── npc.js      # NPC
 │   ├── items/          # アイテム関連エンティティ
@@ -41,26 +44,41 @@ src/
 │   ├── skills/         # スキル関連エンティティ
 │   │   ├── skill.js    # スキルベースクラス
 │   │   ├── projectile.js # プロジェクタイルスキル
-│   │   └── area-attack.js # エリア攻撃スキル
+│   │   ├── area-attack.js # エリア攻撃スキル
+│   │   └── buff.js     # バフスキル
 │   └── world/          # ワールド関連エンティティ
 │       ├── environment.js # 環境オブジェクト（雲、地面など）
 │       └── terrain.js  # 地形オブジェクト（木、岩、草など）
 ├── world/
-│   ├── field.js        # 地形や背景の生成
+│   ├── field.js        # 地形や背景の生成（ステージベース）
 │   └── light.js        # ライトの設定
 ├── controls/
 │   └── input-controller.js # キーボード・マウス入力、およびカメラの管理
 ├── ui/
-│   └── hud.js          # 画面表示（HPゲージなど）
+│   ├── hud.js          # 画面表示（HPゲージ、ステージ情報など）
+│   ├── title-screen.js # タイトル画面
+│   ├── loading-screen.js # ローディング画面
+│   ├── pause-menu.js   # ポーズメニュー
+│   ├── dialog-box.js   # ダイアログボックス
+│   ├── enemy-health-bar.js # 敵ヘルスバー
+│   └── lock-on-ui.js   # ロックオンUI
 ├── utils/
-│   └── constants.js    # 定数管理
+│   ├── constants.js    # 定数管理
+│   ├── localization.js # 多言語対応
+│   └── model-utils.js  # モデルユーティリティ
 └── public/data/      # ゲームデータ（JSONファイル）
     ├── player.json
     ├── weapons.json
+    ├── shields.json
     ├── enemies.json
     ├── npcs.json
     ├── items.json
-    └── skills.json
+    ├── skills.json
+    ├── stages.json     # ステージ定義
+    ├── terrains.json   # 地形オブジェクト
+    ├── environments.json # 環境オブジェクト
+    ├── sequences.json  # シーケンス定義
+    └── localization.json # 多言語テキスト
 ```
 
 ## 4. データ駆動アーキテクチャ
@@ -71,7 +89,24 @@ src/
 - **データ形式:** JSON (JavaScript Object Notation)
 - **読み込み:** ゲーム起動時に `AssetLoader` がすべてのJSONデータを非同期で読み込み、`game.data` オブジェクトに格納する。
 - **アクセス:** 各クラスは `this.game.data` を通じて、必要なパラメータにアクセスする。
-- **地形アセットのデータ管理:** `public/data/terrains.json` と `public/data/environments.json` を導入し、地形オブジェクト（木、岩、草など）や環境要素（雲、地面など）のモデル名やテクスチャ名を一元管理する。これにより、ゲーム内の地形要素の追加や変更がデータ編集のみで可能になる。
+
+### 4.1. ステージ管理システム
+
+- **ステージ定義:** `stages.json` でステージごとの設定（敵配置、BGM、環境設定）を管理
+- **土台モデル:** 各ステージに対応する `.glb` ファイルを土台として使用
+- **エリア配置:** plains、ruins、field、sky等のエリア別エンティティ配置システム
+- **動的読み込み:** `StageManager` によるステージの動的読み込み・切り替え
+
+### 4.2. 多言語対応システム
+
+- **ローカライゼーション:** `localization.json` で日本語・英語の多言語対応
+- **動的言語切り替え:** `localization.js` による実行時言語切り替え
+- **UI国際化:** ステージ名、説明文、UIテキストの完全多言語対応
+
+### 4.3. 地形・環境システム
+
+- **地形アセットのデータ管理:** `terrains.json` と `environments.json` で地形オブジェクト（木、岩、草など）や環境要素（雲、地面など）のモデル名やテクスチャ名を一元管理
+- **プロシージャル配置:** ステージ設定に基づく自動配置システム
 
 ## 5. アセット管理
 
@@ -102,6 +137,10 @@ public/assets/
 │   ├── players/      # プレイヤー3Dモデル
 │   ├── shields/      # 盾3Dモデル
 │   ├── skills/       # スキル3Dモデル
+│   ├── stages/       # ステージ土台3Dモデル
+│   │   ├── starting-plains.glb # 始まりの地
+│   │   ├── cursed-forest.glb   # 呪われた森
+│   │   └── ...       # その他のステージ
 │   ├── weapons/      # 武器3Dモデル
 │   ├── terrains/     # 地形オブジェクト3Dモデル
 │   └── sequences/    # シーケンス関連3Dモデル
