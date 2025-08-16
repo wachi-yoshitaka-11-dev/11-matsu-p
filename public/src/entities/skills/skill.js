@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { BaseEntity } from '../base-entity.js';
-import { SkillShape } from '../../utils/constants.js'; // SkillShapeをインポート
+import { SkillShape } from '../../utils/constants.js';
 
 export class Skill extends BaseEntity {
   constructor(game, skillId, options = {}) {
@@ -9,10 +9,10 @@ export class Skill extends BaseEntity {
       throw new Error(`Skill ID "${skillId}" not found in skills data`);
     }
 
-    // effectデータに基づいてジオメトリとマテリアルを生成
+    // Generate geometry and material based on effect data
     const { geometry, material } = Skill.createEffectMesh(skillData.effect);
 
-    // BaseEntityに生成したジオメトリとマテリアルを渡す
+    // Pass the generated geometry and material to BaseEntity
     super(game, skillId, skillData, geometry, material, options);
   }
 
@@ -178,7 +178,6 @@ export class Skill extends BaseEntity {
     return { geometry, material };
   }
 
-  // skills.jsonの回転設定をキャラクターの向き基準で適用
   applyRotation(casterQuaternion) {
     const skillData = this.data;
 
@@ -192,10 +191,8 @@ export class Skill extends BaseEntity {
         skillRotation
       );
 
-      // キャラクターの向き + スキルの回転
       this.mesh.quaternion.copy(casterQuaternion).multiply(skillQuaternion);
     } else {
-      // 回転設定がない場合はキャラクターの向きをそのまま適用
       this.mesh.quaternion.copy(casterQuaternion);
     }
   }

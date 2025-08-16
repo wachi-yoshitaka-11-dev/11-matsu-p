@@ -19,7 +19,7 @@ export default [
       quotes: 'off',
       semi: 'off',
       'no-unused-vars': ['warn', { args: 'none' }],
-      'no-console': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-trailing-spaces': 'error',
       'eol-last': 'error',
     },

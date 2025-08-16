@@ -26,7 +26,7 @@ export class Character extends BaseEntity {
     }
     this.currentAnimationName = null;
 
-    this.physics = new PhysicsComponent(this.mesh, this.game.field);
+    this.physics = new PhysicsComponent(this.mesh, this.game);
 
     const defaults = {
       hp: 100,

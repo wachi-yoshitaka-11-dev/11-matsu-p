@@ -1,18 +1,18 @@
 import * as THREE from 'three';
-import { GameConstants } from '../../utils/constants.js';
+import { GameConstants, Fall } from '../../utils/constants.js';
 
 export class PhysicsComponent {
-  constructor(object, field) {
+  constructor(object, game) {
     if (!object || !(object instanceof THREE.Object3D)) {
       throw new Error(
         'PhysicsComponent: Invalid object provided. Must be a THREE.Object3D.'
       );
     }
-    if (!field) {
-      throw new Error('PhysicsComponent: Invalid field provided.');
+    if (!game) {
+      throw new Error('PhysicsComponent: Invalid game provided.');
     }
     this.object = object;
-    this.field = field;
+    this.game = game;
     this.velocity = new THREE.Vector3();
     this.onGround = false;
 
@@ -21,29 +21,44 @@ export class PhysicsComponent {
   }
 
   update(deltaTime) {
-    const previousY = this.object.position.y;
-
+    // Apply gravity
     this.velocity.y -= GameConstants.GRAVITY * deltaTime;
-    this.object.position.y += this.velocity.y * deltaTime;
 
+    // Apply all movement including gravity
     this.object.position.x += this.velocity.x * deltaTime;
+    this.object.position.y += this.velocity.y * deltaTime;
     this.object.position.z += this.velocity.z * deltaTime;
 
-    const groundHeight = this.field.getHeightAt(
-      this.object.position.x,
-      this.object.position.z
-    );
-    const objectBottomY = this.object.position.y - this.objectHeight / 2;
+    // Ground collision detection - prioritize stage GLB, fallback to field
+    let groundHeight = Fall.MAX_FALL_DEPTH;
 
-    if (
-      this.velocity.y <= 0 &&
-      objectBottomY <= groundHeight &&
-      previousY >= groundHeight
-    ) {
-      this.object.position.y = groundHeight + this.objectHeight / 2;
-      this.velocity.y = 0;
-      this.onGround = true;
+    // First check stage GLB (higher priority)
+    if (this.game.stageManager) {
+      groundHeight = this.game.stageManager.getHeightAt(
+        this.object.position.x,
+        this.object.position.z
+      );
+    }
+
+    // If stage GLB has no surface, check field as fallback
+    if (groundHeight === Fall.MAX_FALL_DEPTH && this.game.field) {
+      groundHeight = this.game.field.getHeightAt(
+        this.object.position.x,
+        this.object.position.z
+      );
+    }
+
+    // Apply ground collision if surface exists
+    if (groundHeight > Fall.MAX_FALL_DEPTH) {
+      if (this.object.position.y <= groundHeight + this.objectHeight / 2) {
+        this.object.position.y = groundHeight + this.objectHeight / 2;
+        this.velocity.y = 0;
+        this.onGround = true;
+      } else {
+        this.onGround = false;
+      }
     } else {
+      // No ground surface - allow falling
       this.onGround = false;
     }
   }

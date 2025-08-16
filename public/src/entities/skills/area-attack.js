@@ -23,7 +23,7 @@ export class AreaAttack extends Skill {
     this.mesh.position.copy(centerPosition);
     this.mesh.position.y += 0.1; // Display slightly above ground
 
-    // skills.jsonの回転設定をキャスターの向き基準で適用
+    // Apply rotation settings from skills.json based on caster's orientation
     this.applyRotation(caster.mesh.quaternion);
 
     // Set initial scale to 0 (enlarge with animation)
@@ -45,7 +45,6 @@ export class AreaAttack extends Skill {
 
     // Effect animation
     this.mesh.scale.setScalar(progress);
-    // AreaAttackのmaterialはSkillクラスで生成されるので、そのopacityを操作する
     if (this.mesh.material) {
       this.mesh.material.opacity =
         (this.data.effect.opacity || 0.6) * (1 - progress);

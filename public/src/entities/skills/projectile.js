@@ -19,7 +19,6 @@ export class Projectile extends Skill {
         ? direction.clone().normalize()
         : new THREE.Vector3(0, 0, -1);
 
-    // skills.jsonの回転設定をキャスターの向き基準で適用
     this.applyRotation(caster.mesh.quaternion);
 
     this.direction = unitDir;

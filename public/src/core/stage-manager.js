@@ -1,5 +1,9 @@
 import * as THREE from 'three';
-import { StageBGMConditions } from '../utils/constants.js';
+import {
+  StageBGMConditions,
+  Fall,
+  EnvironmentTypes,
+} from '../utils/constants.js';
 
 export class StageManager {
   constructor(game) {
@@ -7,6 +11,8 @@ export class StageManager {
     this.currentLevel = null;
     this.currentStageData = null;
     this.loadedStageAssets = new Set();
+    this.stageBaseModel = null;
+    this.raycaster = new THREE.Raycaster();
   }
 
   async loadStage(level) {
@@ -44,7 +50,7 @@ export class StageManager {
   }
 
   async loadStageModelsAndAssets(stageData) {
-    // Load stage base model (土台glb)
+    // Load stage base model
     if (stageData.model) {
       try {
         const modelKey = stageData.model.replace('.glb', '');
@@ -53,6 +59,102 @@ export class StageManager {
           `assets/models/${stageData.model}`
         );
         this.loadedStageAssets.add(modelKey);
+
+        // Add stage base model to scene
+        const stageModel = this.game.assetLoader.getModel(modelKey);
+        if (stageModel) {
+          const stageModelClone = stageModel.clone();
+
+          // Apply model settings from JSON configuration
+          const modelSettings = stageData.modelSettings || {};
+
+          // Set position from JSON or use default
+          const position = modelSettings.position || [0, 0, 0];
+          stageModelClone.position.set(position[0], position[1], position[2]);
+
+          // Calculate bounding box for auto-scaling
+          const boundingBox = new THREE.Box3().setFromObject(stageModelClone);
+          const size = boundingBox.getSize(new THREE.Vector3());
+
+          // Ensure stage model is visible and has proper scale
+          stageModelClone.visible = true;
+
+          // Apply scale from JSON configuration
+          if (modelSettings.scale) {
+            // Use explicit scale from JSON
+            const scale = modelSettings.scale;
+            stageModelClone.scale.set(scale[0], scale[1], scale[2]);
+          } else if (
+            modelSettings.autoScale &&
+            modelSettings.autoScale.enabled
+          ) {
+            // Use auto-scaling based on JSON configuration
+            const autoScale = modelSettings.autoScale;
+            const targetSize = autoScale.targetSize || 20000;
+            const basedOn = autoScale.basedOn || 'max';
+
+            let referenceDimension;
+            if (basedOn === 'max') {
+              referenceDimension = Math.max(size.x, size.y, size.z);
+            } else if (basedOn === 'xy') {
+              referenceDimension = Math.max(size.x, size.y);
+            } else if (basedOn === 'xz') {
+              referenceDimension = Math.max(size.x, size.z);
+            } else {
+              referenceDimension = Math.max(size.x, size.z); // Default to XZ plane
+            }
+
+            const scaleMultiplier =
+              referenceDimension > 0 ? targetSize / referenceDimension : 1;
+            stageModelClone.scale.set(
+              scaleMultiplier,
+              scaleMultiplier,
+              scaleMultiplier
+            );
+          }
+
+          stageModelClone.traverse((child) => {
+            if (child.isMesh) {
+              child.visible = true;
+              child.castShadow = true;
+              child.receiveShadow = true;
+
+              // Count vertices
+
+              // Ensure material is visible and not transparent
+              if (child.material) {
+                // Force material to be fully opaque and visible
+                if (child.material.transparent) {
+                  child.material.opacity = 1.0;
+                  child.material.transparent = false;
+                }
+
+                // Ensure material color is visible (not black or transparent)
+                if (
+                  child.material.color &&
+                  child.material.color.r === 0 &&
+                  child.material.color.g === 0 &&
+                  child.material.color.b === 0
+                ) {
+                  child.material.color.setHex(0x888888); // Set to gray if black
+                }
+
+                // Force material update
+                child.material.needsUpdate = true;
+              }
+            }
+          });
+
+          this.game.sceneManager.add(stageModelClone);
+
+          // Store reference for cleanup
+          this.stageBaseModel = stageModelClone;
+        } else {
+          console.error(
+            'Failed to get stage model from asset loader:',
+            modelKey
+          );
+        }
       } catch (error) {
         console.warn(
           `Failed to load stage base model: ${stageData.model}`,
@@ -61,20 +163,18 @@ export class StageManager {
       }
     }
 
-    // Load stage-specific textures
-    if (stageData.texture) {
+    // Load stage-specific textures (check both texture and image properties)
+    const textureFile = stageData.texture || stageData.image;
+    if (textureFile) {
       try {
-        const textureKey = stageData.texture.replace('.png', '');
-        await this.game.assetLoader.loadTexture(
-          textureKey,
-          `assets/textures/${stageData.texture}`
-        );
+        const textureKey = textureFile.replace('.png', '');
+        const texturePath = stageData.texture
+          ? `assets/textures/${textureFile}`
+          : `assets/images/${textureFile}`;
+        await this.game.assetLoader.loadTexture(textureKey, texturePath);
         this.loadedStageAssets.add(textureKey);
       } catch (error) {
-        console.warn(
-          `Failed to load stage texture: ${stageData.texture}`,
-          error
-        );
+        console.warn(`Failed to load stage texture: ${textureFile}`, error);
       }
     }
   }
@@ -138,7 +238,19 @@ export class StageManager {
       const positions = this.generatePositionsFromConfig(terrainConfig, areas);
 
       for (const position of positions) {
-        const terrain = new Terrain(this.game, terrainConfig.id, position);
+        // Apply random scale from config if specified
+        let scale = 1;
+        if (terrainConfig.minScale && terrainConfig.maxScale) {
+          scale =
+            terrainConfig.minScale +
+            Math.random() * (terrainConfig.maxScale - terrainConfig.minScale);
+        } else if (terrainConfig.scale) {
+          scale = terrainConfig.scale;
+        }
+
+        const terrain = new Terrain(this.game, terrainConfig.id, position, {
+          scale,
+        });
         this.game.sceneManager.add(terrain.mesh);
         // Store reference for cleanup
         this.game.entities.world.terrains.push(terrain);
@@ -156,7 +268,61 @@ export class StageManager {
       const positions = this.generatePositionsFromConfig(envConfig, areas);
 
       for (const position of positions) {
-        const environment = new Environment(this.game, envConfig.id, position);
+        // Special handling for different environment types
+        let options = {};
+        switch (envConfig.id) {
+          case EnvironmentTypes.GROUND: {
+            // Use placement-specific configuration for ground
+            const placement = envConfig.placements?.[0];
+            if (placement) {
+              options = {
+                circle: true,
+                scale: placement.scale || 150,
+                segments: placement.segments || 50,
+              };
+            }
+            break;
+          }
+
+          case EnvironmentTypes.CLOUD: {
+            // Cloud-specific options
+            let scale = 10;
+            if (envConfig.minScale && envConfig.maxScale) {
+              scale =
+                envConfig.minScale +
+                Math.random() * (envConfig.maxScale - envConfig.minScale);
+            }
+
+            // Set height for cloud
+            let height = 50;
+            if (envConfig.height) {
+              height =
+                envConfig.height.min +
+                Math.random() * (envConfig.height.max - envConfig.height.min);
+            }
+
+            options = {
+              scale: { x: scale, y: scale * 0.5, z: 1 },
+              opacity: envConfig.opacity || 0.4,
+            };
+
+            // Adjust position for height
+            position.y = height;
+            break;
+          }
+
+          default: {
+            // No special options for other environment types
+            break;
+          }
+        }
+
+        const environment = new Environment(
+          this.game,
+          envConfig.id,
+          position,
+          options
+        );
         this.game.sceneManager.add(environment.mesh);
         // Store reference for cleanup
         this.game.entities.world.environments.push(environment);
@@ -256,12 +422,15 @@ export class StageManager {
       const positions = this.generatePositionsFromConfig(enemyConfig, areas);
 
       for (const position of positions) {
+        // Skip height adjustment - use original position
+        const adjustedPosition = position.clone();
+
         let enemy;
         if (enemyData.type === 'boss') {
-          enemy = new Boss(this.game, enemyConfig.id, position);
+          enemy = new Boss(this.game, enemyConfig.id, adjustedPosition);
           this.game.entities.characters.boss = enemy;
         } else {
-          enemy = new Enemy(this.game, enemyConfig.id, position);
+          enemy = new Enemy(this.game, enemyConfig.id, adjustedPosition);
         }
 
         this.game.entities.characters.enemies.push(enemy);
@@ -324,6 +493,12 @@ export class StageManager {
 
     // Stop current BGM
     this.game.stopBGM();
+
+    // Clean up stage base model
+    if (this.stageBaseModel) {
+      this.game.sceneManager.remove(this.stageBaseModel);
+      this.stageBaseModel = null;
+    }
 
     // Clean up stage lights
     if (this.game.stageLights) {
@@ -396,5 +571,48 @@ export class StageManager {
       level: this.currentLevel,
       loaded: this.loadedStageAssets.size,
     };
+  }
+
+  getHeightAt(x, z) {
+    let highestY = Fall.MAX_FALL_DEPTH;
+    const rayStartHeight = 100; // A safe height above everything
+    this.raycaster.set(
+      new THREE.Vector3(x, rayStartHeight, z),
+      new THREE.Vector3(0, -1, 0)
+    );
+
+    const objectsToCheck = [];
+
+    // 1. Stage base model
+    if (this.stageBaseModel) {
+      objectsToCheck.push(this.stageBaseModel);
+    }
+
+    // 2. Ground environment
+    const groundEnv = this.game.entities.world.environments.find(
+      (env) => env.id === EnvironmentTypes.GROUND && env.mesh
+    );
+    if (groundEnv) {
+      objectsToCheck.push(groundEnv.mesh);
+    }
+
+    // 3. All terrain objects (trees, rocks, etc.)
+    const terrainMeshes = this.game.entities.world.terrains.map((t) => t.mesh);
+    objectsToCheck.push(...terrainMeshes);
+
+    if (objectsToCheck.length > 0) {
+      const intersects = this.raycaster.intersectObjects(objectsToCheck, true);
+
+      if (intersects.length > 0) {
+        // Find the highest intersection point
+        for (const intersect of intersects) {
+          if (intersect.point.y > highestY) {
+            highestY = intersect.point.y;
+          }
+        }
+      }
+    }
+
+    return highestY;
   }
 }

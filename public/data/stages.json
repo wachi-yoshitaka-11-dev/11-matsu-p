@@ -10,6 +10,15 @@
     "startingPlains": {
       "name": "始まりの地",
       "model": "stages/starting-plains.glb",
+      "modelSettings": {
+        "position": [0, -4.5, 0],
+        "scale": [100, 100, 100],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
       "image": "stages/starting-plains.png",
       "description": "穏やかな平原と小さな遺跡。基本的な操作を学ぶ安全なエリア。",
       "bgm": [
@@ -25,14 +34,6 @@
         }
       ],
       "world": {
-        "field": {
-          "size": 100,
-          "segments": 50,
-          "heightVariation": {
-            "amplitude": 2,
-            "frequency": 0.1
-          }
-        },
         "lights": [
           {
             "type": "ambient",
@@ -49,21 +50,21 @@
         "terrains": [
           {
             "id": "tree",
-            "count": 20,
+            "count": 15,
             "minScale": 2.0,
             "maxScale": 6.0,
-            "areas": ["scattered"]
+            "areas": ["field"]
           },
           {
             "id": "rock",
-            "count": 40,
+            "count": 25,
             "minScale": 2.0,
             "maxScale": 10.0,
             "areas": ["ruins"]
           },
           {
             "id": "grass",
-            "count": 1000,
+            "count": 200,
             "minScale": 0.5,
             "maxScale": 4.0,
             "areas": ["plains"]
@@ -71,17 +72,32 @@
         ],
         "environments": [
           {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 100,
+                "segments": 50
+              }
+            ]
+          },
+          {
             "id": "cloud",
-            "count": 100,
+            "count": 50,
             "minScale": 5.0,
             "maxScale": 50.0,
             "opacity": 0.4,
             "height": {
               "min": 40,
               "max": 70
-            }
+            },
+            "areas": ["sky"]
           }
         ]
+      },
+      "player": {
+        "startPosition": [0, 1, 0]
       },
       "entities": {
         "enemies": [
@@ -105,13 +121,13 @@
           },
           {
             "id": "dog",
-            "placements": [{ "position": [25, 0, 25] }]
+            "placements": [{ "position": [10, 1, 10] }]
           }
         ],
         "npcs": [
           {
             "id": "guide",
-            "placements": [{ "position": [-5, 0.5, -5] }]
+            "placements": [{ "position": [-5, 0, -5] }]
           }
         ],
         "items": [
@@ -119,7 +135,7 @@
             "id": "potion",
             "placements": [
               { "area": "plains", "count": 2 },
-              { "area": "scattered", "count": 1 }
+              { "area": "field", "count": 1 }
             ]
           },
           {
@@ -139,10 +155,15 @@
           "radius": 20,
           "description": "古い石造建築群のある遺跡エリア"
         },
-        "scattered": {
+        "field": {
           "center": [0, 0, 0],
-          "radius": 45,
+          "radius": 50,
           "description": "フィールド全体にランダム配置"
+        },
+        "sky": {
+          "center": [0, 0, 0],
+          "radius": 200,
+          "description": "空全体に雲を配置するための広範囲エリア"
         }
       },
       "objectives": {

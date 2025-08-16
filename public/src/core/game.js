@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { SceneManager } from './scene-manager.js';
 import { AssetLoader } from './asset-loader.js';
 import { StageManager } from './stage-manager.js';
-import { Field } from '../world/field.js';
 import { Player } from '../entities/characters/player.js';
 import { InputController } from '../controls/input-controller.js';
 import { Hud } from '../ui/hud.js';
@@ -23,13 +22,11 @@ export class Game {
     this.stageManager = new StageManager(this);
     this.clock = new THREE.Clock();
 
-    this.field = null;
     this.player = null;
     this.inputController = null;
     this.hud = null;
     this.enemyHealthBar = null;
 
-    // 階層化されたエンティティ管理
     this.entities = {
       characters: {
         enemies: [],
@@ -361,11 +358,18 @@ export class Game {
         await this.stageManager.loadStageBGM(stageData);
       }
 
-      // Initialize game objects now
-      this.field = new Field(this);
-      this.sceneManager.add(this.field.mesh);
+      // Field is now handled through environments system
 
       this.player = new Player(this, 'player');
+
+      // Set player position from stage configuration
+      const playerStartPos = stageData.player?.startPosition || [0, 1, 0];
+      this.player.mesh.position.set(
+        playerStartPos[0],
+        playerStartPos[1],
+        playerStartPos[2]
+      );
+
       this.sceneManager.add(this.player.mesh);
 
       // Load stage entities after player is created
@@ -532,7 +536,7 @@ export class Game {
     ) {
       this.sequenceManager.update(deltaTime);
     } else if (this.gameState === GameState.LOADING) {
-      // During loading, just render the scene (might be empty or loading screen)
+      // During loading, stop ALL game updates - don't update any entities
       this.sceneManager.render();
       return;
     } else if (this.gameState !== GameState.PAUSED) {
