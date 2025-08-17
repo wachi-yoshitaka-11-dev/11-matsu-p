@@ -8,7 +8,6 @@ import {
   EnemyTypes,
   AssetPaths,
   StageMessageTypes,
-  AudioConstants,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 import { Boss } from '../entities/characters/boss.js';
@@ -199,30 +198,8 @@ export class StageManager {
   }
 
   async loadStageBGM(stageData) {
-    if (!stageData.bgm || !Array.isArray(stageData.bgm)) return;
-
-    for (const bgmConfig of stageData.bgm) {
-      if (!bgmConfig.file) continue;
-
-      try {
-        const bgmKey = bgmConfig.file.replace('.mp3', '');
-        const buffer = await this.game.assetLoader.loadAudio(
-          bgmKey,
-          `assets/audio/${bgmConfig.file}`
-        );
-
-        // Create BGM audio object
-        const bgmAudio = new THREE.Audio(this.game.listener);
-        bgmAudio.setBuffer(buffer);
-        bgmAudio.setLoop(bgmConfig.loop !== false);
-        bgmAudio.setVolume(AudioConstants.BGM_VOLUME);
-
-        this.game.bgmAudios[bgmKey] = bgmAudio;
-        this.loadedStageAssets.add(bgmKey);
-      } catch (error) {
-        console.warn(`Failed to load stage BGM: ${bgmConfig.file}`, error);
-      }
-    }
+    const loadedKeys = await this.game.loadStageBGM(stageData);
+    loadedKeys.forEach((key) => this.loadedStageAssets.add(key));
   }
 
   async loadStageWorld(stageData) {
@@ -695,7 +672,7 @@ export class StageManager {
     this.playDefaultBGM();
 
     // Play stage start sound and show message
-    this.game.playSound(AssetPaths.SFX_STAGE_START);
+    this.game.playSFX(AssetPaths.SFX_STAGE_START);
 
     if (this.game.hud && this.currentStageData) {
       const stageName =
@@ -876,7 +853,7 @@ export class StageManager {
     this.isStageCleared = true;
 
     // Play stage clear sound
-    this.game.playSound(AssetPaths.SFX_STAGE_CLEAR);
+    this.game.playSFX(AssetPaths.SFX_STAGE_CLEAR);
 
     // Show stage clear message
     if (this.game.hud) {

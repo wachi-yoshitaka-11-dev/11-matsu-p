@@ -183,7 +183,7 @@ export class Hud {
       if (this.game.player.statusPoints > 0) {
         onClick();
         this.game.player.statusPoints--;
-        this.game.playSound(AssetPaths.SFX_CLICK);
+        this.game.playSFX(AssetPaths.SFX_CLICK);
 
         if (this.game.player.statusPoints === 0) {
           this.game.player.hp = this.game.player.maxHp;

@@ -172,7 +172,10 @@ export const SkillShape = {
 };
 
 export const AudioConstants = {
-  BGM_VOLUME: 0.7, // Background music volume
+  BGM_VOLUME: 0.4, // Background music volume
+  VOICE_VOLUME: 1.0, // Voice audio volume for sequences
+  SFX_VOLUME: 0.8, // Sound effects volume
+  TALK_VOLUME: 0.6, // Talk sound volume for dialog
   FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // Sound is not audible beyond this distance
   FOOTSTEP_MIN_VOLUME: 0.05, // Minimum volume
   FOOTSTEP_MAX_VOLUME: 0.3, // Maximum volume (close range)

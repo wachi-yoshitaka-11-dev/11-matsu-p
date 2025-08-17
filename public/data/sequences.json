@@ -13,6 +13,12 @@
       "sequences/opening-bg-03.png",
       "sequences/opening-bg-04.png",
       "sequences/opening-bg-05.png"
+    ],
+    "voices": [
+      {
+        "audio": "sequences/voice-opening.mp3",
+        "delay": 1000
+      }
     ]
   },
   "ending": {
@@ -24,6 +30,12 @@
       "sequences/ending-bg-01.png",
       "sequences/ending-bg-02.png"
     ],
+    "voices": [
+      {
+        "audio": "sequences/voice-ending.mp3",
+        "delay": 500
+      }
+    ],
     "staffRoll": [
       "Director: わたし",
       "Game Designer: Claude Code",
@@ -34,6 +46,7 @@
       "Concept Artist: ImageFX",
       "Music Composer: Suno",
       "Sound Designer: 効果音ラボ",
+      "Voice: ElevenLabs",
       "",
       "Special Thanks: あなた"
     ],

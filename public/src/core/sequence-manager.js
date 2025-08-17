@@ -14,6 +14,7 @@ export class SequenceManager {
     this.game = game;
     this.currentSequence = null;
     this.sequencesData = null;
+    this.voiceTimeouts = [];
 
     // Loads sequencesData during initialization
     this.loadSequencesData();
@@ -174,6 +175,13 @@ export class SequenceManager {
       this.game.bgmAudios[AssetPaths.BGM_ENDING].stop();
     }
 
+    // Stop all playing voices
+    this.game.stopAllVoices();
+
+    // Cancel all pending voice timeouts
+    this.voiceTimeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+    this.voiceTimeouts.length = 0;
+
     this.disableSkip();
 
     if (this.onSequenceCompleteCallback) {
@@ -201,6 +209,9 @@ export class SequenceManager {
       });
       this.game.sceneManager.restoreGameElements();
       this.game.sceneManager.resetCamera();
+
+      // Clear timeouts
+      this.voiceTimeouts.length = 0;
 
       const callback = this.onSequenceCompleteCallback;
       this.currentStep = SequenceStep.IDLE;
@@ -282,6 +293,11 @@ export class SequenceManager {
     this.textElement.classList.remove('hidden', 'transparent');
     this.textElement.classList.add('visible');
 
+    // Play voice audios with timing if available
+    if (this.sequencesData.opening.voices) {
+      this.playVoicesWithTiming(this.sequencesData.opening.voices);
+    }
+
     this.textElement.classList.remove(
       'sequence-text-small',
       'sequence-text-fin'
@@ -340,6 +356,10 @@ export class SequenceManager {
         });
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
+
+        // Clear timeouts
+        this.voiceTimeouts.length = 0;
+
         originalCallback();
         this.currentStep = SequenceStep.IDLE;
       }, 1500);
@@ -376,6 +396,11 @@ export class SequenceManager {
     this.textElement.textContent = this.textSequence[this.currentTextIndex];
     this.textElement.classList.remove('hidden', 'transparent');
     this.textElement.classList.add('visible');
+
+    // Play voice audios with timing if available
+    if (this.sequencesData.ending.voices) {
+      this.playVoicesWithTiming(this.sequencesData.ending.voices);
+    }
 
     this.textElement.classList.remove(
       'sequence-text-small',
@@ -461,6 +486,10 @@ export class SequenceManager {
               });
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();
+
+              // Clear timeouts
+              this.voiceTimeouts.length = 0;
+
               originalCallback();
               this.currentStep = SequenceStep.IDLE;
             }, 1500);
@@ -489,5 +518,21 @@ export class SequenceManager {
     };
 
     fade();
+  }
+
+  playVoicesWithTiming(voices) {
+    if (!voices || !Array.isArray(voices)) return;
+
+    voices.forEach((voice) => {
+      const timeoutId = setTimeout(() => {
+        this.game.playVoice(voice.audio);
+        // Remove timeout ID after execution
+        const index = this.voiceTimeouts.indexOf(timeoutId);
+        if (index > -1) this.voiceTimeouts.splice(index, 1);
+      }, voice.delay || 0);
+
+      // Store timeout ID for potential cancellation
+      this.voiceTimeouts.push(timeoutId);
+    });
   }
 }

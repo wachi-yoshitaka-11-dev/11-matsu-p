@@ -172,7 +172,7 @@ export class Player extends Character {
   }
 
   onDeath() {
-    this.game.playSound(AssetPaths.SFX_DEATH);
+    this.game.playSFX(AssetPaths.SFX_DEATH);
     this.game.hud.showDeathScreen();
     setTimeout(() => this.respawn(), this.data.respawnDelay);
   }
@@ -190,13 +190,13 @@ export class Player extends Character {
       const staminaDamage = amount * 0.3;
       this.takeStaminaDamage(staminaDamage);
 
-      this.game.playSound(
+      this.game.playSFX(
         this.game.assetLoader.getAudio(AssetPaths.SFX_GUARD_SUCCESS)
           ? AssetPaths.SFX_GUARD_SUCCESS
           : AssetPaths.SFX_DAMAGE
       );
     } else {
-      this.game.playSound(AssetPaths.SFX_DAMAGE);
+      this.game.playSFX(AssetPaths.SFX_DAMAGE);
       if (this.game.hud) {
         this.game.hud.showHpDamageEffect();
       }
@@ -229,7 +229,7 @@ export class Player extends Character {
       this.experienceToNextLevel * this.data.levelUpExpMultiplier
     );
     this.statusPoints += this.data.statusPointsPerLevel;
-    this.game.playSound(AssetPaths.SFX_LEVEL_UP);
+    this.game.playSFX(AssetPaths.SFX_LEVEL_UP);
 
     // Check for consecutive level-ups
     if (this.currentLevelExperience >= this.experienceToNextLevel) {
@@ -247,7 +247,7 @@ export class Player extends Character {
     if (this.shields.length > 1) {
       this.currentShieldIndex =
         (this.currentShieldIndex + 1) % this.shields.length;
-      this.game.playSound(AssetPaths.SFX_SWITCH_SHIELD);
+      this.game.playSFX(AssetPaths.SFX_SWITCH_SHIELD);
     }
   }
 
@@ -266,7 +266,7 @@ export class Player extends Character {
     if (this.skills.length > 1) {
       this.currentSkillIndex =
         (this.currentSkillIndex + 1) % this.skills.length;
-      this.game.playSound(AssetPaths.SFX_SWITCH_SKILL);
+      this.game.playSFX(AssetPaths.SFX_SWITCH_SKILL);
     }
   }
 
@@ -280,7 +280,7 @@ export class Player extends Character {
     if (this.weapons.length > 1) {
       this.currentWeaponIndex =
         (this.currentWeaponIndex + 1) % this.weapons.length;
-      this.game.playSound(AssetPaths.SFX_SWITCH_WEAPON);
+      this.game.playSFX(AssetPaths.SFX_SWITCH_WEAPON);
     }
   }
 
@@ -293,7 +293,7 @@ export class Player extends Character {
     if (this.inventory.length > 1) {
       this.currentItemIndex =
         (this.currentItemIndex + 1) % this.inventory.length;
-      this.game.playSound(AssetPaths.SFX_SWITCH_ITEM);
+      this.game.playSFX(AssetPaths.SFX_SWITCH_ITEM);
     }
   }
 
@@ -325,7 +325,7 @@ export class Player extends Character {
 
     if (itemUsed) {
       this.playAnimation(AnimationNames.USE_ITEM);
-      this.game.playSound(AssetPaths.SFX_USE_ITEM);
+      this.game.playSFX(AssetPaths.SFX_USE_ITEM);
 
       this.inventory.splice(this.currentItemIndex, 1);
 
@@ -353,7 +353,7 @@ export class Player extends Character {
     }
 
     if (this.fp < currentSkill.fpCost) {
-      this.game.playSound(AssetPaths.SFX_FP_INSUFFICIENT);
+      this.game.playSFX(AssetPaths.SFX_FP_INSUFFICIENT);
       if (this.game.hud) {
         this.game.hud.showFpInsufficientEffect();
       }
@@ -407,7 +407,7 @@ export class Player extends Character {
     super.executeBuffSkill(skillId);
 
     setTimeout(() => {
-      this.game.playSound(AssetPaths.SFX_USE_SKILL_BUFF);
+      this.game.playSFX(AssetPaths.SFX_USE_SKILL_BUFF);
       this.showSkillBuffEffect();
     }, skillData.castTime || 0);
   }
@@ -421,7 +421,7 @@ export class Player extends Character {
 
     setTimeout(() => {
       if (!this.isDead) {
-        this.game.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
+        this.game.playSFX(AssetPaths.SFX_USE_SKILL_PROJECTILE);
         this.showSkillProjectileEffect();
       }
     }, skillData.castTime || 0);
@@ -436,7 +436,7 @@ export class Player extends Character {
 
     setTimeout(() => {
       if (!this.isDead) {
-        this.game.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
+        this.game.playSFX(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
       }
     }, skillData.castTime || 0);
   }
@@ -478,6 +478,6 @@ export class Player extends Character {
     this.isPickingUp = true;
     this.playAnimation(AnimationNames.PICK_UP);
 
-    this.game.playSound(AssetPaths.SFX_PICKUP_ITEM);
+    this.game.playSFX(AssetPaths.SFX_PICKUP_ITEM);
   }
 }

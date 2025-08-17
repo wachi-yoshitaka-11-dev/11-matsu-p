@@ -186,7 +186,7 @@ export class Enemy extends Character {
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.weakAttack.damage);
-      this.game.playSound(AssetPaths.SFX_ATTACK_WEAK);
+      this.game.playSFX(AssetPaths.SFX_ATTACK_WEAK);
     }, this.data.weakAttack.castTime * 1000);
   }
 
@@ -198,7 +198,7 @@ export class Enemy extends Character {
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.strongAttack.damage);
-      this.game.playSound(AssetPaths.SFX_ATTACK_STRONG);
+      this.game.playSFX(AssetPaths.SFX_ATTACK_STRONG);
     }, this.data.strongAttack.castTime * 1000);
   }
 
@@ -215,7 +215,7 @@ export class Enemy extends Character {
       this.game.player.takeStaminaDamage(
         this.game.data.player.staminaCostGuard
       );
-      this.game.playSound(AssetPaths.SFX_GUARD);
+      this.game.playSFX(AssetPaths.SFX_GUARD);
     } else {
       this.game.player.takeDamage(damage);
     }
@@ -249,7 +249,7 @@ export class Enemy extends Character {
 
   onDeath() {
     this.playAnimation(AnimationNames.DIE);
-    this.game.playSound(AssetPaths.SFX_KILL);
+    this.game.playSFX(AssetPaths.SFX_KILL);
 
     this.deathAnimationStartTime = Date.now();
   }
