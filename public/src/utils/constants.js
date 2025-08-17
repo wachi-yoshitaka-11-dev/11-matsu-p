@@ -65,6 +65,18 @@ export const StageBGMConditions = {
   DANGER: 'danger',
 };
 
+export const SkyTypes = {
+  COLOR: 'color',
+  GRADIENT: 'gradient',
+  SKYBOX: 'skybox',
+};
+
+export const DefaultSkyColors = {
+  DEFAULT: 0x87ceeb, // Default sky blue
+  GRADIENT_TOP: 0x87ceeb, // Sky blue for gradient top
+  GRADIENT_BOTTOM: 0xe0f6ff, // Light blue for gradient bottom
+};
+
 export const LightTypes = {
   AMBIENT: 'ambient',
   DIRECTIONAL: 'directional',

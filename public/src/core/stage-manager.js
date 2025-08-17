@@ -218,6 +218,16 @@ export class StageManager {
       );
     }
 
+    // Set up sky first (background should be set before lights)
+    if (stageData.world.sky) {
+      this.setupSky(stageData.world.sky);
+    } else {
+      // Use default sky if no configuration
+      if (this.game.sceneManager) {
+        this.game.sceneManager.setDefaultSkyColor();
+      }
+    }
+
     // Set up lights
     if (stageData.world.lights) {
       this.setupLights(stageData.world.lights);
@@ -324,8 +334,15 @@ export class StageManager {
 
   setupLights(lights) {
     // Use the Light class for consistent lighting management
-    if (this.game.sceneManager.light) {
+    if (this.game.sceneManager?.light) {
       this.game.sceneManager.light.setupLightsFromConfig(lights);
+    }
+  }
+
+  setupSky(skyConfig) {
+    // Set sky configuration from stage data
+    if (this.game.sceneManager) {
+      this.game.sceneManager.setSkyFromConfig(skyConfig);
     }
   }
 
@@ -506,6 +523,11 @@ export class StageManager {
 
     // Clean up stage lights (lights are managed by SceneManager.light)
     // No specific cleanup needed as lights are reset when new stage loads
+
+    // Reset sky to default
+    if (this.game.sceneManager) {
+      this.game.sceneManager.setDefaultSkyColor();
+    }
 
     // Clean up terrains
     if (this.game.entities.world.terrains) {
