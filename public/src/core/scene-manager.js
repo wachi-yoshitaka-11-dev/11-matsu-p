@@ -107,6 +107,14 @@ export class SceneManager {
    * Set the default sky color
    */
   setDefaultSkyColor() {
+    // Dispose any existing background texture to avoid leaks
+    if (
+      this.scene.background &&
+      this.scene.background.isTexture &&
+      typeof this.scene.background.dispose === 'function'
+    ) {
+      this.scene.background.dispose();
+    }
     this.scene.background = new THREE.Color(DefaultSkyColors.DEFAULT);
   }
 
@@ -115,6 +123,14 @@ export class SceneManager {
    * @param {string|number} color - Color in hex format (e.g., "#87CEEB" or 0x87ceeb)
    */
   setSkyColor(color) {
+    // Dispose any existing background texture to avoid leaks
+    if (
+      this.scene.background &&
+      this.scene.background.isTexture &&
+      typeof this.scene.background.dispose === 'function'
+    ) {
+      this.scene.background.dispose();
+    }
     this.scene.background = new THREE.Color(color);
   }
 
@@ -148,6 +164,15 @@ export class SceneManager {
     // Fill canvas with gradient
     context.fillStyle = gradient;
     context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Dispose any existing background texture to avoid leaks
+    if (
+      this.scene.background &&
+      this.scene.background.isTexture &&
+      typeof this.scene.background.dispose === 'function'
+    ) {
+      this.scene.background.dispose();
+    }
 
     // Create texture and set as background
     const texture = new THREE.CanvasTexture(canvas);

@@ -205,6 +205,16 @@ export class StageManager {
   async loadStageWorld(stageData) {
     if (!stageData.world) return;
 
+    // Set up sky first (background should be set before world objects to reduce flicker)
+    if (stageData.world.sky) {
+      this.setupSky(stageData.world.sky);
+    } else {
+      // Use default sky if no configuration
+      if (this.game.sceneManager) {
+        this.game.sceneManager.setDefaultSkyColor();
+      }
+    }
+
     // Load terrains
     if (stageData.world.terrains) {
       await this.loadTerrains(stageData.world.terrains, stageData.areas);
@@ -216,16 +226,6 @@ export class StageManager {
         stageData.world.environments,
         stageData.areas
       );
-    }
-
-    // Set up sky first (background should be set before lights)
-    if (stageData.world.sky) {
-      this.setupSky(stageData.world.sky);
-    } else {
-      // Use default sky if no configuration
-      if (this.game.sceneManager) {
-        this.game.sceneManager.setDefaultSkyColor();
-      }
     }
 
     // Set up lights
