@@ -19,7 +19,7 @@ export class PauseMenu {
     this.resumeButton = document.createElement('button');
     this.resumeButton.textContent = localization.getText('ui.resume');
     this.resumeButton.addEventListener('click', () => {
-      this.game.playSound(AssetPaths.SFX_CLICK);
+      this.game.playSFX(AssetPaths.SFX_CLICK);
       this.game.togglePause();
       this.game.setPauseMenuVisibility(false);
       this.game.inputController.reevaluateKeyStates();
@@ -31,7 +31,7 @@ export class PauseMenu {
     this.controlsButton.setAttribute('aria-haspopup', 'dialog');
     this.controlsButton.textContent = localization.getText('ui.controls');
     this.controlsButton.addEventListener('click', () => {
-      this.game.playSound(AssetPaths.SFX_CLICK);
+      this.game.playSFX(AssetPaths.SFX_CLICK);
       this.showModal(MODAL_TYPES.CONTROLS);
     });
     this.container.appendChild(this.controlsButton);
@@ -65,7 +65,7 @@ export class PauseMenu {
     const closeButton = document.createElement('button');
     closeButton.textContent = localization.getText('dialog.close');
     closeButton.addEventListener('click', () => {
-      this.game.playSound(AssetPaths.SFX_CLICK);
+      this.game.playSFX(AssetPaths.SFX_CLICK);
       this.hideModal(MODAL_TYPES.CONTROLS);
     });
     modalContent.appendChild(closeButton);

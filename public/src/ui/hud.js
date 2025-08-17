@@ -183,7 +183,7 @@ export class Hud {
       if (this.game.player.statusPoints > 0) {
         onClick();
         this.game.player.statusPoints--;
-        this.game.playSound(AssetPaths.SFX_CLICK);
+        this.game.playSFX(AssetPaths.SFX_CLICK);
 
         if (this.game.player.statusPoints === 0) {
           this.game.player.hp = this.game.player.maxHp;
@@ -243,6 +243,25 @@ export class Hud {
     const container = document.createElement('div');
     container.id = 'stage-display';
 
+    // Main stage container with image and text
+    const stageMainContainer = document.createElement('div');
+    stageMainContainer.classList.add('stage-main-container');
+
+    // Stage image (left side)
+    const stageImage = document.createElement('img');
+    stageImage.id = 'current-stage-image';
+    stageImage.classList.add('stage-image', 'hidden');
+    stageImage.alt = 'Stage Image';
+
+    stageImage.onerror = () => {
+      stageImage.classList.add('hidden');
+      stageImage.classList.remove('visible');
+    };
+
+    // Text content container (right side)
+    const stageTextContainer = document.createElement('div');
+    stageTextContainer.classList.add('stage-text-container');
+
     // Stage header container (label + name)
     const stageHeaderContainer = document.createElement('div');
     stageHeaderContainer.classList.add('stage-name-box');
@@ -269,9 +288,15 @@ export class Hud {
 
     stageDescriptionContainer.appendChild(stageDescription);
 
-    container.appendChild(stageHeaderContainer);
-    container.appendChild(stageDescriptionContainer);
+    stageTextContainer.appendChild(stageHeaderContainer);
+    stageTextContainer.appendChild(stageDescriptionContainer);
 
+    stageMainContainer.appendChild(stageImage);
+    stageMainContainer.appendChild(stageTextContainer);
+
+    container.appendChild(stageMainContainer);
+
+    this.stageImageElement = stageImage;
     this.stageNameElement = stageName;
     this.stageDescriptionElement = stageDescription;
 
@@ -462,7 +487,12 @@ export class Hud {
   }
 
   updateStageDisplay() {
-    if (!this.stageNameElement || !this.stageDescriptionElement) return;
+    if (
+      !this.stageNameElement ||
+      !this.stageDescriptionElement ||
+      !this.stageImageElement
+    )
+      return;
 
     const stageData = this.game.stageManager?.getCurrentStageData();
     if (stageData && stageData.name) {
@@ -475,9 +505,21 @@ export class Hud {
       } else {
         this.stageDescriptionElement.textContent = '';
       }
+
+      // Update stage image
+      if (stageData.image) {
+        this.stageImageElement.src = `./assets/images/${stageData.image}`;
+        this.stageImageElement.classList.remove('hidden');
+        this.stageImageElement.classList.add('visible');
+      } else {
+        this.stageImageElement.classList.add('hidden');
+        this.stageImageElement.classList.remove('visible');
+      }
     } else {
       this.stageNameElement.textContent = '';
       this.stageDescriptionElement.textContent = '';
+      this.stageImageElement.classList.add('hidden');
+      this.stageImageElement.classList.remove('visible');
     }
   }
 

@@ -11,7 +11,12 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { AssetPaths, GameState, ItemConstants } from '../utils/constants.js';
+import {
+  AssetPaths,
+  GameState,
+  ItemConstants,
+  AudioConstants,
+} from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 
@@ -73,6 +78,7 @@ export class Game {
     this.currentBGM = null;
     this.currentLevel = 1;
     this.currentLevelProgress = 1;
+    this.playingVoices = [];
   }
 
   setupBeforeUnloadHandler() {
@@ -208,7 +214,7 @@ export class Game {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
-        this.bgmAudios[assetName].setVolume(0.4);
+        this.bgmAudios[assetName].setVolume(AudioConstants.BGM_VOLUME);
       }
     }
   }
@@ -420,12 +426,12 @@ export class Game {
       this.gameState = GameState.PAUSED;
       this.pauseBGM();
       document.exitPointerLock();
-      this.playSound(AssetPaths.SFX_PAUSE);
+      this.playSFX(AssetPaths.SFX_PAUSE);
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
       this.resumeBGM();
       this.sceneManager.renderer.domElement.requestPointerLock();
-      this.playSound(AssetPaths.SFX_UNPAUSE);
+      this.playSFX(AssetPaths.SFX_UNPAUSE);
     }
   }
 
@@ -483,28 +489,115 @@ export class Game {
     }
   }
 
-  playSound(name) {
+  // Play sound effects with fixed SFX_VOLUME
+  playSFX(name) {
     const buffer = this.assetLoader.getAudio(name);
     if (buffer) {
       const sound = new THREE.Audio(this.listener);
       sound.setBuffer(buffer);
-      sound.setVolume(1);
+      sound.setVolume(AudioConstants.SFX_VOLUME);
       sound.play();
     }
   }
 
+  // Create basic audio (volume set later with setVolume)
   createAudio(name, options = {}) {
     const buffer = this.assetLoader.getAudio(name);
     if (buffer) {
       const sound = new THREE.Audio(this.listener);
       sound.setBuffer(buffer);
-      sound.setVolume(options.volume || 1);
       if (options.loop) {
         sound.setLoop(true);
       }
       return sound;
     }
     return null;
+  }
+
+  // Create footstep loop audio with calculated volume
+  createFootstepAudio(name, volume) {
+    const audio = this.createAudio(name, { loop: true });
+    if (audio) {
+      audio.setVolume(volume);
+    }
+    return audio;
+  }
+
+  // Create talk loop audio with fixed TALK_VOLUME
+  createTalkAudio(name) {
+    const audio = this.createAudio(name, { loop: true });
+    if (audio) {
+      audio.setVolume(AudioConstants.TALK_VOLUME);
+    }
+    return audio;
+  }
+
+  // Play voice audio with fixed VOICE_VOLUME
+  async playVoice(audioPath) {
+    try {
+      const audioKey = `voice-${audioPath.replace(/[^a-zA-Z0-9]/g, '-')}`;
+      const buffer = await this.assetLoader.loadAudio(
+        audioKey,
+        `assets/audio/${audioPath}`
+      );
+
+      const voiceAudio = new THREE.Audio(this.listener);
+      voiceAudio.setBuffer(buffer);
+      voiceAudio.setLoop(false);
+      voiceAudio.setVolume(AudioConstants.VOICE_VOLUME);
+
+      // Add to internal tracker
+      this.playingVoices.push(voiceAudio);
+      voiceAudio.onEnded = () => {
+        const index = this.playingVoices.indexOf(voiceAudio);
+        if (index > -1) this.playingVoices.splice(index, 1);
+      };
+
+      voiceAudio.play();
+      return voiceAudio;
+    } catch (error) {
+      console.warn(`Failed to load voice audio: ${audioPath}`, error);
+      return null;
+    }
+  }
+
+  // Stop all playing voices
+  stopAllVoices() {
+    this.playingVoices.forEach((voice) => {
+      if (voice && voice.isPlaying) {
+        voice.stop();
+      }
+    });
+    this.playingVoices.length = 0; // Clear array
+  }
+
+  // Load stage BGM audio objects
+  async loadStageBGM(stageData) {
+    if (!stageData.bgm || !Array.isArray(stageData.bgm)) return [];
+
+    const loadedKeys = [];
+    for (const bgmConfig of stageData.bgm) {
+      if (!bgmConfig.file) continue;
+
+      try {
+        const bgmKey = bgmConfig.file.replace('.mp3', '');
+        const buffer = await this.assetLoader.loadAudio(
+          bgmKey,
+          `assets/audio/${bgmConfig.file}`
+        );
+
+        const bgmAudio = new THREE.Audio(this.listener);
+        bgmAudio.setBuffer(buffer);
+        bgmAudio.setLoop(bgmConfig.loop !== false);
+        bgmAudio.setVolume(AudioConstants.BGM_VOLUME);
+
+        this.bgmAudios[bgmKey] = bgmAudio;
+        loadedKeys.push(bgmKey);
+      } catch (error) {
+        console.warn(`Failed to load stage BGM: ${bgmConfig.file}`, error);
+      }
+    }
+    return loadedKeys;
   }
 
   onWindowResize() {

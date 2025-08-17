@@ -132,10 +132,7 @@ export class DialogBox {
   }
 
   startTalkSound() {
-    this.talkSound = this.game.createAudio(AssetPaths.SFX_TALK, {
-      volume: 0.7,
-      loop: true,
-    });
+    this.talkSound = this.game.createTalkAudio(AssetPaths.SFX_TALK);
 
     if (this.talkSound) {
       this.talkSound.play();

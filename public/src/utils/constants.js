@@ -88,6 +88,7 @@ export const SequenceStep = {
 export const AssetPaths = {
   LOGO_IMAGE: 'sequences/logo.png',
   LOGO_VIDEO: 'sequences/logo.mp4',
+  LOADING_VIDEO: 'sequences/loading.mp4',
 
   BGM_TITLE: 'sequences/bgm-title.mp3',
   BGM_OPENING: 'sequences/bgm-opening.mp3',
@@ -171,6 +172,10 @@ export const SkillShape = {
 };
 
 export const AudioConstants = {
+  BGM_VOLUME: 0.4, // Background music volume
+  VOICE_VOLUME: 1.0, // Voice audio volume for sequences
+  SFX_VOLUME: 0.8, // Sound effects volume
+  TALK_VOLUME: 0.6, // Talk sound volume for dialog
   FOOTSTEP_MAX_AUDIBLE_DISTANCE: 20, // Sound is not audible beyond this distance
   FOOTSTEP_MIN_VOLUME: 0.05, // Minimum volume
   FOOTSTEP_MAX_VOLUME: 0.3, // Maximum volume (close range)

@@ -201,7 +201,7 @@ export class Character extends BaseEntity {
 
     this.hp -= amount;
     this.showDamageEffect();
-    this.game.playSound(AssetPaths.SFX_DAMAGE);
+    this.game.playSFX(AssetPaths.SFX_DAMAGE);
     if (this.hp <= 0) {
       this.hp = 0;
       this.isDead = true;
@@ -254,10 +254,7 @@ export class Character extends BaseEntity {
 
     const volume = this.calculateFootstepVolume();
 
-    this.footstepAudio = this.game.createAudio(soundName, {
-      volume: volume,
-      loop: true,
-    });
+    this.footstepAudio = this.game.createFootstepAudio(soundName, volume);
 
     if (this.footstepAudio) {
       this.footstepAudio.play();
