@@ -177,12 +177,13 @@ export class Player extends Character {
     setTimeout(() => this.respawn(), this.data.respawnDelay);
   }
 
-  takeDamage(amount) {
+  takeDamage(amount, options = {}) {
     if (this.isInvincible || this.isRolling) return;
 
     let finalDamage = amount / this.defenseBuffMultiplier;
+    const { canGuard = true } = options;
 
-    if (this.isGuarding) {
+    if (this.isGuarding && canGuard) {
       const shieldDefense = this.getShieldDefense();
       const blockPercentage = Math.min(0.8, shieldDefense / 100);
       finalDamage = finalDamage * (1 - blockPercentage);
@@ -190,11 +191,7 @@ export class Player extends Character {
       const staminaDamage = amount * 0.3;
       this.takeStaminaDamage(staminaDamage);
 
-      this.game.playSFX(
-        this.game.assetLoader.getAudio(AssetPaths.SFX_GUARD_SUCCESS)
-          ? AssetPaths.SFX_GUARD_SUCCESS
-          : AssetPaths.SFX_DAMAGE
-      );
+      this.game.playSFX(AssetPaths.SFX_GUARD);
     } else {
       this.game.playSFX(AssetPaths.SFX_DAMAGE);
       if (this.game.hud) {

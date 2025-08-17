@@ -179,8 +179,7 @@ export class SequenceManager {
     this.game.stopAllVoices();
 
     // Cancel all pending voice timeouts
-    this.voiceTimeouts.forEach((timeoutId) => clearTimeout(timeoutId));
-    this.voiceTimeouts.length = 0;
+    this.clearAllVoiceTimeouts();
 
     this.disableSkip();
 
@@ -210,8 +209,8 @@ export class SequenceManager {
       this.game.sceneManager.restoreGameElements();
       this.game.sceneManager.resetCamera();
 
-      // Clear timeouts
-      this.voiceTimeouts.length = 0;
+      // Clear any pending voice timeouts
+      this.clearAllVoiceTimeouts();
 
       const callback = this.onSequenceCompleteCallback;
       this.currentStep = SequenceStep.IDLE;
@@ -357,8 +356,8 @@ export class SequenceManager {
         this.game.sceneManager.restoreGameElements();
         this.game.sceneManager.resetCamera();
 
-        // Clear timeouts
-        this.voiceTimeouts.length = 0;
+        // Clear any pending voice timeouts
+        this.clearAllVoiceTimeouts();
 
         originalCallback();
         this.currentStep = SequenceStep.IDLE;
@@ -487,8 +486,8 @@ export class SequenceManager {
               this.game.sceneManager.restoreGameElements();
               this.game.sceneManager.resetCamera();
 
-              // Clear timeouts
-              this.voiceTimeouts.length = 0;
+              // Clear any pending voice timeouts
+              this.clearAllVoiceTimeouts();
 
               originalCallback();
               this.currentStep = SequenceStep.IDLE;
@@ -518,6 +517,11 @@ export class SequenceManager {
     };
 
     fade();
+  }
+
+  clearAllVoiceTimeouts() {
+    this.voiceTimeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+    this.voiceTimeouts.length = 0;
   }
 
   playVoicesWithTiming(voices) {

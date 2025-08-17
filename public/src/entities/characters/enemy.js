@@ -203,22 +203,17 @@ export class Enemy extends Character {
   }
 
   dealDamageToPlayer(damage) {
+    // Guard direction check - player can only guard attacks from front
     const toEnemy = new THREE.Vector3()
       .subVectors(this.mesh.position, this.game.player.mesh.position)
       .normalize();
     const playerForward = this.game.player.getForwardDirection();
     const angle = toEnemy.angleTo(playerForward);
 
-    const isGuarded = this.game.player.isGuarding && angle < Math.PI / 2;
+    const canGuard = angle < Math.PI / 2;
 
-    if (isGuarded) {
-      this.game.player.takeStaminaDamage(
-        this.game.data.player.staminaCostGuard
-      );
-      this.game.playSFX(AssetPaths.SFX_GUARD);
-    } else {
-      this.game.player.takeDamage(damage);
-    }
+    // Pass damage and guard possibility to player
+    this.game.player.takeDamage(damage, { canGuard });
   }
 
   updateDeathAnimation() {
