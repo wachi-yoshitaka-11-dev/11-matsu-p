@@ -293,17 +293,60 @@ export class InputController {
     }
 
     if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
+      // Check lock-on range
+      const targetDistance = this.player.mesh.position.distanceTo(
+        this.player.lockedTarget.mesh.position
+      );
+      const maxLockOnDistance = 20; // Slightly expanded range
+
+      if (targetDistance > maxLockOnDistance) {
+        // Release lock-on when out of range
+        this.player.lockedTarget = null;
+        if (this.game.lockOnUI) {
+          this.game.lockOnUI.hideLockOnTarget();
+        }
+        // Return to normal camera control
+        const cameraQuaternion = new THREE.Quaternion();
+        cameraQuaternion.setFromEuler(
+          new THREE.Euler(this.cameraPitch, this.cameraYaw, 0, 'YXZ')
+        );
+        this.camera.quaternion.copy(cameraQuaternion);
+
+        const cameraOffset = new THREE.Vector3(0, 2, 5);
+        cameraOffset.applyQuaternion(this.camera.quaternion);
+        this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
+        return;
+      }
+
       const targetPosition = this.player.lockedTarget.mesh.position;
       const playerPosition = this.player.mesh.position;
 
-      const midPoint = new THREE.Vector3()
+      // Direction vector from player to target
+      const directionToTarget = new THREE.Vector3()
+        .subVectors(targetPosition, playerPosition)
+        .normalize();
+
+      // Basic camera offset
+      const baseOffset = new THREE.Vector3(0, 2, 5);
+
+      // Adjust to a slightly elevated viewing angle during lock-on
+      const cameraOffset = new THREE.Vector3(
+        directionToTarget.x * -3, // Slight offset opposite to target direction
+        3, // Slightly raise height
+        directionToTarget.z * -3
+      ).add(baseOffset);
+
+      this.camera.position.copy(playerPosition).add(cameraOffset);
+
+      // Set camera to look at target (midpoint between player and target with slight upward offset)
+      const lookAtPoint = new THREE.Vector3()
         .addVectors(playerPosition, targetPosition)
-        .multiplyScalar(0.5);
-      const cameraOffset = new THREE.Vector3(0, 2, 5);
-      cameraOffset.applyQuaternion(this.player.mesh.quaternion);
-      this.camera.position.copy(this.player.mesh.position).add(cameraOffset);
-      this.camera.lookAt(midPoint);
+        .multiplyScalar(0.5)
+        .add(new THREE.Vector3(0, 1, 0)); // Look slightly upward
+
+      this.camera.lookAt(lookAtPoint);
     } else {
+      // Normal camera control when not locked on
       const cameraQuaternion = new THREE.Quaternion();
       cameraQuaternion.setFromEuler(
         new THREE.Euler(this.cameraPitch, this.cameraYaw, 0, 'YXZ')
@@ -407,6 +450,7 @@ export class InputController {
       this.game.playSFX(AssetPaths.SFX_ROLLING);
 
       const direction = this.getMovementDirection();
+
       if (direction.length() > 0) {
         direction.normalize();
         const rollingSpeed = this.game.data.player.rollingSpeed || 8;
@@ -477,11 +521,15 @@ export class InputController {
 
   handleLockOnToggle() {
     if (this.player.lockedTarget) {
+      // Release lock-on
       this.player.lockedTarget = null;
       if (this.game.lockOnUI) {
         this.game.lockOnUI.hideLockOnTarget();
       }
+      // Play lock-on release sound
+      this.game.playSFX(AssetPaths.SFX_LOCK_ON);
     } else {
+      // Search for new target
       const nearestEnemy = this.findNearestEnemy();
       if (nearestEnemy) {
         this.player.lockedTarget = nearestEnemy;
@@ -489,6 +537,9 @@ export class InputController {
           this.game.lockOnUI.showLockOnTarget(nearestEnemy);
         }
         this.game.playSFX(AssetPaths.SFX_LOCK_ON);
+      } else {
+        // Feedback when no target is found
+        console.log('No lock-on target found within range');
       }
     }
   }
@@ -531,22 +582,51 @@ export class InputController {
   findNearestEnemy() {
     let nearestEnemy = null;
     let nearestDistance = Infinity;
-    const maxLockOnDistance = 15; // Maximum distance for lock-on
+    const maxLockOnDistance = 20; // Expanded lock-on range
 
     const enemies = this.game.entities?.characters?.enemies ?? [];
-    for (const enemy of enemies) {
-      if (enemy.isDead) continue;
+    const bosses = this.game.entities?.characters?.boss
+      ? [this.game.entities.characters.boss]
+      : [];
+    const allTargets = [...enemies, ...bosses];
+
+    for (const target of allTargets) {
+      if (target.isDead) continue;
 
       const distance = this.player.mesh.position.distanceTo(
-        enemy.mesh.position
+        target.mesh.position
       );
-      if (distance < nearestDistance && distance <= maxLockOnDistance) {
+
+      // Also check if target is visible on screen (optional)
+      const isVisible = this.isTargetVisible(target);
+
+      if (
+        distance < nearestDistance &&
+        distance <= maxLockOnDistance &&
+        isVisible
+      ) {
         nearestDistance = distance;
-        nearestEnemy = enemy;
+        nearestEnemy = target;
       }
     }
 
     return nearestEnemy;
+  }
+
+  isTargetVisible(target) {
+    // Check if target is within camera frustum
+    const targetPosition = target.mesh.position.clone();
+    targetPosition.project(this.camera);
+
+    // Check if within screen bounds (-1 to 1 range)
+    return (
+      targetPosition.x >= -1 &&
+      targetPosition.x <= 1 &&
+      targetPosition.y >= -1 &&
+      targetPosition.y <= 1 &&
+      targetPosition.z >= 0 &&
+      targetPosition.z <= 1
+    );
   }
 
   performAttack(damage, range) {
