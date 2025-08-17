@@ -11,7 +11,12 @@ import { PauseMenu } from '../ui/pause-menu.js';
 import { DialogBox } from '../ui/dialog-box.js';
 import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
 import { LockOnUI } from '../ui/lock-on-ui.js';
-import { AssetPaths, GameState, ItemConstants } from '../utils/constants.js';
+import {
+  AssetPaths,
+  GameState,
+  ItemConstants,
+  AudioConstants,
+} from '../utils/constants.js';
 import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
 
@@ -208,7 +213,7 @@ export class Game {
         this.bgmAudios[assetName] = new THREE.Audio(this.listener);
         this.bgmAudios[assetName].setBuffer(buffer);
         this.bgmAudios[assetName].setLoop(true);
-        this.bgmAudios[assetName].setVolume(0.4);
+        this.bgmAudios[assetName].setVolume(AudioConstants.BGM_VOLUME);
       }
     }
   }

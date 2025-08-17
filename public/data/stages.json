@@ -3,7 +3,8 @@
   "stages": {
     "startingPlains": {
       "name": "始まりの地",
-      "model": "stages/starting-plains.glb",
+      "model": "",
+      "texture": "",
       "modelSettings": {
         "position": [0, -4.5, 0],
         "scale": [100, 100, 100],
@@ -158,7 +159,7 @@
       },
       "clearConditions": {
         "type": "killAll",
-        "targets": ["grunt"],
+        "targets": ["grunt", "boss"],
         "optional": false,
         "reward": {
           "experience": 100,

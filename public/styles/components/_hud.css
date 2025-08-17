@@ -384,6 +384,31 @@
   pointer-events: auto;
 }
 
+.stage-main-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.stage-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.stage-text-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 #experience-display > div:first-child {
   font-weight: 600;
   opacity: 0.9;

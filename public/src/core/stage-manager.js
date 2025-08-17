@@ -8,6 +8,7 @@ import {
   EnemyTypes,
   AssetPaths,
   StageMessageTypes,
+  AudioConstants,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 import { Boss } from '../entities/characters/boss.js';
@@ -214,7 +215,7 @@ export class StageManager {
         const bgmAudio = new THREE.Audio(this.game.listener);
         bgmAudio.setBuffer(buffer);
         bgmAudio.setLoop(bgmConfig.loop !== false);
-        bgmAudio.setVolume(0.4);
+        bgmAudio.setVolume(AudioConstants.BGM_VOLUME);
 
         this.game.bgmAudios[bgmKey] = bgmAudio;
         this.loadedStageAssets.add(bgmKey);
