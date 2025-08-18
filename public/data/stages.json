@@ -29,6 +29,11 @@
         }
       ],
       "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#87CEEB",
+          "gradientBottom": "#E0F6FF"
+        },
         "lights": [
           {
             "type": "ambient",

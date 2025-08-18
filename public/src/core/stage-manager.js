@@ -205,6 +205,9 @@ export class StageManager {
   async loadStageWorld(stageData) {
     if (!stageData.world) return;
 
+    // Set up sky first (background should be set before world objects to reduce flicker)
+    this.setupSky(stageData.world.sky);
+
     // Load terrains
     if (stageData.world.terrains) {
       await this.loadTerrains(stageData.world.terrains, stageData.areas);
@@ -219,9 +222,7 @@ export class StageManager {
     }
 
     // Set up lights
-    if (stageData.world.lights) {
-      this.setupLights(stageData.world.lights);
-    }
+    this.setupLights(stageData.world.lights);
   }
 
   async loadTerrains(terrains, areas) {
@@ -322,10 +323,42 @@ export class StageManager {
     }
   }
 
+  setupSky(skyConfig) {
+    // Centralize sky application, including fallback and error guard
+    if (!this.game.sceneManager) return;
+
+    try {
+      if (skyConfig) {
+        this.game.sceneManager.setSkyFromConfig(skyConfig);
+      } else {
+        this.game.sceneManager.setDefaultSkyColor();
+      }
+    } catch (err) {
+      console.warn(
+        'Invalid sky configuration; falling back to default sky.',
+        err
+      );
+      this.game.sceneManager.setDefaultSkyColor();
+    }
+  }
+
   setupLights(lights) {
     // Use the Light class for consistent lighting management
-    if (this.game.sceneManager.light) {
-      this.game.sceneManager.light.setupLightsFromConfig(lights);
+    if (!this.game.sceneManager?.light) return;
+
+    try {
+      if (lights && lights.length > 0) {
+        this.game.sceneManager.light.setupLightsFromConfig(lights);
+      } else {
+        // Use default lights if no configuration
+        this.game.sceneManager.light.setupDefaultLights();
+      }
+    } catch (err) {
+      console.warn(
+        'Invalid light configuration; falling back to default lights.',
+        err
+      );
+      this.game.sceneManager.light.setupDefaultLights();
     }
   }
 
@@ -506,6 +539,11 @@ export class StageManager {
 
     // Clean up stage lights (lights are managed by SceneManager.light)
     // No specific cleanup needed as lights are reset when new stage loads
+
+    // Reset sky to default
+    if (this.game.sceneManager) {
+      this.game.sceneManager.setDefaultSkyColor();
+    }
 
     // Clean up terrains
     if (this.game.entities.world.terrains) {

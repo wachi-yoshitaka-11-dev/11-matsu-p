@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Light } from '../world/light.js';
+import { SkyTypes, DefaultSkyColors } from '../utils/constants.js';
 
 export class SceneManager {
   constructor() {
@@ -29,7 +30,8 @@ export class SceneManager {
     this.renderer.domElement.classList.add('hidden');
     document.body.appendChild(this.renderer.domElement);
 
-    this.scene.background = new THREE.Color(0x87ceeb);
+    // Set default sky color
+    this.setDefaultSkyColor();
 
     window.addEventListener('resize', this._onResize, false);
   }
@@ -99,5 +101,112 @@ export class SceneManager {
     this._gameElements.forEach((element) => {
       element.visible = true;
     });
+  }
+
+  /**
+   * Set the default sky color
+   */
+  setDefaultSkyColor() {
+    // Dispose any existing background texture to avoid leaks
+    if (
+      this.scene.background &&
+      this.scene.background.isTexture &&
+      typeof this.scene.background.dispose === 'function'
+    ) {
+      this.scene.background.dispose();
+    }
+    this.scene.background = new THREE.Color(DefaultSkyColors.DEFAULT);
+  }
+
+  /**
+   * Set sky color from hex string or number
+   * @param {string|number} color - Color in hex format (e.g., "#87CEEB" or 0x87ceeb)
+   */
+  setSkyColor(color) {
+    // Dispose any existing background texture to avoid leaks
+    if (
+      this.scene.background &&
+      this.scene.background.isTexture &&
+      typeof this.scene.background.dispose === 'function'
+    ) {
+      this.scene.background.dispose();
+    }
+    this.scene.background = new THREE.Color(color);
+  }
+
+  /**
+   * Set sky gradient (creates a gradient background)
+   * @param {string|number} topColor - Top color of gradient
+   * @param {string|number} bottomColor - Bottom color of gradient
+   */
+  setSkyGradient(topColor, bottomColor) {
+    // Create a gradient texture
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const context = canvas.getContext('2d');
+
+    // Create gradient
+    const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(
+      0,
+      typeof topColor === 'string'
+        ? topColor
+        : `#${topColor.toString(16).padStart(6, '0')}`
+    );
+    gradient.addColorStop(
+      1,
+      typeof bottomColor === 'string'
+        ? bottomColor
+        : `#${bottomColor.toString(16).padStart(6, '0')}`
+    );
+
+    // Fill canvas with gradient
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Dispose any existing background texture to avoid leaks
+    if (
+      this.scene.background &&
+      this.scene.background.isTexture &&
+      typeof this.scene.background.dispose === 'function'
+    ) {
+      this.scene.background.dispose();
+    }
+
+    // Create texture and set as background
+    const texture = new THREE.CanvasTexture(canvas);
+    this.scene.background = texture;
+  }
+
+  /**
+   * Set sky configuration from stage data
+   * @param {Object} skyConfig - Sky configuration object
+   */
+  setSkyFromConfig(skyConfig) {
+    if (!skyConfig) {
+      this.setDefaultSkyColor();
+      return;
+    }
+
+    switch (skyConfig.type) {
+      case SkyTypes.COLOR:
+        this.setSkyColor(skyConfig.color || DefaultSkyColors.DEFAULT);
+        break;
+      case SkyTypes.GRADIENT:
+        this.setSkyGradient(
+          skyConfig.gradientTop ||
+            skyConfig.color ||
+            DefaultSkyColors.GRADIENT_TOP,
+          skyConfig.gradientBottom ||
+            skyConfig.color ||
+            DefaultSkyColors.GRADIENT_BOTTOM
+        );
+        break;
+      default:
+        // Default to color if type is not specified
+        this.setSkyColor(skyConfig.color || DefaultSkyColors.DEFAULT);
+        break;
+    }
   }
 }
