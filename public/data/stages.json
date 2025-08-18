@@ -294,7 +294,7 @@
           {
             "id": "dog",
             "placements": [
-              { "position": [0, 1, 40] }
+              { "area": "bossArea", "count": 1 }
             ]
           }
         ],
