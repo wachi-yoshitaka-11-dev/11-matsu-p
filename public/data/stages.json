@@ -1,5 +1,5 @@
 {
-  "stageOrder": ["startingPlains"],
+  "stageOrder": ["startingPlains", "cursedForest"],
   "stages": {
     "startingPlains": {
       "name": "始まりの地",
@@ -168,6 +168,180 @@
         "optional": false,
         "reward": {
           "experience": 100,
+          "unlockNextStage": true
+        }
+      }
+    },
+    "cursedForest": {
+      "name": "呪われた森",
+      "model": "",
+      "texture": "",
+      "modelSettings": {
+        "position": [0, -4.5, 0],
+        "scale": [100, 100, 100],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
+      "image": "stages/cursed-forest.png",
+      "description": "stages.cursedForest.description",
+      "bgm": [
+        {
+          "file": "stages/cursed-forest/default.mp3",
+          "condition": "default",
+          "loop": true
+        },
+        {
+          "file": "stages/cursed-forest/combat.mp3",
+          "condition": "combat",
+          "loop": true
+        }
+      ],
+      "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#2F1B3C",
+          "gradientBottom": "#4A4A4A"
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#3D2F4F",
+            "intensity": 0.3
+          },
+          {
+            "type": "directional",
+            "color": "#8B7355",
+            "intensity": 0.6,
+            "position": [5, 30, 5]
+          }
+        ],
+        "terrains": [
+          {
+            "id": "tree",
+            "count": 30,
+            "minScale": 3.0,
+            "maxScale": 8.0,
+            "areas": ["forest", "deepForest"]
+          },
+          {
+            "id": "rock",
+            "count": 15,
+            "minScale": 1.5,
+            "maxScale": 5.0,
+            "areas": ["clearing"]
+          },
+          {
+            "id": "grass",
+            "count": 100,
+            "minScale": 0.3,
+            "maxScale": 2.0,
+            "areas": ["forest"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 100,
+                "segments": 50
+              }
+            ]
+          },
+          {
+            "id": "cloud",
+            "count": 30,
+            "minScale": 8.0,
+            "maxScale": 25.0,
+            "opacity": 0.6,
+            "height": {
+              "min": 20,
+              "max": 40
+            },
+            "areas": ["sky"]
+          }
+        ]
+      },
+      "player": {
+        "startPosition": [0, 1, 0]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "mouse",
+            "placements": [
+              { "area": "forest", "count": 1 }
+            ]
+          },
+          {
+            "id": "weasel",
+            "placements": [
+              { "area": "forest", "count": 2 },
+              { "area": "deepForest", "count": 1 }
+            ]
+          },
+          {
+            "id": "crow",
+            "placements": [
+              { "area": "clearing", "count": 1 }
+            ]
+          },
+          {
+            "id": "dog",
+            "placements": [
+              { "position": [0, 1, 40] }
+            ]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "hermit",
+            "placements": [{ "position": [-15, 0, 10] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "potion",
+            "placements": [
+              { "area": "forest", "count": 1 },
+              { "area": "clearing", "count": 1 }
+            ]
+          }
+        ]
+      },
+      "areas": {
+        "forest": {
+          "center": [0, 0, 0],
+          "radius": 30
+        },
+        "deepForest": {
+          "center": [0, 0, 25],
+          "radius": 15
+        },
+        "clearing": {
+          "center": [20, 0, 0],
+          "radius": 12
+        },
+        "bossArea": {
+          "center": [0, 0, 40],
+          "radius": 10
+        },
+        "sky": {
+          "center": [0, 0, 0],
+          "radius": 200
+        }
+      },
+      "clearConditions": {
+        "type": "killAll",
+        "targets": ["boss"],
+        "optional": false,
+        "reward": {
+          "experience": 150,
           "unlockNextStage": true
         }
       }

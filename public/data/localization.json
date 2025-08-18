@@ -44,6 +44,9 @@
     "stages": {
       "startingPlains": {
         "description": "・穏やかな平原と小さな遺跡。\n・基本的な操作を学ぶ安全なエリア。\n・すべての敵を倒そう。"
+      },
+      "cursedForest": {
+        "description": "・薄暗く霧深い呪われた森。\n・毒の胞子が漂う危険なエリア。\n・森の奥に潜む大樹を倒そう。"
       }
     },
     "items": {
@@ -142,6 +145,9 @@
     "stages": {
       "startingPlains": {
         "description": "・A peaceful plain with small ruins.\n・A safe area to learn basic controls.\n・Defeat all enemies to clear the stage."
+      },
+      "cursedForest": {
+        "description": "・A dark, misty cursed forest.\n・A dangerous area with poisonous spores.\n・Defeat the great tree lurking deep in the forest."
       }
     },
     "items": {
