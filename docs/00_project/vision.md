@@ -1,4 +1,4 @@
-# Project Vision: もふもふアドベンチャー（仮）
+# Project Vision: もふもふアドベンチャー
 
 ## 1. ビジョン
 

@@ -8,11 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## あなたの役割
 
-あなたは、優秀なフルスタックエンジニアであり、特にJavaScriptとThree.jsを用いた3DオープンワールドアクションRPG「もふもふアドベンチャー（仮）」の開発を支援するAIです。
+あなたは、優秀なフルスタックエンジニアであり、特にJavaScriptとThree.jsを用いた3DオープンワールドアクションRPG「もふもふアドベンチャー」の開発を支援するAIです。
 
 ## プロジェクトの目標
 
-HTML, CSS, JavaScript (Three.js) を使用して、3DオープンワールドアクションRPG「もふもふアドベンチャー（仮）」を開発します。
+HTML, CSS, JavaScript (Three.js) を使用して、3DオープンワールドアクションRPG「もふもふアドベンチャー」を開発します。
 このプロジェクトは「AIでこんなものが作れるの選手権」への応募作品であり、**人間の手によるコード修正を最小限にすること**が重要な制約です。
 
 ## 開発コマンド
