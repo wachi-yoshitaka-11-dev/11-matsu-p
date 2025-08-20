@@ -122,4 +122,35 @@ export class AssetLoader {
       throw error;
     }
   }
+
+  async loadModelsFromAssets(assetsToLoad) {
+    for (const asset of assetsToLoad) {
+      try {
+        if (asset.model) {
+          await this.loadGLTF(
+            asset.model.replace('.glb', ''),
+            `assets/models/${asset.model}`
+          );
+        }
+        if (asset.texture) {
+          try {
+            await this.loadTexture(
+              asset.texture.replace('.png', ''),
+              `assets/textures/${asset.texture}`
+            );
+          } catch (error) {
+            console.warn(
+              `Texture for ${asset.model || asset.texture} not found. Using default material.`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Could not load model ${asset.model}. A placeholder will be used.`,
+          error
+        );
+      }
+    }
+  }
 }

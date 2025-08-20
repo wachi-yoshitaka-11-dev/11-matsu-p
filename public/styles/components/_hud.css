@@ -183,7 +183,54 @@
   box-shadow: 0 0 20px rgba(46, 213, 115, 0.3);
 }
 
-/* バーエフェクト共通 - 角を丸くして枠をはみ出ないようにする */
+/* Buffs and Debuffs Display */
+.buffs-and-debuffs-container {
+  position: absolute;
+  top: 110px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 100;
+}
+
+.buff-debuff-item {
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  padding: 5px 10px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  min-width: 80px;
+}
+
+.buff-debuff-item.buff {
+  background: rgba(0, 255, 0, 0.2);
+  border: 2px solid #00ff00;
+}
+
+.buff-debuff-item.debuff {
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid #ff0000;
+}
+
+.buff-debuff-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.buff-debuff-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.buff-debuff-name {
+  line-height: 1.2;
+}
+
+/* Common bar effects - rounded corners to prevent overflow */
 .fp-insufficient-flash,
 .hp-damage-flash,
 .fp-use-flash {
@@ -191,7 +238,7 @@
   overflow: hidden;
 }
 
-/* FP不足エフェクト */
+/* FP insufficient effect */
 .fp-insufficient-flash {
   animation: fp-insufficient-flash 0.5s ease-out;
 }
@@ -213,9 +260,13 @@
   }
 }
 
-/* HPダメージエフェクト */
+/* HP damage effect */
 .hp-damage-flash {
   animation: hp-damage-flash 0.5s ease-out;
+}
+
+.hp-poison-flash {
+  animation: hp-poison-flash 0.5s ease-out;
 }
 
 @keyframes hp-damage-flash {
@@ -235,7 +286,23 @@
   }
 }
 
-/* FP使用エフェクト */
+#hp-bar .status-bar-fill.hp-poison-flash {
+  animation: hp-poison-flash 0.5s ease-out;
+}
+
+@keyframes hp-poison-flash {
+  0%,
+  100% {
+    background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+  }
+  50% {
+    background: linear-gradient(135deg, #4a7c59 0%, #3a6b47 100%);
+    box-shadow: 0 0 20px rgba(74, 124, 89, 0.6);
+  }
+}
+
+/* FP use effect */
 .fp-use-flash {
   animation: fp-use-flash 0.3s ease-out;
 }
@@ -301,7 +368,7 @@
   pointer-events: none;
 }
 
-/* ステージ開始メッセージ（現在のスタイル） */
+/* Stage start message (current style) */
 #stage-message-overlay.stage-start {
   width: 30%;
   background-color: rgba(0, 0, 0, 0.7);
@@ -315,7 +382,7 @@
   mask-composite: intersect;
 }
 
-/* ステージクリアメッセージ（横幅100%、黄色文字） */
+/* Stage clear message (100% width, yellow text) */
 #stage-message-overlay.stage-clear {
   width: 100%;
   background-color: rgba(0, 0, 0, 0.6);
@@ -349,7 +416,7 @@
   opacity: 1;
 }
 
-/* 経験値表示 */
+/* Experience display */
 #experience-display {
   position: absolute;
   bottom: 20px;
@@ -370,7 +437,7 @@
   pointer-events: auto;
 }
 
-/* ステージ表示 */
+/* Stage display */
 #stage-display {
   position: absolute;
   top: 20px;
@@ -476,7 +543,7 @@
     0 0 4px rgba(0, 0, 0, 0.6);
 }
 
-/* 装備UI - 十字配置 */
+/* Equipment UI - Cross layout */
 #equipment-container {
   position: absolute;
   bottom: 20px;
@@ -590,7 +657,7 @@
   flex-shrink: 0;
 }
 
-/* 敵ヘルスバー */
+/* Enemy health bar */
 .enemy-health-bar {
   position: absolute;
   width: 60px;
@@ -610,7 +677,7 @@
   border-radius: 3px;
 }
 
-/* 敵ヘルスバー - ヘルス状態別の色クラス */
+/* Enemy health bar - Health status color classes */
 .enemy-health-bar-fill.health-high {
   background: #44ff44 !important;
 }
@@ -633,7 +700,7 @@
   border-radius: 3px;
 }
 
-/* ロックオンUI */
+/* Lock-on UI */
 #lock-on-container {
   position: absolute;
   top: 0;

@@ -323,6 +323,7 @@ export class Player extends Character {
     if (itemUsed) {
       this.playAnimation(AnimationNames.USE_ITEM);
       this.game.playSFX(AssetPaths.SFX_USE_ITEM);
+      this.showItemUseEffect();
 
       this.inventory.splice(this.currentItemIndex, 1);
 
@@ -368,26 +369,17 @@ export class Player extends Character {
     // Player-specific skill execution (FP-based, by type)
     this.isUsingSkill = true;
 
-    if (skillType === SkillTypes.BUFF) {
-      this.executeBuffSkill(this.skills[this.currentSkillIndex]);
+    if (skillType === SkillTypes.SELF_TARGET) {
+      this.executeSelfTargetSkill(this.skills[this.currentSkillIndex]);
     } else if (skillType === SkillTypes.PROJECTILE) {
       this.executeProjectileSkill(this.skills[this.currentSkillIndex]);
     } else if (skillType === SkillTypes.AREA_ATTACK) {
       this.executeAreaAttackSkill(this.skills[this.currentSkillIndex]);
     }
 
-    // Set appropriate animation duration for each skill type
-    let skillAnimationDuration;
-    if (skillType === SkillTypes.BUFF) {
-      // Buff skills have shorter animation duration
-      skillAnimationDuration = (currentSkill.castTime || 0) + 1000;
-    } else {
-      // Other skills use the standard duration
-      skillAnimationDuration = Math.max(
-        (currentSkill.castTime || 0) + 1000,
-        currentSkill.duration || 1000
-      );
-    }
+    // Set animation duration (castTime + 1000ms for animation)
+    // (duration in skills.json is for effects, not animation)
+    const skillAnimationDuration = (currentSkill.castTime || 0) + 1000;
 
     setTimeout(() => {
       this.isUsingSkill = false;
@@ -396,15 +388,15 @@ export class Player extends Character {
     return true;
   }
 
-  // Player-specific buff skill (with effects and sound)
-  executeBuffSkill(skillId) {
+  // Player-specific self-target skill (with effects and sound)
+  executeSelfTargetSkill(skillId) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    super.executeBuffSkill(skillId);
+    super.executeSelfTargetSkill(skillId);
 
     setTimeout(() => {
-      this.game.playSFX(AssetPaths.SFX_USE_SKILL_BUFF);
+      this.game.playSFX(AssetPaths.SFX_USE_SKILL_SELF_TARGET);
       this.showSkillBuffEffect();
     }, skillData.castTime || 0);
   }

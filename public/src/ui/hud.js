@@ -2,6 +2,7 @@ import {
   GameState,
   AssetPaths,
   StageMessageTypes,
+  BuffDebuffCategories,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
@@ -34,6 +35,47 @@ export class Hud {
 
     document.body.appendChild(this.deathOverlay.element);
     document.body.appendChild(this.stageMessageOverlay.element);
+
+    // Create buff/debuff display container
+    this.buffsAndDebuffsContainer = this.createBuffsAndDebuffsContainer();
+    this.container.appendChild(this.buffsAndDebuffsContainer);
+  }
+
+  // Create buff/debuff display container
+  createBuffsAndDebuffsContainer() {
+    const container = document.createElement('div');
+    container.classList.add('buffs-and-debuffs-container');
+    return container;
+  }
+
+  // Update buff/debuff display
+  updateBuffsAndDebuffsDisplay(buffsAndDebuffs) {
+    this.buffsAndDebuffsContainer.innerHTML = '';
+
+    buffsAndDebuffs.forEach((item) => {
+      const element = document.createElement('div');
+      element.classList.add('buff-debuff-item', item.type);
+
+      element.innerHTML = `
+        <span class="buff-debuff-icon">
+          ${item.category === BuffDebuffCategories.BUFF ? '↑' : '↓'}
+        </span>
+        <div class="buff-debuff-info">
+          <div class="buff-debuff-name">${item.type}</div>
+        </div>
+      `;
+
+      this.buffsAndDebuffsContainer.appendChild(element);
+    });
+  }
+
+  // Show poison effect helper
+  showPoisonEffect() {
+    // Show poison effect across entire HUD
+    this.container.style.filter = 'hue-rotate(100deg)';
+    setTimeout(() => {
+      this.container.style.filter = '';
+    }, 300);
   }
 
   createStatusBarsContainer() {
@@ -534,6 +576,13 @@ export class Hud {
     this.hpBar.element.classList.add('hp-damage-flash');
     setTimeout(() => {
       this.hpBar.element.classList.remove('hp-damage-flash');
+    }, 500);
+  }
+
+  showHpPoisonEffect() {
+    this.hpBar.fill.classList.add('hp-poison-flash');
+    setTimeout(() => {
+      this.hpBar.fill.classList.remove('hp-poison-flash');
     }, 500);
   }
 

@@ -152,16 +152,43 @@ export class Enemy extends Character {
 
   // Action selection logic (can be overridden in subclasses)
   selectNextAction() {
-    // Regular Enemy uses basic attacks only
-    this.nextAction =
-      Math.random() < this.data.strongAttack.probability
-        ? AttackTypes.STRONG
-        : AttackTypes.WEAK;
+    const rand = Math.random();
+    let cumulativeProbability = 0;
+
+    // Dynamically process skill probability checks (including attacks, buffs, healing, etc.)
+    if (this.data.skills) {
+      for (const skillId of Object.keys(this.data.skills)) {
+        const skillConfig = this.data.skills[skillId];
+        if (skillConfig.probability) {
+          cumulativeProbability += skillConfig.probability;
+          if (rand < cumulativeProbability) {
+            this.nextAction = skillId;
+            return;
+          }
+        }
+      }
+    }
+
+    cumulativeProbability += this.data.strongAttack.probability;
+    if (rand < cumulativeProbability) {
+      this.nextAction = AttackTypes.STRONG;
+    } else {
+      this.nextAction = AttackTypes.WEAK;
+    }
   }
 
   // Execute the selected action (can be overridden in subclasses)
   executeSelectedAction(distance) {
-    if (
+    if (this.data.skills && this.data.skills[this.nextAction]) {
+      if (this.canPerformSkill(this.nextAction, distance)) {
+        if (this.performSkill(this.nextAction)) {
+          this.nextAction = null;
+        }
+      } else {
+        // Reset if skill cannot be executed and select a new action next time
+        this.nextAction = null;
+      }
+    } else if (
       this.nextAction === AttackTypes.STRONG &&
       this.strongAttackCooldown <= 0 &&
       distance <= this.data.strongAttack.range
@@ -174,6 +201,9 @@ export class Enemy extends Character {
       distance <= this.data.weakAttack.range
     ) {
       this.performWeakAttack();
+      this.nextAction = null;
+    } else {
+      // Reset if attack cannot be executed and select a new action next time
       this.nextAction = null;
     }
   }
@@ -293,8 +323,8 @@ export class Enemy extends Character {
     const skillType = skillData.type;
 
     switch (skillType) {
-      case SkillTypes.BUFF:
-        this.executeBuffSkill(skillId);
+      case SkillTypes.SELF_TARGET:
+        this.executeSelfTargetSkill(skillId);
         break;
       case SkillTypes.PROJECTILE:
         this.executeProjectileSkill(skillId);
@@ -314,8 +344,8 @@ export class Enemy extends Character {
   }
 
   // Enemy version of skill execution (with state management)
-  executeBuffSkill(skillId) {
-    super.executeBuffSkill(skillId);
+  executeSelfTargetSkill(skillId) {
+    super.executeSelfTargetSkill(skillId);
     this.scheduleSkillStateReset(skillId, 500);
   }
 

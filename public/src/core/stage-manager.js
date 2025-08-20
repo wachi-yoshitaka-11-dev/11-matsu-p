@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 import {
-  StageBGMConditions,
   Fall,
   EnvironmentTypes,
   StageClearConditionTypes,
@@ -28,6 +27,13 @@ export class StageManager {
 
     // Stage progress tracking
     this.isStageCleared = false;
+
+    // Collision detection performance tracking
+    this.collisionStats = {
+      totalCalls: 0,
+      totalObjects: 0,
+      averageObjects: 0,
+    };
   }
 
   async loadStage(level) {
@@ -44,14 +50,17 @@ export class StageManager {
       await this.unloadCurrentStage();
     }
 
-    // Load stage itself (base model + textures)
-    await this.loadStageModelsAndAssets(stageData);
-
-    // Note: Stage world and entities will be loaded separately by Game.js
-
-    // Set current level
+    // Set current level and stage data first
     this.currentLevel = level;
     this.currentStageData = stageData;
+
+    // Load stage base assets (model and textures)
+    await this.loadStageBaseAssets(stageData);
+
+    // Load entity assets (enemies, terrains, NPCs, etc.)
+    await this.loadEntityAssets();
+
+    // Note: Stage world and entities will be loaded separately by Game.js
 
     // Reset stage progress tracking
     this.resetStageProgress();
@@ -67,7 +76,84 @@ export class StageManager {
     return stageOrder[level - 1];
   }
 
-  async loadStageModelsAndAssets(stageData) {
+  async loadEntityAssets() {
+    // Load only models that are actually used in the current stage
+    const stageData = this.getCurrentStageData();
+    if (!stageData) return;
+
+    const assetsToLoad = [];
+
+    // Collect terrain models used in current stage
+    if (stageData.world?.terrains) {
+      for (const terrainConfig of stageData.world.terrains) {
+        const terrainData = this.game.data.terrains?.[terrainConfig.id];
+        if (terrainData && (terrainData.model || terrainData.texture)) {
+          assetsToLoad.push({
+            model: terrainData.model,
+            texture: terrainData.texture,
+          });
+        }
+      }
+    }
+
+    // Collect environment assets used in current stage
+    if (stageData.world?.environments) {
+      for (const envConfig of stageData.world.environments) {
+        const envData = this.game.data.environments?.[envConfig.id];
+        if (envData && envData.texture) {
+          assetsToLoad.push({
+            texture: envData.texture,
+          });
+        }
+      }
+    }
+
+    // Collect entity models used in current stage
+    if (stageData.entities) {
+      // Enemies
+      if (stageData.entities.enemies) {
+        for (const enemyConfig of stageData.entities.enemies) {
+          const enemyData = this.game.data.enemies?.[enemyConfig.id];
+          if (enemyData && (enemyData.model || enemyData.texture)) {
+            assetsToLoad.push({
+              model: enemyData.model,
+              texture: enemyData.texture,
+            });
+          }
+        }
+      }
+
+      // NPCs
+      if (stageData.entities.npcs) {
+        for (const npcConfig of stageData.entities.npcs) {
+          const npcData = this.game.data.npcs?.[npcConfig.id];
+          if (npcData && (npcData.model || npcData.texture)) {
+            assetsToLoad.push({
+              model: npcData.model,
+              texture: npcData.texture,
+            });
+          }
+        }
+      }
+
+      // Items
+      if (stageData.entities.items) {
+        for (const itemConfig of stageData.entities.items) {
+          const itemData = this.game.data.items?.[itemConfig.id];
+          if (itemData && (itemData.model || itemData.texture)) {
+            assetsToLoad.push({
+              model: itemData.model,
+              texture: itemData.texture,
+            });
+          }
+        }
+      }
+    }
+
+    await this.game.assetLoader.loadModelsFromAssets(assetsToLoad);
+  }
+
+  async loadStageBaseAssets(stageData) {
     // Load stage base model
     if (stageData.model) {
       try {
@@ -494,15 +580,10 @@ export class StageManager {
   playDefaultBGM() {
     if (!this.currentStageData?.bgm) return;
 
-    for (const bgmConfig of this.currentStageData.bgm) {
-      if (
-        bgmConfig.condition === StageBGMConditions.DEFAULT &&
-        bgmConfig.file
-      ) {
-        const bgmKey = bgmConfig.file.replace('.mp3', '');
-        this.game.playBGM(bgmKey);
-        break;
-      }
+    // Start with default BGM (no condition specified)
+    const defaultBgm = this.currentStageData.bgm.find((bgm) => !bgm.condition);
+    if (defaultBgm) {
+      this.game.playBGM(defaultBgm.file);
     }
   }
 
@@ -604,11 +685,11 @@ export class StageManager {
     }
 
     // Clean up skills
-    if (this.game.entities.skills.buffs) {
-      this.game.entities.skills.buffs.forEach((buff) => {
-        this.game.sceneManager.remove(buff.mesh);
+    if (this.game.entities.skills.selfTargets) {
+      this.game.entities.skills.selfTargets.forEach((selfTarget) => {
+        this.game.sceneManager.remove(selfTarget.mesh);
       });
-      this.game.entities.skills.buffs.length = 0;
+      this.game.entities.skills.selfTargets.length = 0;
     }
 
     if (this.game.entities.skills.projectiles) {
@@ -649,6 +730,21 @@ export class StageManager {
     };
   }
 
+  getCollisionStats() {
+    return {
+      ...this.collisionStats,
+      optimization: 'Stage GLB excluded, terrain collision optimized',
+    };
+  }
+
+  resetCollisionStats() {
+    this.collisionStats = {
+      totalCalls: 0,
+      totalObjects: 0,
+      averageObjects: 0,
+    };
+  }
+
   getHeightAt(x, z) {
     let highestY = Fall.MAX_FALL_DEPTH;
     const rayStartHeight = 100; // A safe height above everything
@@ -659,12 +755,7 @@ export class StageManager {
 
     const objectsToCheck = [];
 
-    // 1. Stage base model
-    if (this.stageBaseModel) {
-      objectsToCheck.push(this.stageBaseModel);
-    }
-
-    // 2. Ground environment
+    // 1. Ground environment (primary collision surface)
     const groundEnv = this.game.entities.world.environments.find(
       (env) => env.id === EnvironmentTypes.GROUND && env.mesh
     );
@@ -672,9 +763,26 @@ export class StageManager {
       objectsToCheck.push(groundEnv.mesh);
     }
 
-    // 3. All terrain objects (trees, rocks, etc.)
-    const terrainMeshes = this.game.entities.world.terrains.map((t) => t.mesh);
-    objectsToCheck.push(...terrainMeshes);
+    // 2. Terrain objects only (trees, rocks - optimized collision, grass excluded)
+    const collisionTerrains = this.game.entities.world.terrains
+      .filter((terrain) => {
+        if (!terrain.mesh) return false;
+
+        // Check if collision is enabled for this terrain type
+        const terrainData = this.game.data.terrains?.[terrain.id];
+        return terrainData?.collision?.enabled === true;
+      })
+      .map((terrain) => terrain.mesh);
+    objectsToCheck.push(...collisionTerrains);
+
+    // Note: Stage base model (stageBaseModel) excluded for performance optimization
+    // The ground environment provides the primary collision surface
+
+    // Update collision statistics
+    this.collisionStats.totalCalls++;
+    this.collisionStats.totalObjects += objectsToCheck.length;
+    this.collisionStats.averageObjects =
+      this.collisionStats.totalObjects / this.collisionStats.totalCalls;
 
     if (objectsToCheck.length > 0) {
       const intersects = this.raycaster.intersectObjects(objectsToCheck, true);
@@ -747,6 +855,8 @@ export class StageManager {
 
       // Load the new stage
       await this.loadStage(targetLevel);
+
+      // Stage models are now loaded within loadStage()
 
       // Load stage world and entities (same as in Game.js startGame)
       await this.loadStageWorld(this.currentStageData);
