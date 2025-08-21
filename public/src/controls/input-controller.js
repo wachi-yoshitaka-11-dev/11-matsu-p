@@ -160,7 +160,7 @@ export class InputController {
     this.canvas.addEventListener('click', () => {
       if (!this._canProcessInput()) return;
       if (typeof window.playwright === 'undefined') {
-        this.canvas.requestPointerLock();
+        this.canvas.requestPointerLock?.();
       }
     });
 

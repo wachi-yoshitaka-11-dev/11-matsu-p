@@ -395,7 +395,7 @@ export class Game {
       this.gameState = GameState.PLAYING;
       this.hud?.show();
 
-      this.sceneManager.renderer.domElement.requestPointerLock();
+      this.sceneManager.renderer.domElement.requestPointerLock?.();
 
       // Initialize stage (position, BGM, sound, message) via StageManager
       this.stageManager.initializeStage();
@@ -425,12 +425,12 @@ export class Game {
     if (this.gameState === GameState.PLAYING) {
       this.gameState = GameState.PAUSED;
       this.pauseBGM();
-      document.exitPointerLock();
+      document.exitPointerLock?.();
       this.playSFX(AssetPaths.SFX_PAUSE);
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
       this.resumeBGM();
-      this.sceneManager.renderer.domElement.requestPointerLock();
+      this.sceneManager.renderer.domElement.requestPointerLock?.();
       this.playSFX(AssetPaths.SFX_UNPAUSE);
     }
   }
@@ -776,7 +776,7 @@ export class Game {
 
   playOpeningSequence() {
     this.gameState = GameState.OPENING;
-    document.exitPointerLock();
+    document.exitPointerLock?.();
 
     this.titleScreen.hideSplash();
     this.titleScreen.hideMenu();
@@ -799,7 +799,7 @@ export class Game {
 
   playEndingSequence() {
     this.gameState = GameState.ENDING;
-    document.exitPointerLock();
+    document.exitPointerLock?.();
 
     this.hud?.hide();
 
