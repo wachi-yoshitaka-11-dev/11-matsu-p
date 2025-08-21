@@ -2,7 +2,6 @@ import {
   GameState,
   AssetPaths,
   StageMessageTypes,
-  BuffDebuffCategories,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
 
@@ -35,10 +34,6 @@ export class Hud {
 
     document.body.appendChild(this.deathOverlay.element);
     document.body.appendChild(this.stageMessageOverlay.element);
-
-    // Create buff/debuff display container
-    this.buffsAndDebuffsContainer = this.createBuffsAndDebuffsContainer();
-    this.container.appendChild(this.buffsAndDebuffsContainer);
   }
 
   // Create buff/debuff display container
@@ -56,15 +51,13 @@ export class Hud {
       const element = document.createElement('div');
       element.classList.add('buff-debuff-item', item.type);
 
-      element.innerHTML = `
-        <span class="buff-debuff-icon">
-          ${item.category === BuffDebuffCategories.BUFF ? '↑' : '↓'}
-        </span>
-        <div class="buff-debuff-info">
-          <div class="buff-debuff-name">${item.type}</div>
-        </div>
-      `;
+      const iconElement = document.createElement('div');
+      iconElement.classList.add(
+        'buff-debuff-icon',
+        `${item.category}-${item.type.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+      );
 
+      element.appendChild(iconElement);
       this.buffsAndDebuffsContainer.appendChild(element);
     });
   }
@@ -82,8 +75,11 @@ export class Hud {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
+    const topContainer = document.createElement('div');
+    topContainer.classList.add('status-bars-top');
+
     this.game.playerPortrait = this.createPlayerPortrait();
-    container.appendChild(this.game.playerPortrait);
+    topContainer.appendChild(this.game.playerPortrait);
 
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
@@ -96,7 +92,12 @@ export class Hud {
     barsContainer.appendChild(this.fpBar.element);
     barsContainer.appendChild(this.staminaBar.element);
 
-    container.appendChild(barsContainer);
+    topContainer.appendChild(barsContainer);
+    container.appendChild(topContainer);
+
+    // Add buffs and debuffs container to status bars
+    this.buffsAndDebuffsContainer = this.createBuffsAndDebuffsContainer();
+    container.appendChild(this.buffsAndDebuffsContainer);
 
     return container;
   }

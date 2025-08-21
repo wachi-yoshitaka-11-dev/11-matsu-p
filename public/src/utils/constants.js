@@ -49,8 +49,10 @@ export const BuffTypes = {
 };
 
 export const DebuffTypes = {
-  POISON: 'poison',
+  ATTACK_REDUCTION: 'attackReduction',
+  DEFENSE_REDUCTION: 'defenseReduction',
   SPEED_REDUCTION: 'speedReduction',
+  POISON: 'poison',
 };
 
 export const BuffDebuffCategories = {

@@ -47,6 +47,11 @@ export class Character extends BaseEntity {
     this.defenseBuffMultiplier = 1.0;
     this.speedBuffMultiplier = 1.0;
 
+    // Initialize debuff multipliers
+    this.attackDebuffMultiplier = 1.0;
+    this.defenseDebuffMultiplier = 1.0;
+    this.speedDebuffMultiplier = 1.0;
+
     this.originalColors = new Map();
     this.effectTimeout = null;
 
@@ -112,7 +117,8 @@ export class Character extends BaseEntity {
     });
 
     // Manage buff duration
-    this.buffTimers.forEach((endTime, id) => {
+    const buffEntries = Array.from(this.buffTimers.entries());
+    buffEntries.forEach(([id, endTime]) => {
       if (Date.now() >= endTime) {
         this.removeBuff(id);
         hudUpdateNeeded = true;
@@ -120,7 +126,8 @@ export class Character extends BaseEntity {
     });
 
     // Manage debuff duration
-    this.debuffTimers.forEach((endTime, id) => {
+    const debuffEntries = Array.from(this.debuffTimers.entries());
+    debuffEntries.forEach(([id, endTime]) => {
       if (Date.now() >= endTime) {
         this.removeDebuff(id);
         hudUpdateNeeded = true;
@@ -136,6 +143,17 @@ export class Character extends BaseEntity {
 
   // Apply buff effect
   applyBuff(config) {
+    // Remove existing buff of the same type first
+    const existingIds = [];
+    this.activeBuffs.forEach((buff, id) => {
+      if (buff.type === config.type) {
+        existingIds.push(id);
+      }
+    });
+    existingIds.forEach((id) => {
+      this.removeBuff(id);
+    });
+
     const id = `${BuffDebuffCategories.BUFF}_${Date.now()}`;
     const endTime = Date.now() + config.duration;
 
@@ -196,6 +214,20 @@ export class Character extends BaseEntity {
       debuffData.tickInterval = config.tickInterval / 1000; // Store as seconds for consistency
     }
 
+    // Apply debuff properties
+    if (config.attackDebuffMultiplier) {
+      this.attackDebuffMultiplier =
+        (this.attackDebuffMultiplier || 1.0) * config.attackDebuffMultiplier;
+    }
+    if (config.defenseDebuffMultiplier) {
+      this.defenseDebuffMultiplier =
+        (this.defenseDebuffMultiplier || 1.0) * config.defenseDebuffMultiplier;
+    }
+    if (config.speedDebuffMultiplier) {
+      this.speedDebuffMultiplier =
+        (this.speedDebuffMultiplier || 1.0) * config.speedDebuffMultiplier;
+    }
+
     this.activeDebuffs.set(id, debuffData);
     this.debuffTimers.set(id, endTime);
 
@@ -234,6 +266,20 @@ export class Character extends BaseEntity {
   removeDebuff(id) {
     const debuff = this.activeDebuffs.get(id);
     if (debuff) {
+      // Remove debuff properties
+      if (debuff.attackDebuffMultiplier) {
+        this.attackDebuffMultiplier =
+          (this.attackDebuffMultiplier || 1.0) / debuff.attackDebuffMultiplier;
+      }
+      if (debuff.defenseDebuffMultiplier) {
+        this.defenseDebuffMultiplier =
+          (this.defenseDebuffMultiplier || 1.0) /
+          debuff.defenseDebuffMultiplier;
+      }
+      if (debuff.speedDebuffMultiplier) {
+        this.speedDebuffMultiplier =
+          (this.speedDebuffMultiplier || 1.0) / debuff.speedDebuffMultiplier;
+      }
       this.activeDebuffs.delete(id);
     }
     this.debuffTimers.delete(id);

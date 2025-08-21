@@ -438,7 +438,12 @@ export class Game {
 
     const targetBGM = this.getBGMForCurrentCondition();
 
-    if (targetBGM && this.currentBGM !== targetBGM) {
+    // Only proceed if target BGM exists and is different from current
+    if (
+      targetBGM &&
+      this.currentBGM !== targetBGM &&
+      this.bgmAudios[targetBGM]
+    ) {
       // Use crossfade for more natural dynamic BGM changes
       this.crossfadeBGM(targetBGM, 1500); // 1.5 second crossfade
     }
