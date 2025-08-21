@@ -75,11 +75,11 @@ export class Hud {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
-    const topContainer = document.createElement('div');
-    topContainer.classList.add('status-bars-top');
-
     this.game.playerPortrait = this.createPlayerPortrait();
-    topContainer.appendChild(this.game.playerPortrait);
+    container.appendChild(this.game.playerPortrait);
+
+    const rightOfPortraitContainer = document.createElement('div');
+    rightOfPortraitContainer.classList.add('right-of-portrait-container');
 
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
@@ -92,12 +92,13 @@ export class Hud {
     barsContainer.appendChild(this.fpBar.element);
     barsContainer.appendChild(this.staminaBar.element);
 
-    topContainer.appendChild(barsContainer);
-    container.appendChild(topContainer);
+    rightOfPortraitContainer.appendChild(barsContainer);
 
-    // Add buffs and debuffs container to status bars
+    // Add buffs and debuffs container to the new container
     this.buffsAndDebuffsContainer = this.createBuffsAndDebuffsContainer();
-    container.appendChild(this.buffsAndDebuffsContainer);
+    rightOfPortraitContainer.appendChild(this.buffsAndDebuffsContainer);
+
+    container.appendChild(rightOfPortraitContainer);
 
     return container;
   }

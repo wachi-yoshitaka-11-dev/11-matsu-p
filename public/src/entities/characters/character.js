@@ -98,8 +98,6 @@ export class Character extends BaseEntity {
 
   // Update buff and debuff properties
   updateBuffsAndDebuffs(deltaTime) {
-    let hudUpdateNeeded = false;
-
     // Process debuff properties
     this.activeDebuffs.forEach((debuff, id) => {
       if (debuff.type === DebuffTypes.POISON) {
@@ -121,7 +119,12 @@ export class Character extends BaseEntity {
     buffEntries.forEach(([id, endTime]) => {
       if (Date.now() >= endTime) {
         this.removeBuff(id);
-        hudUpdateNeeded = true;
+        // Update HUD immediately after removing a buff
+        if (this === this.game.player && this.game.hud) {
+          this.game.hud.updateBuffsAndDebuffsDisplay(
+            this.getActiveBuffsAndDebuffs()
+          );
+        }
       }
     });
 
@@ -130,15 +133,14 @@ export class Character extends BaseEntity {
     debuffEntries.forEach(([id, endTime]) => {
       if (Date.now() >= endTime) {
         this.removeDebuff(id);
-        hudUpdateNeeded = true;
+        // Update HUD immediately after removing a debuff
+        if (this === this.game.player && this.game.hud) {
+          this.game.hud.updateBuffsAndDebuffsDisplay(
+            this.getActiveBuffsAndDebuffs()
+          );
+        }
       }
     });
-
-    // Update HUD display for player
-    if (hudUpdateNeeded && this === this.game.player && this.game.hud) {
-      const allBuffsAndDebuffs = this.getActiveBuffsAndDebuffs();
-      this.game.hud.updateBuffsAndDebuffsDisplay(allBuffsAndDebuffs);
-    }
   }
 
   // Apply buff effect
@@ -154,7 +156,7 @@ export class Character extends BaseEntity {
       this.removeBuff(id);
     });
 
-    const id = `${BuffDebuffCategories.BUFF}_${Date.now()}`;
+    const id = `${BuffDebuffCategories.BUFF}_${crypto.randomUUID()}`;
     const endTime = Date.now() + config.duration;
 
     this.activeBuffs.set(id, {
@@ -200,7 +202,7 @@ export class Character extends BaseEntity {
       }
     }
 
-    const id = `${BuffDebuffCategories.DEBUFF}_${Date.now()}`;
+    const id = `${BuffDebuffCategories.DEBUFF}_${crypto.randomUUID()}`;
     const endTime = Date.now() + config.duration;
 
     const debuffData = {
@@ -416,15 +418,6 @@ export class Character extends BaseEntity {
     this.clearEffectTimeout();
     this._setMeshColor(EffectColors.ITEM_USE);
     this._startEffectTimeout(200);
-  }
-
-  startChargingEffect() {
-    this.clearEffectTimeout();
-    this._setMeshColor(EffectColors.CHARGE);
-  }
-
-  stopChargingEffect() {
-    this._resetMeshColor();
   }
 
   _startEffectTimeout(duration) {

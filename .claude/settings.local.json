@@ -32,7 +32,8 @@
       "Bash(find:*)",
       "Bash(dos2unix:*)",
       "mcp__serena__think_about_collected_information",
-      "mcp__serena__think_about_task_adherence"
+      "mcp__serena__think_about_task_adherence",
+      "mcp__playwright__browser_close"
     ]
   },
   "enableAllProjectMcpServers": true,

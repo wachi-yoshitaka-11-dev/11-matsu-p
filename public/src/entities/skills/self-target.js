@@ -72,8 +72,6 @@ export class SelfTarget extends Skill {
     this.data.buffs.forEach((buffData) => {
       const effectConfig = {
         ...buffData,
-        name: this.data.name,
-        icon: this.data.image,
       };
 
       if (this.caster.applyBuff) {
@@ -91,12 +89,8 @@ export class SelfTarget extends Skill {
 
     this.isActive = false;
 
-    // Remove all self-target status changes from caster
-    if (this.caster.removeBuff && this.effectIds) {
-      this.effectIds.forEach((effectId) => {
-        this.caster.removeBuff(effectId);
-      });
-    }
+    // Don't manually remove buffs - let the Character.updateBuffsAndDebuffs() handle expiration
+    // This prevents duplicate removal and ensures proper HUD updates
 
     // Fade out effect
     this.mesh.scale.setScalar(0);

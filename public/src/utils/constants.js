@@ -200,7 +200,6 @@ export const EffectColors = {
   SKILL_BUFF: 0x00ffff,
   SKILL_PROJECTILE: 0x8a2be2,
   SKILL_AREA_ATTACK: 0xff4500,
-  CHARGE: 0xff00ff,
   ITEM_USE: 0x00ff00,
 };
 
