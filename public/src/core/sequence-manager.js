@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
 import { AssetPaths, SequenceStep } from '../utils/constants.js';
 
 const SEQUENCE_CAMERA_CONFIG = {
@@ -65,6 +68,7 @@ export class SequenceManager {
     this.onSequenceCompleteCallback = null;
     this.currentStep = SequenceStep.IDLE;
     this.isSkippable = false;
+    this.isSkipping = false;
 
     this.skipEventListener = (event) => {
       if (
@@ -156,6 +160,8 @@ export class SequenceManager {
   skipSequence() {
     if (!this.isSkippable || this.currentStep === SequenceStep.IDLE) return;
 
+    this.isSkipping = true;
+
     this.currentStep = SequenceStep.TEXT_COMPLETE;
 
     this.textElement.classList.remove(
@@ -175,11 +181,11 @@ export class SequenceManager {
       this.game.bgmAudios[AssetPaths.BGM_ENDING].stop();
     }
 
-    // Stop all playing voices
-    this.game.stopAllVoices();
-
-    // Cancel all pending voice timeouts
+    // Cancel all pending voice timeouts FIRST to prevent new voices from starting
     this.clearAllVoiceTimeouts();
+
+    // Stop all currently playing voices AFTER canceling timeouts
+    this.game.stopAllVoices();
 
     this.disableSkip();
 
@@ -215,6 +221,7 @@ export class SequenceManager {
       const callback = this.onSequenceCompleteCallback;
       this.currentStep = SequenceStep.IDLE;
       this.onSequenceCompleteCallback = null;
+      this.isSkipping = false; // Reset skip state after cleanup
 
       setTimeout(() => callback(), 100);
     }
@@ -269,6 +276,7 @@ export class SequenceManager {
   }
 
   startOpeningSequence(onComplete) {
+    this.isSkipping = false;
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = SequenceStep.SHOWING_TEXT;
 
@@ -366,6 +374,7 @@ export class SequenceManager {
   }
 
   startEndingSequence(onComplete) {
+    this.isSkipping = false;
     this.onSequenceCompleteCallback = onComplete;
     this.currentStep = SequenceStep.SHOWING_TEXT;
 
@@ -528,8 +537,8 @@ export class SequenceManager {
     if (!voices || !Array.isArray(voices)) return;
 
     voices.forEach((voice) => {
-      const timeoutId = setTimeout(() => {
-        this.game.playVoice(voice.audio);
+      const timeoutId = setTimeout(async () => {
+        await this.game.playVoice(voice.audio);
         // Remove timeout ID after execution
         const index = this.voiceTimeouts.indexOf(timeoutId);
         if (index > -1) this.voiceTimeouts.splice(index, 1);

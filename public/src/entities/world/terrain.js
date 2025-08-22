@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Entities
 import { BaseEntity } from '../base-entity.js';
 
 export class Terrain extends BaseEntity {

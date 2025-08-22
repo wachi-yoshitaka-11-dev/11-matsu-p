@@ -18,7 +18,6 @@
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_tab_new",
       "mcp__serena__search_for_pattern",
-      "mcp__serena__activate_project",
       "mcp__serena__find_symbol",
       "mcp__serena__get_symbols_overview",
       "mcp__serena__replace_regex",
@@ -26,7 +25,15 @@
       "mcp__playwright__browser_snapshot",
       "mcp__playwright__browser_handle_dialog",
       "Bash(npm run lint:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__replace_symbol_body",
+      "Bash(node:*)",
+      "Bash(find:*)",
+      "Bash(dos2unix:*)",
+      "mcp__serena__think_about_collected_information",
+      "mcp__serena__think_about_task_adherence",
+      "mcp__playwright__browser_close"
     ]
   },
   "enableAllProjectMcpServers": true,

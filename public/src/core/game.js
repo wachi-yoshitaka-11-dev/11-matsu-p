@@ -1,24 +1,35 @@
+// External libraries
 import * as THREE from 'three';
-import { SceneManager } from './scene-manager.js';
-import { AssetLoader } from './asset-loader.js';
-import { StageManager } from './stage-manager.js';
-import { Player } from '../entities/characters/player.js';
-import { InputController } from '../controls/input-controller.js';
-import { Hud } from '../ui/hud.js';
-import { TitleScreen } from '../ui/title-screen.js';
-import { LoadingScreen } from '../ui/loading-screen.js';
-import { PauseMenu } from '../ui/pause-menu.js';
-import { DialogBox } from '../ui/dialog-box.js';
-import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
-import { LockOnUI } from '../ui/lock-on-ui.js';
+
+// Utils
 import {
   AssetPaths,
+  AudioConstants,
+  BGMConditionOperators,
+  BGMConditionTypes,
   GameState,
   ItemConstants,
-  AudioConstants,
 } from '../utils/constants.js';
-import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
+
+// Core
+import { AssetLoader } from './asset-loader.js';
+import { SceneManager } from './scene-manager.js';
+import { SequenceManager } from './sequence-manager.js';
+import { StageManager } from './stage-manager.js';
+
+// Entities
+import { Player } from '../entities/characters/player.js';
+
+// Other
+import { InputController } from '../controls/input-controller.js';
+import { DialogBox } from '../ui/dialog-box.js';
+import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
+import { Hud } from '../ui/hud.js';
+import { LoadingScreen } from '../ui/loading-screen.js';
+import { LockOnUI } from '../ui/lock-on-ui.js';
+import { PauseMenu } from '../ui/pause-menu.js';
+import { TitleScreen } from '../ui/title-screen.js';
 
 export class Game {
   constructor() {
@@ -40,7 +51,7 @@ export class Game {
       },
       items: [],
       skills: {
-        buffs: [],
+        selfTargets: [],
         projectiles: [],
         areaAttacks: [],
       },
@@ -79,6 +90,7 @@ export class Game {
     this.currentLevel = 1;
     this.currentLevelProgress = 1;
     this.playingVoices = [];
+    this.lastBGMCheck = 0;
   }
 
   setupBeforeUnloadHandler() {
@@ -194,7 +206,7 @@ export class Game {
       AssetPaths.SFX_TALK,
       AssetPaths.SFX_UNPAUSE,
       AssetPaths.SFX_USE_ITEM,
-      AssetPaths.SFX_USE_SKILL_BUFF,
+      AssetPaths.SFX_USE_SKILL_SELF_TARGET,
       AssetPaths.SFX_USE_SKILL_PROJECTILE,
       AssetPaths.SFX_USE_SKILL_AREA_ATTACK,
       AssetPaths.SFX_WALK,
@@ -219,37 +231,6 @@ export class Game {
     }
   }
 
-  async loadModelsFromAssets(assetsToLoad) {
-    for (const asset of assetsToLoad) {
-      try {
-        if (asset.model) {
-          await this.assetLoader.loadGLTF(
-            asset.model.replace('.glb', ''),
-            `assets/models/${asset.model}`
-          );
-        }
-        if (asset.texture) {
-          try {
-            await this.assetLoader.loadTexture(
-              asset.texture.replace('.png', ''),
-              `assets/textures/${asset.texture}`
-            );
-          } catch (error) {
-            console.warn(
-              `Texture for ${asset.model || asset.texture} not found. Using default material.`,
-              error
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          `Could not load model ${asset.model}. A placeholder will be used.`,
-          error
-        );
-      }
-    }
-  }
-
   async loadBasicModels() {
     // Load only player assets during startup
     const basicAssetsToLoad = [];
@@ -260,84 +241,7 @@ export class Game {
       texture: this.data.player.texture,
     });
 
-    await this.loadModelsFromAssets(basicAssetsToLoad);
-  }
-
-  async loadStageModels() {
-    // Load only models that are actually used in the current stage
-    const stageData = this.stageManager.getCurrentStageData();
-    if (!stageData) return;
-
-    const assetsToLoad = [];
-
-    // Collect terrain models used in current stage
-    if (stageData.world?.terrains) {
-      for (const terrainConfig of stageData.world.terrains) {
-        const terrainData = this.data.terrains?.[terrainConfig.id];
-        if (terrainData && (terrainData.model || terrainData.texture)) {
-          assetsToLoad.push({
-            model: terrainData.model,
-            texture: terrainData.texture,
-          });
-        }
-      }
-    }
-
-    // Collect environment assets used in current stage
-    if (stageData.world?.environments) {
-      for (const envConfig of stageData.world.environments) {
-        const envData = this.data.environments?.[envConfig.id];
-        if (envData && envData.texture) {
-          assetsToLoad.push({
-            texture: envData.texture,
-          });
-        }
-      }
-    }
-
-    // Collect entity models used in current stage
-    if (stageData.entities) {
-      // Enemies
-      if (stageData.entities.enemies) {
-        for (const enemyConfig of stageData.entities.enemies) {
-          const enemyData = this.data.enemies?.[enemyConfig.id];
-          if (enemyData && (enemyData.model || enemyData.texture)) {
-            assetsToLoad.push({
-              model: enemyData.model,
-              texture: enemyData.texture,
-            });
-          }
-        }
-      }
-
-      // NPCs
-      if (stageData.entities.npcs) {
-        for (const npcConfig of stageData.entities.npcs) {
-          const npcData = this.data.npcs?.[npcConfig.id];
-          if (npcData && (npcData.model || npcData.texture)) {
-            assetsToLoad.push({
-              model: npcData.model,
-              texture: npcData.texture,
-            });
-          }
-        }
-      }
-
-      // Items
-      if (stageData.entities.items) {
-        for (const itemConfig of stageData.entities.items) {
-          const itemData = this.data.items?.[itemConfig.id];
-          if (itemData && (itemData.model || itemData.texture)) {
-            assetsToLoad.push({
-              model: itemData.model,
-              texture: itemData.texture,
-            });
-          }
-        }
-      }
-    }
-
-    await this.loadModelsFromAssets(assetsToLoad);
+    await this.assetLoader.loadModelsFromAssets(basicAssetsToLoad);
   }
 
   async startGame() {
@@ -355,28 +259,9 @@ export class Game {
     }
 
     try {
-      // Step 1: Load stage configuration (sets stageData)
-      await this.stageManager.loadStage(this.currentLevel);
-
-      // Step 2: Load stage-related assets
-      await this.loadStageModels();
-
-      // Step 3: Load stage world with assets available
-      const stageData = this.stageManager.getCurrentStageData();
-      if (stageData) {
-        await this.stageManager.loadStageWorld(stageData);
-        await this.stageManager.loadStageBGM(stageData);
-      }
-
-      // Field is now handled through environments system
-
+      // Create player and UI components first (needed only on initial start)
       this.player = new Player(this, 'player');
       this.sceneManager.add(this.player.mesh);
-
-      // Load stage entities after player is created
-      if (stageData) {
-        await this.stageManager.loadStageEntities(stageData);
-      }
 
       this.hud = new Hud(this);
       this.enemyHealthBar = new EnemyHealthBar(this, this.sceneManager);
@@ -389,13 +274,23 @@ export class Game {
         this.sceneManager.renderer.domElement
       );
 
+      // Use switchStage for consistent stage loading
+      const success = await this.stageManager.switchStage(this.currentLevel);
+      if (!success) {
+        throw new Error('Failed to load initial stage');
+      }
+
       // Hide loading and start gameplay
       this.loadingScreen.hide();
       this.sceneManager.showCanvas();
       this.gameState = GameState.PLAYING;
       this.hud?.show();
 
-      this.sceneManager.renderer.domElement.requestPointerLock?.();
+      try {
+        this.sceneManager.renderer.domElement.requestPointerLock();
+      } catch (error) {
+        console.warn('Failed to request pointer lock on game start:', error);
+      }
 
       // Initialize stage (position, BGM, sound, message) via StageManager
       this.stageManager.initializeStage();
@@ -430,7 +325,11 @@ export class Game {
     } else if (this.gameState === GameState.PAUSED) {
       this.gameState = GameState.PLAYING;
       this.resumeBGM();
-      this.sceneManager.renderer.domElement.requestPointerLock?.();
+      try {
+        this.sceneManager.renderer.domElement.requestPointerLock();
+      } catch (error) {
+        console.warn('Failed to request pointer lock on unpause:', error);
+      }
       this.playSFX(AssetPaths.SFX_UNPAUSE);
     }
   }
@@ -445,6 +344,10 @@ export class Game {
 
   // BGM management methods
   playBGM(bgmName) {
+    if (this.currentBGM === bgmName) {
+      return; // Already playing the requested BGM
+    }
+
     if (this.currentBGM) {
       this.stopBGM();
     }
@@ -453,6 +356,197 @@ export class Game {
       this.bgmAudios[bgmName].play();
       this.currentBGM = bgmName;
     }
+  }
+
+  // Smooth BGM transition with fade effect
+  async transitionBGM(newBGMName, fadeTime = 1000) {
+    if (this.currentBGM === newBGMName) {
+      return; // Already playing the requested BGM
+    }
+
+    const currentAudio = this.currentBGM
+      ? this.bgmAudios[this.currentBGM]
+      : null;
+    const newAudio = this.bgmAudios[newBGMName];
+
+    if (!newAudio) {
+      console.warn(`BGM not found: ${newBGMName}`);
+      return;
+    }
+
+    // If there's a current BGM, fade it out
+    if (currentAudio && currentAudio.isPlaying) {
+      await this.fadeOutBGM(currentAudio, fadeTime);
+    }
+
+    // Start new BGM at full volume immediately (no fade-in)
+    this.currentBGM = newBGMName;
+    if (!newAudio.isPlaying) {
+      newAudio.setVolume(AudioConstants.BGM_VOLUME); // Full volume from start
+      newAudio.play();
+    }
+  }
+
+  // Fade out BGM audio
+  fadeOutBGM(audio, fadeTime) {
+    return new Promise((resolve) => {
+      const startVolume = audio.getVolume();
+      const startTime = Date.now();
+
+      const fadeOut = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / fadeTime, 1);
+        const volume = startVolume * (1 - progress);
+
+        audio.setVolume(volume);
+
+        if (progress >= 1) {
+          audio.stop();
+          resolve();
+        } else {
+          requestAnimationFrame(fadeOut);
+        }
+      };
+
+      fadeOut();
+    });
+  }
+
+  // Fade in BGM audio
+  fadeInBGM(audio, fadeTime) {
+    return new Promise((resolve) => {
+      const targetVolume = AudioConstants.BGM_VOLUME;
+      const startTime = Date.now();
+
+      const fadeIn = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / fadeTime, 1);
+        const volume = targetVolume * progress;
+
+        audio.setVolume(volume);
+
+        if (progress >= 1) {
+          resolve();
+        } else {
+          requestAnimationFrame(fadeIn);
+        }
+      };
+
+      fadeIn();
+    });
+  }
+
+  // Dynamic BGM switching based on game state
+  updateDynamicBGM() {
+    if (this.gameState !== GameState.PLAYING) return;
+
+    // Limit BGM condition checking to once per second to avoid excessive switching
+    const now = Date.now();
+    if (now - this.lastBGMCheck < 1000) return;
+    this.lastBGMCheck = now;
+
+    const targetBGM = this.getBGMForCurrentCondition();
+
+    // Only proceed if target BGM exists and is different from current
+    if (
+      targetBGM &&
+      this.currentBGM !== targetBGM &&
+      this.bgmAudios[targetBGM]
+    ) {
+      // Use crossfade for more natural dynamic BGM changes
+      this.crossfadeBGM(targetBGM, 1500); // 1.5 second crossfade
+    }
+  }
+
+  // Crossfade BGM transition (overlap old and new)
+  async crossfadeBGM(newBGMName, fadeTime = 1500) {
+    if (this.currentBGM === newBGMName) {
+      return; // Already playing the requested BGM
+    }
+
+    const currentAudio = this.currentBGM
+      ? this.bgmAudios[this.currentBGM]
+      : null;
+    const newAudio = this.bgmAudios[newBGMName];
+
+    if (!newAudio) {
+      console.warn(`BGM not found: ${newBGMName}`);
+      return;
+    }
+
+    // Start new BGM at full volume immediately
+    this.currentBGM = newBGMName;
+    if (!newAudio.isPlaying) {
+      newAudio.setVolume(AudioConstants.BGM_VOLUME);
+      newAudio.play();
+    }
+
+    // Fade out the old BGM while new one plays
+    if (currentAudio && currentAudio.isPlaying) {
+      this.fadeOutBGM(currentAudio, fadeTime);
+    }
+  }
+
+  getBGMForCurrentCondition() {
+    const stageData = this.stageManager.currentStageData;
+    if (!stageData || !stageData.bgm) return null;
+
+    // Check each BGM condition
+    for (const bgmConfig of stageData.bgm) {
+      if (bgmConfig.condition && this.checkBGMCondition(bgmConfig.condition)) {
+        return bgmConfig.file;
+      }
+    }
+
+    // Fallback to default BGM (no condition specified)
+    const defaultBgm = stageData.bgm.find((bgm) => !bgm.condition);
+    if (defaultBgm) {
+      return defaultBgm.file;
+    }
+
+    return null;
+  }
+
+  checkBGMCondition(condition) {
+    // Object-based conditions (clearConditions style)
+    if (typeof condition === 'object' && condition.type) {
+      if (condition.type === BGMConditionTypes.ENEMY_COUNT) {
+        const enemies = this.entities.characters.enemies;
+        const aliveEnemies = enemies.filter((enemy) => !enemy.isDead);
+
+        // Filter by target types
+        const targetEnemies = condition.targets
+          ? aliveEnemies.filter((enemy) =>
+              condition.targets.includes(enemy.data.type)
+            )
+          : aliveEnemies;
+
+        // Apply operator
+        switch (condition.operator) {
+          case BGMConditionOperators.LESS_THAN:
+            return targetEnemies.length < (condition.count || 0);
+          case BGMConditionOperators.LESS_THAN_OR_EQUAL:
+            return targetEnemies.length <= (condition.count || 0);
+          case BGMConditionOperators.EQUAL:
+            return targetEnemies.length === (condition.count || 0);
+          case BGMConditionOperators.GREATER_THAN:
+            return targetEnemies.length > (condition.count || 0);
+          case BGMConditionOperators.GREATER_THAN_OR_EQUAL:
+            return targetEnemies.length >= (condition.count || 0);
+          case BGMConditionOperators.ONLY:
+            // Only the specified enemy types remain
+            return (
+              aliveEnemies.length > 0 &&
+              targetEnemies.length === aliveEnemies.length
+            );
+          default:
+            return false;
+        }
+      }
+      return false;
+    }
+
+    return false;
   }
 
   stopBGM() {
@@ -548,12 +642,24 @@ export class Game {
 
       // Add to internal tracker
       this.playingVoices.push(voiceAudio);
-      voiceAudio.onEnded = () => {
+
+      // Check if sequence is being skipped right before playing
+      if (this.sequenceManager && this.sequenceManager.isSkipping) {
+        // Remove from tracker if skipped
         const index = this.playingVoices.indexOf(voiceAudio);
         if (index > -1) this.playingVoices.splice(index, 1);
-      };
+        return null;
+      }
 
       voiceAudio.play();
+
+      // Attach onended handler after play()
+      if (voiceAudio.source) {
+        voiceAudio.source.onended = () => {
+          const index = this.playingVoices.indexOf(voiceAudio);
+          if (index > -1) this.playingVoices.splice(index, 1);
+        };
+      }
       return voiceAudio;
     } catch (error) {
       console.warn(`Failed to load voice audio: ${audioPath}`, error);
@@ -564,11 +670,17 @@ export class Game {
   // Stop all playing voices
   stopAllVoices() {
     this.playingVoices.forEach((voice) => {
-      if (voice && voice.isPlaying) {
-        voice.stop();
+      if (voice) {
+        try {
+          if (voice.isPlaying) {
+            voice.stop();
+          }
+        } catch (error) {
+          console.warn('Error stopping voice:', error);
+        }
       }
     });
-    this.playingVoices.length = 0; // Clear array
+    this.playingVoices.length = 0;
   }
 
   // Load stage BGM audio objects
@@ -580,9 +692,8 @@ export class Game {
       if (!bgmConfig.file) continue;
 
       try {
-        const bgmKey = bgmConfig.file.replace('.mp3', '');
         const buffer = await this.assetLoader.loadAudio(
-          bgmKey,
+          bgmConfig.file,
           `assets/audio/${bgmConfig.file}`
         );
 
@@ -591,8 +702,8 @@ export class Game {
         bgmAudio.setLoop(bgmConfig.loop !== false);
         bgmAudio.setVolume(AudioConstants.BGM_VOLUME);
 
-        this.bgmAudios[bgmKey] = bgmAudio;
-        loadedKeys.push(bgmKey);
+        this.bgmAudios[bgmConfig.file] = bgmAudio;
+        loadedKeys.push(bgmConfig.file);
       } catch (error) {
         console.warn(`Failed to load stage BGM: ${bgmConfig.file}`, error);
       }
@@ -632,6 +743,9 @@ export class Game {
       if (this.gameState === GameState.PLAYING) {
         this.enemyHealthBar?.update();
 
+        // Update dynamic BGM based on current conditions
+        this.updateDynamicBGM();
+
         // Update stage progress (check for clear conditions)
         this.stageManager?.updateStageProgress();
         for (let i = this.entities.characters.enemies.length - 1; i >= 0; i--) {
@@ -667,59 +781,25 @@ export class Game {
           }
         }
 
+        // Update projectiles (collision detection and cleanup handled in Projectile class)
         for (let i = this.entities.skills.projectiles.length - 1; i >= 0; i--) {
           const projectile = this.entities.skills.projectiles[i];
           projectile.update(deltaTime);
-          let shouldRemove = false;
 
+          // Remove projectile if lifespan expired
           if (projectile.lifespan <= 0) {
-            shouldRemove = true;
-          }
-
-          if (!shouldRemove) {
-            const hitRange = this.data.skills[projectile.id]?.hitRange || 1.0;
-
-            if (projectile.caster !== this.player) {
-              // Enemy attack: collision detection with player
-              const playerHitPosition = this.player.mesh.position.clone();
-              playerHitPosition.y += 1.0;
-              if (
-                projectile.mesh.position.distanceTo(playerHitPosition) <
-                hitRange
-              ) {
-                this.player.takeDamage(projectile.damage);
-                shouldRemove = true;
-              }
-            } else {
-              // Player attack: collision detection with enemies
-              for (const enemy of this.entities.characters.enemies) {
-                const enemyHitPosition = enemy.mesh.position.clone();
-                enemyHitPosition.y += 0.5;
-                if (
-                  projectile.mesh.position.distanceTo(enemyHitPosition) <
-                  hitRange
-                ) {
-                  enemy.takeDamage(projectile.damage);
-                  shouldRemove = true;
-                  break;
-                }
-              }
-            }
-          }
-
-          if (shouldRemove) {
             this.sceneManager.remove(projectile.mesh);
             this.entities.skills.projectiles.splice(i, 1);
           }
         }
 
-        for (let i = this.entities.skills.buffs.length - 1; i >= 0; i--) {
-          const buff = this.entities.skills.buffs[i];
-          buff.update(deltaTime);
+        for (let i = this.entities.skills.selfTargets.length - 1; i >= 0; i--) {
+          const selfTarget = this.entities.skills.selfTargets[i];
+          selfTarget.update(deltaTime);
 
-          if (buff.duration <= 0) {
-            this.sceneManager.remove(buff.mesh);
-            this.entities.skills.buffs.splice(i, 1);
+          if (selfTarget.lifespan <= 0) {
+            this.sceneManager.remove(selfTarget.mesh);
+            this.entities.skills.selfTargets.splice(i, 1);
           }
         }
 

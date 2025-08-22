@@ -37,7 +37,7 @@ export const MovementState = {
 };
 
 export const SkillTypes = {
-  BUFF: 'buff',
+  SELF_TARGET: 'selfTarget',
   PROJECTILE: 'projectile',
   AREA_ATTACK: 'areaAttack',
 };
@@ -47,22 +47,50 @@ export const AttackTypes = {
   STRONG: 'strong',
 };
 
+export const CollisionTypes = {
+  NONE: 'none',
+  MESH: 'mesh',
+};
+
+export const BuffTypes = {
+  ATTACK_ENHANCEMENT: 'attackEnhancement',
+  DEFENSE_ENHANCEMENT: 'defenseEnhancement',
+  SPEED_ENHANCEMENT: 'speedEnhancement',
+};
+
+export const DebuffTypes = {
+  ATTACK_REDUCTION: 'attackReduction',
+  DEFENSE_REDUCTION: 'defenseReduction',
+  SPEED_REDUCTION: 'speedReduction',
+  POISON: 'poison',
+};
+
+export const BuffDebuffCategories = {
+  BUFF: 'buff',
+  DEBUFF: 'debuff',
+};
+
 export const EnemyTypes = {
   GRUNT: 'grunt',
   BOSS: 'boss',
 };
 
+export const BGMConditionTypes = {
+  ENEMY_COUNT: 'enemyCount',
+};
+
+export const BGMConditionOperators = {
+  LESS_THAN: 'lessThan',
+  LESS_THAN_OR_EQUAL: 'lessThanOrEqual',
+  EQUAL: 'equal',
+  GREATER_THAN: 'greaterThan',
+  GREATER_THAN_OR_EQUAL: 'greaterThanOrEqual',
+  ONLY: 'only',
+};
+
 export const EnvironmentTypes = {
   CLOUD: 'cloud',
   GROUND: 'ground',
-};
-
-export const StageBGMConditions = {
-  DEFAULT: 'default',
-  COMBAT: 'combat',
-  BOSS: 'boss',
-  VICTORY: 'victory',
-  DANGER: 'danger',
 };
 
 export const SkyTypes = {
@@ -130,7 +158,7 @@ export const AssetPaths = {
   SFX_TALK: 'sfx/talk.mp3',
   SFX_USE_ITEM: 'sfx/use-item.mp3',
   SFX_PICKUP_ITEM: 'sfx/pickup-item.mp3',
-  SFX_USE_SKILL_BUFF: 'sfx/use-skill-buff.mp3',
+  SFX_USE_SKILL_SELF_TARGET: 'sfx/use-skill-self-target.mp3',
   SFX_USE_SKILL_PROJECTILE: 'sfx/use-skill-projectile.mp3',
   SFX_USE_SKILL_AREA_ATTACK: 'sfx/use-skill-area-attack.mp3',
   SFX_FP_INSUFFICIENT: 'sfx/fp-insufficient.mp3',
@@ -156,6 +184,19 @@ export const AnimationNames = {
   PICK_UP: 'pick-up',
 };
 
+// One-shot animations (play once, don't loop)
+export const ONE_SHOT_ANIMATIONS = [
+  AnimationNames.ATTACK_WEAK,
+  AnimationNames.ATTACK_STRONG,
+  AnimationNames.DIE,
+  AnimationNames.ROLLING,
+  AnimationNames.BACK_STEP,
+  AnimationNames.PICK_UP,
+  AnimationNames.USE_SKILL_BUFF,
+  AnimationNames.USE_SKILL_PROJECTILE,
+  AnimationNames.USE_SKILL_AREA_ATTACK,
+];
+
 // Feature-specific constants
 
 export const EffectColors = {
@@ -164,7 +205,7 @@ export const EffectColors = {
   SKILL_BUFF: 0x00ffff,
   SKILL_PROJECTILE: 0x8a2be2,
   SKILL_AREA_ATTACK: 0xff4500,
-  CHARGE: 0xff00ff,
+  ITEM_USE: 0x00ff00,
 };
 
 export const SkillShape = {
@@ -184,7 +225,7 @@ export const SkillShape = {
 };
 
 export const AudioConstants = {
-  BGM_VOLUME: 0.4, // Background music volume
+  BGM_VOLUME: 0.5, // Background music volume
   VOICE_VOLUME: 1.0, // Voice audio volume for sequences
   SFX_VOLUME: 0.8, // Sound effects volume
   TALK_VOLUME: 0.6, // Talk sound volume for dialog

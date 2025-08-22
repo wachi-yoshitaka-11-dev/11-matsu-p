@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Entities
 import { BaseEntity } from '../base-entity.js';
 
 export class Item extends BaseEntity {
@@ -36,5 +39,6 @@ export class Item extends BaseEntity {
     this.mesh.receiveShadow = true;
 
     this.mesh.position.copy(position);
+    this.mesh.position.y += 1.0; // Float items above ground
   }
 }

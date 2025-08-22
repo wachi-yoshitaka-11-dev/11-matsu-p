@@ -1,14 +1,12 @@
-import * as THREE from 'three';
 import { Skill } from './skill.js';
-import { EffectColors } from '../../utils/constants.js';
 
 export class AreaAttack extends Skill {
-  constructor(game, areaAttackId, centerPosition, direction, caster) {
-    super(game, areaAttackId);
+  constructor(game, skillId, centerPosition, direction, caster) {
+    super(game, skillId);
 
     this.caster = caster;
 
-    const skillData = game.data.skills[areaAttackId];
+    const skillData = game.data.skills[skillId];
 
     this.range = skillData.range || 4.0;
     this.damage = skillData.damage || 50;
@@ -65,57 +63,28 @@ export class AreaAttack extends Skill {
         this.game.player.mesh.position
       );
       if (distance <= this.range) {
-        this.game.player.takeDamage(this.damage);
+        this.caster.dealDamage(this.game.player, this.damage);
         this.showDamageEffect(this.game.player.mesh.position);
+
+        // Apply debuffs
+        if (this.data.debuffs) {
+          this.applyDebuffToTarget(this.game.player);
+        }
       }
     } else {
+      // Player attack: deal damage to enemies
       this.game.entities.characters.enemies.forEach((enemy) => {
         const distance = centerPosition.distanceTo(enemy.mesh.position);
         if (distance <= this.range) {
-          enemy.takeDamage(this.damage);
-          // Display individual damage effect
+          this.caster.dealDamage(enemy, this.damage);
           this.showDamageEffect(enemy.mesh.position);
+
+          // Apply debuff to enemies
+          if (this.data.debuffs) {
+            this.applyDebuffToTarget(enemy);
+          }
         }
       });
     }
-  }
-
-  showDamageEffect(position) {
-    // Display damage effect
-    const effectGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-    const effectMaterial = new THREE.MeshBasicMaterial({
-      color: EffectColors.DAMAGE,
-      transparent: true,
-      opacity: 0.8,
-    });
-    const effectMesh = new THREE.Mesh(effectGeometry, effectMaterial);
-
-    effectMesh.position.copy(position);
-    effectMesh.position.y += 1.0;
-
-    this.game.sceneManager.add(effectMesh);
-
-    // Animation
-    let lastTime = performance.now();
-    const duration = 500;
-    let elapsed = 0;
-    const animate = () => {
-      const currentTime = performance.now();
-      const deltaTime = currentTime - lastTime;
-      lastTime = currentTime;
-      elapsed += deltaTime;
-      const progress = elapsed / duration;
-
-      if (progress < 1) {
-        effectMesh.position.y += 0.02 * (deltaTime / 16);
-        effectMaterial.opacity = 0.8 * (1 - progress);
-        requestAnimationFrame(animate);
-      } else {
-        this.game.sceneManager.remove(effectMesh);
-        effectGeometry.dispose();
-        effectMaterial.dispose();
-      }
-    };
-    animate();
   }
 }

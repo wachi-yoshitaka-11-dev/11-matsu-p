@@ -1,6 +1,7 @@
+// Utils
 import {
-  GameState,
   AssetPaths,
+  GameState,
   StageMessageTypes,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
@@ -36,12 +37,50 @@ export class Hud {
     document.body.appendChild(this.stageMessageOverlay.element);
   }
 
+  // Create buff/debuff display container
+  createBuffsAndDebuffsContainer() {
+    const container = document.createElement('div');
+    container.classList.add('buffs-and-debuffs-container');
+    return container;
+  }
+
+  // Update buff/debuff display
+  updateBuffsAndDebuffsDisplay(buffsAndDebuffs) {
+    this.buffsAndDebuffsContainer.innerHTML = '';
+
+    buffsAndDebuffs.forEach((item) => {
+      const element = document.createElement('div');
+      element.classList.add('buff-debuff-item', item.type);
+
+      const iconElement = document.createElement('div');
+      iconElement.classList.add(
+        'buff-debuff-icon',
+        `${item.category}-${item.type.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+      );
+
+      element.appendChild(iconElement);
+      this.buffsAndDebuffsContainer.appendChild(element);
+    });
+  }
+
+  // Show poison effect helper
+  showPoisonEffect() {
+    // Show poison effect across entire HUD
+    this.container.style.filter = 'hue-rotate(100deg)';
+    setTimeout(() => {
+      this.container.style.filter = '';
+    }, 300);
+  }
+
   createStatusBarsContainer() {
     const container = document.createElement('div');
     container.classList.add('status-bars');
 
     this.game.playerPortrait = this.createPlayerPortrait();
     container.appendChild(this.game.playerPortrait);
+
+    const rightOfPortraitContainer = document.createElement('div');
+    rightOfPortraitContainer.classList.add('right-of-portrait-container');
 
     const barsContainer = document.createElement('div');
     barsContainer.classList.add('bars-container');
@@ -54,7 +93,13 @@ export class Hud {
     barsContainer.appendChild(this.fpBar.element);
     barsContainer.appendChild(this.staminaBar.element);
 
-    container.appendChild(barsContainer);
+    rightOfPortraitContainer.appendChild(barsContainer);
+
+    // Add buffs and debuffs container to the new container
+    this.buffsAndDebuffsContainer = this.createBuffsAndDebuffsContainer();
+    rightOfPortraitContainer.appendChild(this.buffsAndDebuffsContainer);
+
+    container.appendChild(rightOfPortraitContainer);
 
     return container;
   }
@@ -534,6 +579,13 @@ export class Hud {
     this.hpBar.element.classList.add('hp-damage-flash');
     setTimeout(() => {
       this.hpBar.element.classList.remove('hp-damage-flash');
+    }, 500);
+  }
+
+  showHpPoisonEffect() {
+    this.hpBar.fill.classList.add('hp-poison-flash');
+    setTimeout(() => {
+      this.hpBar.fill.classList.remove('hp-poison-flash');
     }, 500);
   }
 

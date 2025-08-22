@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
 import { AnimationNames, AssetPaths, GameState } from '../utils/constants.js';
 
 export class InputController {
@@ -160,7 +163,11 @@ export class InputController {
     this.canvas.addEventListener('click', () => {
       if (!this._canProcessInput()) return;
       if (typeof window.playwright === 'undefined') {
-        this.canvas.requestPointerLock?.();
+        try {
+          this.canvas.requestPointerLock();
+        } catch (error) {
+          console.warn('Failed to request pointer lock on click:', error);
+        }
       }
     });
 
@@ -248,7 +255,8 @@ export class InputController {
           this.game.data.player.staminaCostDash * deltaTime;
       }
 
-      const speed = 5.0;
+      const baseSpeed = 5.0;
+      const speed = baseSpeed * this.player.getMovementSpeed();
       const moveDirection = new THREE.Vector3();
       const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(
         this.camera.quaternion
@@ -539,7 +547,7 @@ export class InputController {
         this.game.playSFX(AssetPaths.SFX_LOCK_ON);
       } else {
         // Feedback when no target is found
-        console.log('No lock-on target found within range');
+        // No lock-on target found within range
       }
     }
   }
@@ -633,14 +641,12 @@ export class InputController {
     const enemies = this.game.entities?.characters?.enemies ?? [];
     enemies.forEach((enemy) => {
       if (this.player.mesh.position.distanceTo(enemy.mesh.position) < range) {
-        const finalDamage = damage * this.player.attackBuffMultiplier;
-
         if (enemy.isGuarding && typeof enemy.getShieldDefense === 'function') {
           const shieldDefense = enemy.getShieldDefense();
-          const reducedDamage = Math.max(1, finalDamage - shieldDefense);
-          enemy.takeDamage(reducedDamage);
+          const reducedDamage = Math.max(1, damage - shieldDefense);
+          this.player.dealDamage(enemy, reducedDamage);
         } else {
-          enemy.takeDamage(finalDamage);
+          this.player.dealDamage(enemy, damage);
         }
       }
     });

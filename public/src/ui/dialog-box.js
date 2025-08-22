@@ -1,5 +1,6 @@
-import { localization } from '../utils/localization.js';
+// Utils
 import { AssetPaths, HTMLTags } from '../utils/constants.js';
+import { localization } from '../utils/localization.js';
 
 export class DialogBox {
   constructor(game) {

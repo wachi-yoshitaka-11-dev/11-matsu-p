@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
 import { applyTextureToObject } from '../utils/model-utils.js';
 
 export class BaseEntity {

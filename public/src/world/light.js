@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
 import { LightTypes } from '../utils/constants.js';
 
 export class Light {

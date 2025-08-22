@@ -1,5 +1,6 @@
 {
   "name": "mofu2adventure",
+  "private": true,
   "version": "0.1.0",
   "description": "AI-generated 3D open-world action RPG using Three.js",
   "main": "src/index.js",

@@ -1,6 +1,11 @@
+// External libraries
 import * as THREE from 'three';
-import { BaseEntity } from '../base-entity.js';
+
+// Utils
 import { EnvironmentTypes } from '../../utils/constants.js';
+
+// Entities
+import { BaseEntity } from '../base-entity.js';
 
 export class Environment extends BaseEntity {
   constructor(game, envId, position, options = {}) {
@@ -92,7 +97,7 @@ export class Environment extends BaseEntity {
         material = new THREE.MeshStandardMaterial({
           map: texture,
           color: texture ? 0xffffff : options.color || 0x4a7d2c,
-          side: options.side || THREE.DoubleSide,
+          side: options.side ?? THREE.DoubleSide,
         });
         super(game, envId, envData, geometry, material);
         this.mesh.position.copy(position);

@@ -1,17 +1,28 @@
+// External libraries
 import * as THREE from 'three';
-import { BaseEntity } from '../base-entity.js';
-import { PhysicsComponent } from '../../core/components/physics-component.js';
-import { AreaAttack } from '../skills/area-attack.js';
-import { Projectile } from '../skills/projectile.js';
+
+// Utils
 import {
-  EffectColors,
-  Fall,
   AnimationNames,
   AssetPaths,
-  SkillTypes,
-  MovementState,
   AudioConstants,
+  BuffDebuffCategories,
+  DebuffTypes,
+  EffectColors,
+  Fall,
+  MovementState,
+  ONE_SHOT_ANIMATIONS,
+  SkillTypes,
 } from '../../utils/constants.js';
+
+// Core
+import { PhysicsComponent } from '../../core/components/physics-component.js';
+
+// Entities
+import { BaseEntity } from '../base-entity.js';
+import { AreaAttack } from '../skills/area-attack.js';
+import { Projectile } from '../skills/projectile.js';
+import { SelfTarget } from '../skills/self-target.js';
 
 export class Character extends BaseEntity {
   constructor(game, id, data, geometryOrModel, material, options = {}) {
@@ -37,6 +48,16 @@ export class Character extends BaseEntity {
     this.hp = this.maxHp;
     this.speed = options.speed ?? defaults.speed;
     this.isDead = false;
+
+    // Initialize buff multipliers
+    this.attackBuffMultiplier = 1.0;
+    this.defenseBuffMultiplier = 1.0;
+    this.speedBuffMultiplier = 1.0;
+
+    // Initialize debuff multipliers
+    this.attackDebuffMultiplier = 1.0;
+    this.defenseDebuffMultiplier = 1.0;
+    this.speedDebuffMultiplier = 1.0;
 
     this.originalColors = new Map();
     this.effectTimeout = null;
@@ -65,6 +86,271 @@ export class Character extends BaseEntity {
         }
       }
     });
+    // Initialize buff and debuff systems
+    this.initializeBuffSystem();
+    this.initializeDebuffSystem();
+  }
+
+  // Initialize buff system
+  initializeBuffSystem() {
+    this.activeBuffs = new Map();
+    this.buffTimers = new Map();
+  }
+
+  // Initialize debuff system
+  initializeDebuffSystem() {
+    this.activeDebuffs = new Map();
+    this.debuffTimers = new Map();
+  }
+
+  // Update buff and debuff properties
+  updateBuffsAndDebuffs(deltaTime) {
+    // Process debuff properties
+    this.activeDebuffs.forEach((debuff, id) => {
+      if (debuff.type === DebuffTypes.POISON) {
+        debuff.tickTimer -= deltaTime;
+        if (debuff.tickTimer <= 0) {
+          this.takeDamage(debuff.damagePerTick);
+          debuff.tickTimer = debuff.tickInterval;
+
+          // Show poison-specific HP effect (player only)
+          if (this === this.game.player && this.game.hud) {
+            this.game.hud.showHpPoisonEffect();
+          }
+        }
+      }
+    });
+
+    // Manage buff duration
+    const buffEntries = Array.from(this.buffTimers.entries());
+    buffEntries.forEach(([id, endTime]) => {
+      if (Date.now() >= endTime) {
+        this.removeBuff(id);
+        // Update HUD immediately after removing a buff
+        if (this === this.game.player && this.game.hud) {
+          this.game.hud.updateBuffsAndDebuffsDisplay(
+            this.getActiveBuffsAndDebuffs()
+          );
+        }
+      }
+    });
+
+    // Manage debuff duration
+    const debuffEntries = Array.from(this.debuffTimers.entries());
+    debuffEntries.forEach(([id, endTime]) => {
+      if (Date.now() >= endTime) {
+        this.removeDebuff(id);
+        // Update HUD immediately after removing a debuff
+        if (this === this.game.player && this.game.hud) {
+          this.game.hud.updateBuffsAndDebuffsDisplay(
+            this.getActiveBuffsAndDebuffs()
+          );
+        }
+      }
+    });
+  }
+
+  // Apply buff effect
+  applyBuff(config) {
+    // Remove existing buff of the same type first
+    const existingIds = [];
+    this.activeBuffs.forEach((buff, id) => {
+      if (buff.type === config.type) {
+        existingIds.push(id);
+      }
+    });
+    existingIds.forEach((id) => {
+      this.removeBuff(id);
+    });
+
+    // Generate a unique ID with safe fallback
+    const genId = () =>
+      globalThis.crypto?.randomUUID?.() ??
+      `id_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+    const id = `${BuffDebuffCategories.BUFF}_${genId()}`;
+    const endTime = Date.now() + config.duration;
+
+    this.activeBuffs.set(id, {
+      type: config.type,
+      duration: config.duration,
+      ...config,
+    });
+
+    // Apply buff properties
+    if (config.attackBuffMultiplier) {
+      this.attackBuffMultiplier =
+        (this.attackBuffMultiplier || 1.0) * config.attackBuffMultiplier;
+    }
+    if (config.defenseBuffMultiplier) {
+      this.defenseBuffMultiplier =
+        (this.defenseBuffMultiplier || 1.0) * config.defenseBuffMultiplier;
+    }
+    if (config.speedBuffMultiplier) {
+      this.speedBuffMultiplier =
+        (this.speedBuffMultiplier || 1.0) * config.speedBuffMultiplier;
+    }
+
+    this.buffTimers.set(id, endTime);
+
+    // Update HUD display for player
+    if (this === this.game.player && this.game.hud) {
+      const allBuffsAndDebuffs = this.getActiveBuffsAndDebuffs();
+      this.game.hud.updateBuffsAndDebuffsDisplay(allBuffsAndDebuffs);
+    }
+
+    return id;
+  }
+
+  // Apply debuff effect
+  applyDebuff(config) {
+    // Check if poison debuff already exists
+    if (config.type === DebuffTypes.POISON) {
+      const existingPoison = Array.from(this.activeDebuffs.values()).find(
+        (debuff) => debuff.type === DebuffTypes.POISON
+      );
+      if (existingPoison) {
+        return null; // Don't apply duplicate poison
+      }
+    }
+
+    // Generate a unique ID with safe fallback
+    const genId = () =>
+      globalThis.crypto?.randomUUID?.() ??
+      `id_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+    const id = `${BuffDebuffCategories.DEBUFF}_${genId()}`;
+    const endTime = Date.now() + config.duration;
+
+    const debuffData = {
+      type: config.type,
+      duration: config.duration,
+      ...config,
+    };
+
+    if (config.type === DebuffTypes.POISON) {
+      debuffData.tickTimer = config.tickInterval / 1000; // Convert milliseconds to seconds
+      debuffData.tickInterval = config.tickInterval / 1000; // Store as seconds for consistency
+    }
+
+    // Apply debuff properties
+    if (config.attackDebuffMultiplier) {
+      this.attackDebuffMultiplier =
+        (this.attackDebuffMultiplier || 1.0) * config.attackDebuffMultiplier;
+    }
+    if (config.defenseDebuffMultiplier) {
+      this.defenseDebuffMultiplier =
+        (this.defenseDebuffMultiplier || 1.0) * config.defenseDebuffMultiplier;
+    }
+    if (config.speedDebuffMultiplier) {
+      this.speedDebuffMultiplier =
+        (this.speedDebuffMultiplier || 1.0) * config.speedDebuffMultiplier;
+    }
+
+    this.activeDebuffs.set(id, debuffData);
+    this.debuffTimers.set(id, endTime);
+
+    // Update HUD display for player
+    if (this === this.game.player && this.game.hud) {
+      const allBuffsAndDebuffs = this.getActiveBuffsAndDebuffs();
+      this.game.hud.updateBuffsAndDebuffsDisplay(allBuffsAndDebuffs);
+    }
+
+    return id;
+  }
+
+  // Remove buff effect
+  removeBuff(id) {
+    const buff = this.activeBuffs.get(id);
+    if (buff) {
+      // Remove buff properties
+      if (buff.attackBuffMultiplier) {
+        this.attackBuffMultiplier =
+          (this.attackBuffMultiplier || 1.0) / buff.attackBuffMultiplier;
+      }
+      if (buff.defenseBuffMultiplier) {
+        this.defenseBuffMultiplier =
+          (this.defenseBuffMultiplier || 1.0) / buff.defenseBuffMultiplier;
+      }
+      if (buff.speedBuffMultiplier) {
+        this.speedBuffMultiplier =
+          (this.speedBuffMultiplier || 1.0) / buff.speedBuffMultiplier;
+      }
+      this.activeBuffs.delete(id);
+    }
+    this.buffTimers.delete(id);
+  }
+
+  // Remove debuff effect
+  removeDebuff(id) {
+    const debuff = this.activeDebuffs.get(id);
+    if (debuff) {
+      // Remove debuff properties
+      if (debuff.attackDebuffMultiplier) {
+        this.attackDebuffMultiplier =
+          (this.attackDebuffMultiplier || 1.0) / debuff.attackDebuffMultiplier;
+      }
+      if (debuff.defenseDebuffMultiplier) {
+        this.defenseDebuffMultiplier =
+          (this.defenseDebuffMultiplier || 1.0) /
+          debuff.defenseDebuffMultiplier;
+      }
+      if (debuff.speedDebuffMultiplier) {
+        this.speedDebuffMultiplier =
+          (this.speedDebuffMultiplier || 1.0) / debuff.speedDebuffMultiplier;
+      }
+      this.activeDebuffs.delete(id);
+    }
+    this.debuffTimers.delete(id);
+  }
+
+  // Get movement speed with buff/debuff properties
+  getMovementSpeed() {
+    let speedMultiplier = 1.0;
+
+    // Apply debuff properties (reduce speed)
+    this.activeDebuffs.forEach((debuff) => {
+      if (
+        debuff.type === DebuffTypes.SPEED_REDUCTION &&
+        debuff.speedMultiplier
+      ) {
+        speedMultiplier *= debuff.speedMultiplier;
+      }
+    });
+
+    // Apply buff properties (increase speed)
+    this.activeBuffs.forEach((buff) => {
+      if (buff.speedBuffMultiplier) {
+        speedMultiplier *= buff.speedBuffMultiplier;
+      }
+    });
+
+    return speedMultiplier;
+  }
+
+  // Get active buffs and debuffs list for display
+  getActiveBuffsAndDebuffs() {
+    const result = [];
+
+    this.activeBuffs.forEach((buff, id) => {
+      const endTime = this.buffTimers.get(id);
+      result.push({
+        id,
+        category: BuffDebuffCategories.BUFF,
+        type: buff.type,
+        remainingTime: Math.max(0, endTime - Date.now()),
+      });
+    });
+
+    this.activeDebuffs.forEach((debuff, id) => {
+      const endTime = this.debuffTimers.get(id);
+      result.push({
+        id,
+        category: BuffDebuffCategories.DEBUFF,
+        type: debuff.type,
+        remainingTime: Math.max(0, endTime - Date.now()),
+      });
+    });
+
+    return result;
   }
 
   clearEffectTimeout() {
@@ -143,13 +429,10 @@ export class Character extends BaseEntity {
     this._startEffectTimeout(100);
   }
 
-  startChargingEffect() {
+  showItemUseEffect() {
     this.clearEffectTimeout();
-    this._setMeshColor(EffectColors.CHARGE);
-  }
-
-  stopChargingEffect() {
-    this._resetMeshColor();
+    this._setMeshColor(EffectColors.ITEM_USE);
+    this._startEffectTimeout(200);
   }
 
   _startEffectTimeout(duration) {
@@ -167,13 +450,7 @@ export class Character extends BaseEntity {
     if (clip) {
       const newAction = this.mixer.clipAction(clip);
 
-      const isOneShot =
-        name === AnimationNames.ATTACK_WEAK ||
-        name === AnimationNames.ATTACK_STRONG ||
-        name === AnimationNames.DIE ||
-        name === AnimationNames.ROLLING ||
-        name === AnimationNames.BACK_STEP ||
-        name === AnimationNames.PICK_UP;
+      const isOneShot = ONE_SHOT_ANIMATIONS.includes(name);
       if (isOneShot) {
         newAction.setLoop(THREE.LoopOnce);
         newAction.clampWhenFinished = true;
@@ -196,12 +473,34 @@ export class Character extends BaseEntity {
     }
   }
 
-  takeDamage(amount) {
-    if (this.isDead) return;
+  // Deal damage with attack buffs applied
+  dealDamage(target, baseAmount) {
+    if (!target || target.isDead) {
+      return;
+    }
 
-    this.hp -= amount;
+    // Apply attack buff and debuff multipliers
+    const finalDamage =
+      baseAmount *
+      (this.attackBuffMultiplier || 1) *
+      (this.attackDebuffMultiplier || 1);
+    target.takeDamage(finalDamage);
+  }
+
+  takeDamage(amount) {
+    if (this.isDead) {
+      return;
+    }
+
+    // Apply defense buff and debuff multipliers
+    const finalAmount =
+      (amount / (this.defenseBuffMultiplier || 1)) *
+      (this.defenseDebuffMultiplier || 1);
+
+    this.hp -= finalAmount;
     this.showDamageEffect();
     this.game.playSFX(AssetPaths.SFX_DAMAGE);
+
     if (this.hp <= 0) {
       this.hp = 0;
       this.isDead = true;
@@ -213,6 +512,7 @@ export class Character extends BaseEntity {
 
   update(deltaTime) {
     this.physics.update(deltaTime);
+    this.updateBuffsAndDebuffs(deltaTime);
 
     if (this.mixer) {
       this.mixer.update(deltaTime);
@@ -381,36 +681,33 @@ export class Character extends BaseEntity {
     return areaAttack;
   }
 
-  applyAttackBuff(skillData) {
-    this.attackBuffMultiplier = skillData.attackBuffMultiplier || 1.5;
+  createSelfTargetSkill(skillId) {
+    // Self-targeted skills (healing, enhancement, self-harm)
+    const selfTarget = new SelfTarget(
+      this.game,
+      skillId,
+      this // caster (self)
+    );
+
+    if (!this.game.entities.skills.selfTargets) {
+      this.game.entities.skills.selfTargets = [];
+    }
+    this.game.entities.skills.selfTargets.push(selfTarget);
+    this.game.sceneManager.add(selfTarget.mesh);
+    return selfTarget;
   }
 
-  removeAttackBuff() {
-    this.attackBuffMultiplier = 1.0;
-  }
-
-  applyDefenseBuff(skillData) {
-    this.defenseBuffMultiplier = skillData.defenseBuffMultiplier || 1.5;
-  }
-
-  removeDefenseBuff() {
-    this.defenseBuffMultiplier = 1.0;
-  }
-
-  executeBuffSkill(skillId) {
+  executeSelfTargetSkill(skillId) {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
-    this.playAnimation(this.getSkillAnimation(SkillTypes.BUFF));
+    this.playAnimation(this.getSkillAnimation(SkillTypes.SELF_TARGET));
 
     setTimeout(() => {
-      this.applyAttackBuff(skillData);
-      this.applyDefenseBuff(skillData);
-
-      setTimeout(() => {
-        this.removeAttackBuff();
-        this.removeDefenseBuff();
-      }, skillData.duration || 5000);
+      if (!this.isDead) {
+        // Create self-target effect and apply buff
+        this.createSelfTargetSkill(skillId);
+      }
     }, skillData.castTime || 0);
   }
 
@@ -442,7 +739,7 @@ export class Character extends BaseEntity {
 
   getSkillAnimation(skillType) {
     switch (skillType) {
-      case SkillTypes.BUFF:
+      case SkillTypes.SELF_TARGET:
         return AnimationNames.USE_SKILL_BUFF;
       case SkillTypes.PROJECTILE:
         return AnimationNames.USE_SKILL_PROJECTILE;

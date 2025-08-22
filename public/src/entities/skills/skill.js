@@ -1,6 +1,11 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
+import { EffectColors, SkillShape } from '../../utils/constants.js';
+
+// Entities
 import { BaseEntity } from '../base-entity.js';
-import { SkillShape } from '../../utils/constants.js';
 
 export class Skill extends BaseEntity {
   constructor(game, skillId, options = {}) {
@@ -195,5 +200,52 @@ export class Skill extends BaseEntity {
     } else {
       this.mesh.quaternion.copy(casterQuaternion);
     }
+  }
+
+  // Apply debuffs to target (common method for all skill types)
+  applyDebuffToTarget(target) {
+    if (this.data.debuffs && target.applyDebuff) {
+      this.data.debuffs.forEach((debuffData) => {
+        const debuffConfig = {
+          ...debuffData,
+          name: this.data.name,
+          icon: this.data.image,
+        };
+
+        target.applyDebuff(debuffConfig);
+      });
+    }
+  }
+
+  // Common damage effect display
+  showDamageEffect(position) {
+    const effectGeometry = new THREE.SphereGeometry(0.3, 8, 8);
+    const effectMaterial = new THREE.MeshBasicMaterial({
+      color: EffectColors.DAMAGE,
+      transparent: true,
+      opacity: 0.8,
+    });
+    const effectMesh = new THREE.Mesh(effectGeometry, effectMaterial);
+
+    effectMesh.position.copy(position);
+    effectMesh.position.y += 1.0;
+    this.game.sceneManager.add(effectMesh);
+
+    // Animate and remove effect
+    let scale = 1.0;
+    const animate = () => {
+      scale += 0.1;
+      effectMesh.scale.setScalar(scale);
+      effectMaterial.opacity -= 0.05;
+
+      if (effectMaterial.opacity > 0) {
+        requestAnimationFrame(animate);
+      } else {
+        this.game.sceneManager.remove(effectMesh);
+        effectGeometry.dispose();
+        effectMaterial.dispose();
+      }
+    };
+    animate();
   }
 }

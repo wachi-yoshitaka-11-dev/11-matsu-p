@@ -1,6 +1,7 @@
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+// External libraries
 import * as THREE from 'three';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 export class AssetLoader {
   constructor() {
@@ -120,6 +121,37 @@ export class AssetLoader {
     } catch (error) {
       console.error(`Error loading JSON ${path}:`, error);
       throw error;
+    }
+  }
+
+  async loadModelsFromAssets(assetsToLoad) {
+    for (const asset of assetsToLoad) {
+      try {
+        if (asset.model) {
+          await this.loadGLTF(
+            asset.model.replace('.glb', ''),
+            `assets/models/${asset.model}`
+          );
+        }
+        if (asset.texture) {
+          try {
+            await this.loadTexture(
+              asset.texture.replace('.png', ''),
+              `assets/textures/${asset.texture}`
+            );
+          } catch (error) {
+            console.warn(
+              `Texture for ${asset.model || asset.texture} not found. Using default material.`,
+              error
+            );
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Could not load model ${asset.model}. A placeholder will be used.`,
+          error
+        );
+      }
     }
   }
 }
