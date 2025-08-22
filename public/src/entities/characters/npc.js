@@ -1,6 +1,11 @@
+// External libraries
 import * as THREE from 'three';
-import { Character } from './character.js';
+
+// Utils
 import { localization } from '../../utils/localization.js';
+
+// Entities
+import { Character } from './character.js';
 
 export class Npc extends Character {
   static PROMPT_SCALE_FACTOR = 0.01;

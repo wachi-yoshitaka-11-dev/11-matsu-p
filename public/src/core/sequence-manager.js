@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
 import { AssetPaths, SequenceStep } from '../utils/constants.js';
 
 const SEQUENCE_CAMERA_CONFIG = {
@@ -218,6 +221,7 @@ export class SequenceManager {
       const callback = this.onSequenceCompleteCallback;
       this.currentStep = SequenceStep.IDLE;
       this.onSequenceCompleteCallback = null;
+      this.isSkipping = false; // Reset skip state after cleanup
 
       setTimeout(() => callback(), 100);
     }

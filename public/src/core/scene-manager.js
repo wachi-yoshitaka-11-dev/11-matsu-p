@@ -1,6 +1,11 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
+import { DefaultSkyColors, SkyTypes } from '../utils/constants.js';
+
+// Other
 import { Light } from '../world/light.js';
-import { SkyTypes, DefaultSkyColors } from '../utils/constants.js';
 
 export class SceneManager {
   constructor() {

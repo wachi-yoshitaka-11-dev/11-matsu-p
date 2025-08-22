@@ -1,5 +1,8 @@
+// External libraries
 import * as THREE from 'three';
-import { GameConstants, Fall } from '../../utils/constants.js';
+
+// Utils
+import { Fall, GameConstants } from '../../utils/constants.js';
 
 export class PhysicsComponent {
   constructor(object, game) {

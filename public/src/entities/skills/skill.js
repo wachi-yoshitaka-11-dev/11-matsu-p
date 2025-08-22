@@ -1,6 +1,11 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
+import { EffectColors, SkillShape } from '../../utils/constants.js';
+
+// Entities
 import { BaseEntity } from '../base-entity.js';
-import { SkillShape, EffectColors } from '../../utils/constants.js';
 
 export class Skill extends BaseEntity {
   constructor(game, skillId, options = {}) {

@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Utils
 import { AnimationNames, AssetPaths, GameState } from '../utils/constants.js';
 
 export class InputController {
@@ -638,14 +641,12 @@ export class InputController {
     const enemies = this.game.entities?.characters?.enemies ?? [];
     enemies.forEach((enemy) => {
       if (this.player.mesh.position.distanceTo(enemy.mesh.position) < range) {
-        const finalDamage = damage * this.player.attackBuffMultiplier;
-
         if (enemy.isGuarding && typeof enemy.getShieldDefense === 'function') {
           const shieldDefense = enemy.getShieldDefense();
-          const reducedDamage = Math.max(1, finalDamage - shieldDefense);
-          enemy.takeDamage(reducedDamage);
+          const reducedDamage = Math.max(1, damage - shieldDefense);
+          this.player.dealDamage(enemy, reducedDamage);
         } else {
-          enemy.takeDamage(finalDamage);
+          this.player.dealDamage(enemy, damage);
         }
       }
     });

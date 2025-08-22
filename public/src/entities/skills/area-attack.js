@@ -63,7 +63,7 @@ export class AreaAttack extends Skill {
         this.game.player.mesh.position
       );
       if (distance <= this.range) {
-        this.game.player.takeDamage(this.damage);
+        this.caster.dealDamage(this.game.player, this.damage);
         this.showDamageEffect(this.game.player.mesh.position);
 
         // Apply debuffs
@@ -76,7 +76,7 @@ export class AreaAttack extends Skill {
       this.game.entities.characters.enemies.forEach((enemy) => {
         const distance = centerPosition.distanceTo(enemy.mesh.position);
         if (distance <= this.range) {
-          enemy.takeDamage(this.damage);
+          this.caster.dealDamage(enemy, this.damage);
           this.showDamageEffect(enemy.mesh.position);
 
           // Apply debuff to enemies

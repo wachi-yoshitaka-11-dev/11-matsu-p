@@ -1,5 +1,6 @@
-import { localization } from '../utils/localization.js';
+// Utils
 import { AssetPaths } from '../utils/constants.js';
+import { localization } from '../utils/localization.js';
 
 export class TitleScreen {
   constructor(onStart, skipSplashScreenDelay) {

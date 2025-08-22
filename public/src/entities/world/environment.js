@@ -1,6 +1,11 @@
+// External libraries
 import * as THREE from 'three';
-import { BaseEntity } from '../base-entity.js';
+
+// Utils
 import { EnvironmentTypes } from '../../utils/constants.js';
+
+// Entities
+import { BaseEntity } from '../base-entity.js';
 
 export class Environment extends BaseEntity {
   constructor(game, envId, position, options = {}) {

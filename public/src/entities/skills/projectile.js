@@ -1,4 +1,7 @@
+// External libraries
 import * as THREE from 'three';
+
+// Entities
 import { Skill } from './skill.js';
 
 export class Projectile extends Skill {
@@ -78,8 +81,8 @@ export class Projectile extends Skill {
 
     this.hasHit = true;
 
-    // Deal damage
-    target.takeDamage(this.damage);
+    // Deal damage with attack buffs applied
+    this.caster.dealDamage(target, this.damage);
 
     // Show damage effect
     this.showDamageEffect(target.mesh.position);

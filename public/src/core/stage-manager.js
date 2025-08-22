@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 
 import {
-  Fall,
-  EnvironmentTypes,
-  StageClearConditionTypes,
-  EnemyTypes,
   AssetPaths,
+  CollisionTypes,
+  EnvironmentTypes,
+  EnemyTypes,
+  Fall,
+  StageClearConditionTypes,
   StageMessageTypes,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
@@ -768,9 +769,12 @@ export class StageManager {
       .filter((terrain) => {
         if (!terrain.mesh) return false;
 
-        // Check if collision is enabled for this terrain type
+        // Check if collision is enabled and type is mesh for this terrain type
         const terrainData = this.game.data.terrains?.[terrain.id];
-        return terrainData?.collision?.enabled === true;
+        return (
+          terrainData?.collision?.enabled === true &&
+          terrainData?.collision?.type === CollisionTypes.MESH
+        );
       })
       .map((terrain) => terrain.mesh);
     objectsToCheck.push(...collisionTerrains);

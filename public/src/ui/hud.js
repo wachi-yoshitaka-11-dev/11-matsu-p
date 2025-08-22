@@ -1,6 +1,7 @@
+// Utils
 import {
-  GameState,
   AssetPaths,
+  GameState,
   StageMessageTypes,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';

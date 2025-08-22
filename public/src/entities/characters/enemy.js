@@ -1,12 +1,17 @@
+// External libraries
 import * as THREE from 'three';
-import { Character } from './character.js';
+
+// Utils
 import {
-  AssetPaths,
   AnimationNames,
-  SkillTypes,
+  AssetPaths,
   AttackTypes,
   MovementState,
+  SkillTypes,
 } from '../../utils/constants.js';
+
+// Entities
+import { Character } from './character.js';
 
 export class Enemy extends Character {
   constructor(game, enemyId, position, options = {}) {

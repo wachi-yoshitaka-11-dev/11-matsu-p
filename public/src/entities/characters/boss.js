@@ -1,5 +1,8 @@
-import { Enemy } from './enemy.js';
+// Utils
 import { AnimationNames } from '../../utils/constants.js';
+
+// Entities
+import { Enemy } from './enemy.js';
 
 export class Boss extends Enemy {
   constructor(game, enemyId, position, options = {}) {

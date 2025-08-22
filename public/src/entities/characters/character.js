@@ -1,21 +1,28 @@
+// External libraries
 import * as THREE from 'three';
-import { BaseEntity } from '../base-entity.js';
+
+// Utils
+import {
+  AnimationNames,
+  AssetPaths,
+  AudioConstants,
+  BuffDebuffCategories,
+  DebuffTypes,
+  EffectColors,
+  Fall,
+  MovementState,
+  ONE_SHOT_ANIMATIONS,
+  SkillTypes,
+} from '../../utils/constants.js';
+
+// Core
 import { PhysicsComponent } from '../../core/components/physics-component.js';
+
+// Entities
+import { BaseEntity } from '../base-entity.js';
 import { AreaAttack } from '../skills/area-attack.js';
 import { Projectile } from '../skills/projectile.js';
 import { SelfTarget } from '../skills/self-target.js';
-import {
-  EffectColors,
-  Fall,
-  AnimationNames,
-  AssetPaths,
-  SkillTypes,
-  MovementState,
-  AudioConstants,
-  DebuffTypes,
-  BuffDebuffCategories,
-  ONE_SHOT_ANIMATIONS,
-} from '../../utils/constants.js';
 
 export class Character extends BaseEntity {
   constructor(game, id, data, geometryOrModel, material, options = {}) {
@@ -156,7 +163,11 @@ export class Character extends BaseEntity {
       this.removeBuff(id);
     });
 
-    const id = `${BuffDebuffCategories.BUFF}_${crypto.randomUUID()}`;
+    // Generate a unique ID with safe fallback
+    const genId = () =>
+      globalThis.crypto?.randomUUID?.() ??
+      `id_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+    const id = `${BuffDebuffCategories.BUFF}_${genId()}`;
     const endTime = Date.now() + config.duration;
 
     this.activeBuffs.set(id, {
@@ -202,7 +213,11 @@ export class Character extends BaseEntity {
       }
     }
 
-    const id = `${BuffDebuffCategories.DEBUFF}_${crypto.randomUUID()}`;
+    // Generate a unique ID with safe fallback
+    const genId = () =>
+      globalThis.crypto?.randomUUID?.() ??
+      `id_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+    const id = `${BuffDebuffCategories.DEBUFF}_${genId()}`;
     const endTime = Date.now() + config.duration;
 
     const debuffData = {
@@ -458,12 +473,26 @@ export class Character extends BaseEntity {
     }
   }
 
+  // Deal damage with attack buffs applied
+  dealDamage(target, baseAmount) {
+    if (!target || target.isDead) {
+      return;
+    }
+
+    // Apply attack buff multiplier
+    const buffedDamage = baseAmount * (this.attackBuffMultiplier || 1);
+    target.takeDamage(buffedDamage);
+  }
+
   takeDamage(amount) {
     if (this.isDead) {
       return;
     }
 
-    this.hp -= amount;
+    // Apply defense buff multiplier
+    const finalAmount = amount / (this.defenseBuffMultiplier || 1);
+
+    this.hp -= finalAmount;
     this.showDamageEffect();
     this.game.playSFX(AssetPaths.SFX_DAMAGE);
 

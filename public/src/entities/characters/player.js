@@ -1,11 +1,16 @@
+// External libraries
 import * as THREE from 'three';
-import { Character } from './character.js';
+
+// Utils
 import {
   AnimationNames,
-  SkillTypes,
   AssetPaths,
   MovementState,
+  SkillTypes,
 } from '../../utils/constants.js';
+
+// Entities
+import { Character } from './character.js';
 
 export class Player extends Character {
   constructor(game, playerId, options = {}) {
@@ -180,7 +185,7 @@ export class Player extends Character {
   takeDamage(amount, options = {}) {
     if (this.isInvincible || this.isRolling) return;
 
-    let finalDamage = amount / this.defenseBuffMultiplier;
+    let finalDamage = amount;
     const { canGuard = true } = options;
 
     if (this.isGuarding && canGuard) {
@@ -241,7 +246,7 @@ export class Player extends Character {
   }
 
   switchShield() {
-    if (this.shields.length > 1) {
+    if (this.shields.length > 0) {
       this.currentShieldIndex =
         (this.currentShieldIndex + 1) % this.shields.length;
       this.game.playSFX(AssetPaths.SFX_SWITCH_SHIELD);
@@ -260,7 +265,7 @@ export class Player extends Character {
   }
 
   switchSkill() {
-    if (this.skills.length > 1) {
+    if (this.skills.length > 0) {
       this.currentSkillIndex =
         (this.currentSkillIndex + 1) % this.skills.length;
       this.game.playSFX(AssetPaths.SFX_SWITCH_SKILL);
@@ -274,7 +279,7 @@ export class Player extends Character {
   }
 
   switchWeapon() {
-    if (this.weapons.length > 1) {
+    if (this.weapons.length > 0) {
       this.currentWeaponIndex =
         (this.currentWeaponIndex + 1) % this.weapons.length;
       this.game.playSFX(AssetPaths.SFX_SWITCH_WEAPON);
@@ -287,7 +292,7 @@ export class Player extends Character {
   }
 
   switchItem() {
-    if (this.inventory.length > 1) {
+    if (this.inventory.length > 0) {
       this.currentItemIndex =
         (this.currentItemIndex + 1) % this.inventory.length;
       this.game.playSFX(AssetPaths.SFX_SWITCH_ITEM);

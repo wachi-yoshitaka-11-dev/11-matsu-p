@@ -1,26 +1,35 @@
+// External libraries
 import * as THREE from 'three';
-import { SceneManager } from './scene-manager.js';
-import { AssetLoader } from './asset-loader.js';
-import { StageManager } from './stage-manager.js';
-import { Player } from '../entities/characters/player.js';
-import { InputController } from '../controls/input-controller.js';
-import { Hud } from '../ui/hud.js';
-import { TitleScreen } from '../ui/title-screen.js';
-import { LoadingScreen } from '../ui/loading-screen.js';
-import { PauseMenu } from '../ui/pause-menu.js';
-import { DialogBox } from '../ui/dialog-box.js';
-import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
-import { LockOnUI } from '../ui/lock-on-ui.js';
+
+// Utils
 import {
   AssetPaths,
+  AudioConstants,
+  BGMConditionOperators,
+  BGMConditionTypes,
   GameState,
   ItemConstants,
-  AudioConstants,
-  BGMConditionTypes,
-  BGMConditionOperators,
 } from '../utils/constants.js';
-import { SequenceManager } from './sequence-manager.js';
 import { localization } from '../utils/localization.js';
+
+// Core
+import { AssetLoader } from './asset-loader.js';
+import { SceneManager } from './scene-manager.js';
+import { SequenceManager } from './sequence-manager.js';
+import { StageManager } from './stage-manager.js';
+
+// Entities
+import { Player } from '../entities/characters/player.js';
+
+// Other
+import { InputController } from '../controls/input-controller.js';
+import { DialogBox } from '../ui/dialog-box.js';
+import { EnemyHealthBar } from '../ui/enemy-health-bar.js';
+import { Hud } from '../ui/hud.js';
+import { LoadingScreen } from '../ui/loading-screen.js';
+import { LockOnUI } from '../ui/lock-on-ui.js';
+import { PauseMenu } from '../ui/pause-menu.js';
+import { TitleScreen } from '../ui/title-screen.js';
 
 export class Game {
   constructor() {

@@ -42,6 +42,16 @@ export const SkillTypes = {
   AREA_ATTACK: 'areaAttack',
 };
 
+export const AttackTypes = {
+  WEAK: 'weak',
+  STRONG: 'strong',
+};
+
+export const CollisionTypes = {
+  NONE: 'none',
+  MESH: 'mesh',
+};
+
 export const BuffTypes = {
   ATTACK_ENHANCEMENT: 'attackEnhancement',
   DEFENSE_ENHANCEMENT: 'defenseEnhancement',
@@ -58,11 +68,6 @@ export const DebuffTypes = {
 export const BuffDebuffCategories = {
   BUFF: 'buff',
   DEBUFF: 'debuff',
-};
-
-export const AttackTypes = {
-  WEAK: 'weak',
-  STRONG: 'strong',
 };
 
 export const EnemyTypes = {
