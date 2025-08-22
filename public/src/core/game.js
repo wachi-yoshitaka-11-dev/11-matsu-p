@@ -94,6 +94,13 @@ export class Game {
   }
 
   setupBeforeUnloadHandler() {
+    // Skip beforeunload handler in Electron environment to allow proper app exit
+    if (typeof window.electronAPI !== 'undefined' || 
+        typeof window.require !== 'undefined' || 
+        navigator.userAgent.indexOf('Electron') !== -1) {
+      return;
+    }
+    
     window.addEventListener('beforeunload', (e) => {
       // Prevent only during actual gameplay
       if (
