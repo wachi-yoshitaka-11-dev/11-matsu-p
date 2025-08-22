@@ -801,7 +801,8 @@ export class StageManager {
       }
     }
 
-    return highestY;
+    // Return safe ground level (0) instead of MAX_FALL_DEPTH for spawn safety
+    return highestY > Fall.MAX_FALL_DEPTH ? highestY : 0;
   }
 
   /**

@@ -97,7 +97,7 @@ export class Environment extends BaseEntity {
         material = new THREE.MeshStandardMaterial({
           map: texture,
           color: texture ? 0xffffff : options.color || 0x4a7d2c,
-          side: options.side || THREE.DoubleSide,
+          side: options.side ?? THREE.DoubleSide,
         });
         super(game, envId, envData, geometry, material);
         this.mesh.position.copy(position);

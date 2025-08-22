@@ -81,8 +81,16 @@ export class Projectile extends Skill {
 
     this.hasHit = true;
 
-    // Deal damage with attack buffs applied
-    this.caster.dealDamage(target, this.damage);
+    // Deal damage with attack buffs applied or fallback to raw damage
+    if (this.caster && this.caster.dealDamage) {
+      this.caster.dealDamage(target, this.damage);
+    } else if (this.game.player && this.game.player.dealDamage) {
+      // Fallback to player damage dealing
+      this.game.player.dealDamage(target, this.damage);
+    } else {
+      // Final fallback to raw damage
+      target.takeDamage(this.damage);
+    }
 
     // Show damage effect
     this.showDamageEffect(target.mesh.position);

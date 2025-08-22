@@ -643,11 +643,6 @@ export class Game {
       // Add to internal tracker
       this.playingVoices.push(voiceAudio);
 
-      voiceAudio.onEnded = () => {
-        const index = this.playingVoices.indexOf(voiceAudio);
-        if (index > -1) this.playingVoices.splice(index, 1);
-      };
-
       // Check if sequence is being skipped right before playing
       if (this.sequenceManager && this.sequenceManager.isSkipping) {
         // Remove from tracker if skipped
@@ -657,6 +652,14 @@ export class Game {
       }
 
       voiceAudio.play();
+
+      // Attach onended handler after play()
+      if (voiceAudio.source) {
+        voiceAudio.source.onended = () => {
+          const index = this.playingVoices.indexOf(voiceAudio);
+          if (index > -1) this.playingVoices.splice(index, 1);
+        };
+      }
       return voiceAudio;
     } catch (error) {
       console.warn(`Failed to load voice audio: ${audioPath}`, error);

@@ -479,9 +479,12 @@ export class Character extends BaseEntity {
       return;
     }
 
-    // Apply attack buff multiplier
-    const buffedDamage = baseAmount * (this.attackBuffMultiplier || 1);
-    target.takeDamage(buffedDamage);
+    // Apply attack buff and debuff multipliers
+    const finalDamage =
+      baseAmount *
+      (this.attackBuffMultiplier || 1) *
+      (this.attackDebuffMultiplier || 1);
+    target.takeDamage(finalDamage);
   }
 
   takeDamage(amount) {
@@ -489,8 +492,10 @@ export class Character extends BaseEntity {
       return;
     }
 
-    // Apply defense buff multiplier
-    const finalAmount = amount / (this.defenseBuffMultiplier || 1);
+    // Apply defense buff and debuff multipliers
+    const finalAmount =
+      (amount / (this.defenseBuffMultiplier || 1)) *
+      (this.defenseDebuffMultiplier || 1);
 
     this.hp -= finalAmount;
     this.showDamageEffect();

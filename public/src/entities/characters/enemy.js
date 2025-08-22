@@ -131,15 +131,8 @@ export class Enemy extends Character {
       return;
     }
 
-    const distance = this.mesh.position.distanceTo(
-      this.game.player.mesh.position
-    );
-    const minAttackRange = Math.min(
-      this.data.weakAttack.range,
-      this.data.strongAttack.range
-    );
-
-    if (distance > minAttackRange) {
+    const movementInfo = this.getMovementInfo();
+    if (movementInfo.shouldPlay && movementInfo.state === MovementState.WALK) {
       this.playAnimation(AnimationNames.WALK);
     } else {
       this.playAnimation(AnimationNames.IDLE);
