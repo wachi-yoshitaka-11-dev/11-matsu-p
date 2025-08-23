@@ -84,6 +84,15 @@ export class Player extends Character {
           this.isAttacking = false;
           this.isAttackingWeak = false;
           this.isAttackingStrong = false;
+
+          // Clear attack timeout if animation finished normally
+          if (
+            this.game.inputController &&
+            this.game.inputController.attackTimeout
+          ) {
+            clearTimeout(this.game.inputController.attackTimeout);
+            this.game.inputController.attackTimeout = null;
+          }
         } else if (clipName === AnimationNames.ROLLING) {
           this.isRolling = false;
         } else if (clipName === AnimationNames.BACK_STEP) {

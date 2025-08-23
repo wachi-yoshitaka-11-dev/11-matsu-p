@@ -801,8 +801,8 @@ export class StageManager {
       }
     }
 
-    // Return safe ground level (0) instead of MAX_FALL_DEPTH for spawn safety
-    return highestY > Fall.MAX_FALL_DEPTH ? highestY : 0;
+    // Return actual height or MAX_FALL_DEPTH if no ground found (allows proper falling)
+    return highestY;
   }
 
   /**
@@ -815,8 +815,13 @@ export class StageManager {
       this.game.player.mesh.position.set(startPos[0], startPos[1], startPos[2]);
 
       // Always adjust Y position to ground level for consistency
-      this.game.player.mesh.position.y =
-        this.getHeightAt(startPos[0], startPos[2]) + 1;
+      const groundHeight = this.getHeightAt(startPos[0], startPos[2]);
+      if (groundHeight > Fall.MAX_FALL_DEPTH) {
+        this.game.player.mesh.position.y = groundHeight + 1;
+      } else {
+        // Fallback to spawn position Y if no ground found at spawn point
+        this.game.player.mesh.position.y = startPos[1];
+      }
     }
 
     // Start BGM

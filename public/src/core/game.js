@@ -293,6 +293,10 @@ export class Game {
       this.loadingScreen.hide();
       this.sceneManager.showCanvas();
       this.gameState = GameState.PLAYING;
+
+      // Stop any remaining sequence voices and BGM to prevent overlap with gameplay
+      this.stopAllVoices();
+
       this.hud?.show();
 
       try {

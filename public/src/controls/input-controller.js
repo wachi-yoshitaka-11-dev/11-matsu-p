@@ -194,6 +194,11 @@ export class InputController {
           this.player.isAttacking = true;
           this.player.stamina -= staminaCost;
 
+          // Clear any existing attack timeout
+          if (this.attackTimeout) {
+            clearTimeout(this.attackTimeout);
+          }
+
           if (isStrongAttack) {
             this.player.isAttackingStrong = true;
             this.player.isAttackingWeak = false;
@@ -201,6 +206,14 @@ export class InputController {
             this.player.playAnimation(AnimationNames.ATTACK_STRONG);
             this.game.playSFX(AssetPaths.SFX_ATTACK_STRONG);
             this.performAttack(params.damageStrong, params.attackRangeStrong);
+
+            // Safety timeout for strong attack (typically ~1-2 seconds)
+            this.attackTimeout = setTimeout(() => {
+              this.player.isAttacking = false;
+              this.player.isAttackingStrong = false;
+              this.player.isAttackingWeak = false;
+              this.player.updateAnimation();
+            }, 3000);
           } else {
             this.player.isAttackingWeak = true;
             this.player.isAttackingStrong = false;
@@ -208,6 +221,14 @@ export class InputController {
             this.player.playAnimation(AnimationNames.ATTACK_WEAK);
             this.game.playSFX(AssetPaths.SFX_ATTACK_WEAK);
             this.performAttack(params.damage, params.attackRange);
+
+            // Safety timeout for weak attack (typically ~0.5-1 second)
+            this.attackTimeout = setTimeout(() => {
+              this.player.isAttacking = false;
+              this.player.isAttackingWeak = false;
+              this.player.isAttackingStrong = false;
+              this.player.updateAnimation();
+            }, 2000);
           }
         }
       } else if (e.button === 1) {

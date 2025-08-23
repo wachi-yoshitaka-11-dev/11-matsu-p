@@ -454,15 +454,22 @@ export class Character extends BaseEntity {
       if (isOneShot) {
         newAction.setLoop(THREE.LoopOnce);
         newAction.clampWhenFinished = true;
+
+        // For one-shot animations, stop current action immediately and start new one
+        if (this.currentAction) {
+          this.currentAction.stop();
+        }
+        newAction.reset().play();
       } else {
         newAction.setLoop(THREE.LoopRepeat);
+
+        // For looping animations, use fade transition
+        if (this.currentAction) {
+          this.currentAction.fadeOut(0.2);
+        }
+        newAction.reset().fadeIn(0.2).play();
       }
 
-      if (this.currentAction) {
-        this.currentAction.fadeOut(0.2);
-      }
-
-      newAction.reset().fadeIn(0.2).play();
       this.currentAction = newAction;
       this.currentAnimationName = name;
     } else {
