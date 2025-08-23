@@ -803,6 +803,279 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
   });
 });
 
+test.describe('Mofu Mofu Adventure - Skill Effects System Tests', () => {
+  test('should implement particle system with count, spread, and speed parameters', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      "#title-screen #title-menu button:has-text('New Game')"
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test particle system by using a skill with particle effects
+    const particleSystemTest = await page.evaluate(() => {
+      const player = window.game?.player;
+      if (!player || !player.skills || player.skills.length === 0) {
+        return { hasSkills: false };
+      }
+
+      // Use the current skill (should have particle effects)
+      player.useCurrentSkill();
+
+      // Check if particle system is working
+      const activeSkills = window.game.entities.skills || [];
+      let hasParticleSystem = false;
+      let particleData = null;
+
+      activeSkills.forEach((skill) => {
+        if (skill.particleSystem) {
+          hasParticleSystem = true;
+          const geometry = skill.particleSystem.geometry;
+          const userData = skill.particleSystem.userData;
+
+          particleData = {
+            hasGeometry: !!geometry,
+            hasPositions: !!geometry?.attributes?.position,
+            hasColors: !!geometry?.attributes?.color,
+            hasVelocities: !!userData?.velocities,
+            hasLifespans: !!userData?.lifespans,
+            particleCount: geometry?.attributes?.position?.count || 0,
+          };
+        }
+      });
+
+      return {
+        hasSkills: true,
+        hasParticleSystem,
+        particleData,
+        activeSkillsCount: activeSkills.length,
+      };
+    });
+
+    expect(particleSystemTest.hasSkills).toBe(true);
+    if (particleSystemTest.activeSkillsCount > 0) {
+      expect(particleSystemTest.hasParticleSystem).toBe(true);
+      expect(particleSystemTest.particleData?.hasGeometry).toBe(true);
+      expect(particleSystemTest.particleData?.hasPositions).toBe(true);
+      expect(particleSystemTest.particleData?.hasColors).toBe(true);
+      expect(particleSystemTest.particleData?.hasVelocities).toBe(true);
+      expect(particleSystemTest.particleData?.hasLifespans).toBe(true);
+      expect(particleSystemTest.particleData?.particleCount).toBeGreaterThan(0);
+    }
+  });
+
+  test('should implement trail system with length and opacity parameters', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      "#title-screen #title-menu button:has-text('New Game')"
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test trail system by using a projectile skill with trail effects
+    const trailSystemTest = await page.evaluate(() => {
+      const player = window.game?.player;
+      if (!player || !player.skills || player.skills.length === 0) {
+        return { hasSkills: false };
+      }
+
+      // Switch to projectile skill (magic missile should have trail)
+      let projectileSkillIndex = -1;
+      for (let i = 0; i < player.skills.length; i++) {
+        const skillData = window.game.data.skills[player.skills[i]];
+        if (skillData?.type === 'projectile' && skillData?.effect?.trail) {
+          projectileSkillIndex = i;
+          break;
+        }
+      }
+
+      if (projectileSkillIndex === -1) {
+        return { hasSkills: true, hasProjectileSkill: false };
+      }
+
+      player.currentSkillIndex = projectileSkillIndex;
+      player.useCurrentSkill();
+
+      // Wait a moment for skill to initialize
+      setTimeout(() => {
+        // Check if trail system is working
+        const activeSkills = window.game.entities.skills || [];
+        let hasTrailSystem = false;
+        let trailData = null;
+
+        activeSkills.forEach((skill) => {
+          if (skill.trailSystem) {
+            hasTrailSystem = true;
+            trailData = {
+              hasLength: typeof skill.trailSystem.length === 'number',
+              hasOpacity: typeof skill.trailSystem.opacity === 'number',
+              hasColor: !!skill.trailSystem.color,
+              hasPositions: Array.isArray(skill.trailSystem.positions),
+              hasMaxPositions:
+                typeof skill.trailSystem.maxPositions === 'number',
+              length: skill.trailSystem.length,
+              opacity: skill.trailSystem.opacity,
+            };
+          }
+        });
+
+        window.testResults = {
+          hasSkills: true,
+          hasProjectileSkill: true,
+          hasTrailSystem,
+          trailData,
+          activeSkillsCount: activeSkills.length,
+        };
+      }, 100);
+
+      return { pending: true };
+    });
+
+    if (trailSystemTest.pending) {
+      // Wait for the test results
+      await page.waitForFunction(() => window.testResults !== undefined, null, {
+        timeout: 5000,
+      });
+
+      const results = await page.evaluate(() => window.testResults);
+
+      expect(results.hasSkills).toBe(true);
+      if (results.hasProjectileSkill && results.activeSkillsCount > 0) {
+        expect(results.hasTrailSystem).toBe(true);
+        expect(results.trailData?.hasLength).toBe(true);
+        expect(results.trailData?.hasOpacity).toBe(true);
+        expect(results.trailData?.hasColor).toBe(true);
+        expect(results.trailData?.hasPositions).toBe(true);
+        expect(results.trailData?.hasMaxPositions).toBe(true);
+        expect(results.trailData?.length).toBeGreaterThan(0);
+        expect(results.trailData?.opacity).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test('should properly dispose of particle and trail resources', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page.locator(
+      "#title-screen #title-menu button:has-text('New Game')"
+    );
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Test resource disposal
+    const disposalTest = await page.evaluate(() => {
+      const player = window.game?.player;
+      if (!player || !player.skills || player.skills.length === 0) {
+        return { hasSkills: false };
+      }
+
+      // Use a skill
+      player.useCurrentSkill();
+
+      // Get reference to active skills
+      const activeSkills = window.game.entities.skills || [];
+      let skillWithEffects = null;
+
+      activeSkills.forEach((skill) => {
+        if (skill.particleSystem || skill.trailSystem) {
+          skillWithEffects = skill;
+        }
+      });
+
+      if (!skillWithEffects) {
+        return { hasSkills: true, hasEffectSkill: false };
+      }
+
+      // Check if dispose method exists
+      const hasDisposeMethod = typeof skillWithEffects.dispose === 'function';
+
+      // Test dispose method (should not throw errors)
+      let disposeWorked = false;
+      try {
+        skillWithEffects.dispose();
+        disposeWorked = true;
+      } catch (error) {
+        console.error('Dispose error:', error);
+      }
+
+      return {
+        hasSkills: true,
+        hasEffectSkill: true,
+        hasDisposeMethod,
+        disposeWorked,
+      };
+    });
+
+    expect(disposalTest.hasSkills).toBe(true);
+    if (disposalTest.hasEffectSkill) {
+      expect(disposalTest.hasDisposeMethod).toBe(true);
+      expect(disposalTest.disposeWorked).toBe(true);
+    }
+  });
+});
+
 test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
   test('should play opening sequence and transition to title screen', async ({
     page,

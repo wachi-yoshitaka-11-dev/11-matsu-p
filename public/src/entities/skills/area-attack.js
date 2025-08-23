@@ -48,10 +48,43 @@ export class AreaAttack extends Skill {
         (this.data.effect.opacity || 0.6) * (1 - progress);
     }
 
+    // Start fading out particles when effect is finishing (earlier start for smoother fade)
+    if (progress > 0.6) {
+      const fadeProgress = (progress - 0.6) / 0.4; // Fade over last 40% of duration
+      if (this.particleData) {
+        this.particleData.fadeRatio = Math.max(0.1, 1.0 - fadeProgress);
+      }
+    }
+
     // Mark for removal when duration ends
     if (progress >= 1) {
       this.lifespan = 0;
+      // Stop particle emission
+      this.particleData = null;
+      // Force cleanup all remaining particles
+      this.forceCleanupAllParticles();
     }
+  }
+
+  // Force cleanup all remaining particles immediately (similar to projectile)
+  forceCleanupAllParticles() {
+    if (this.activeParticles) {
+      this.activeParticles.forEach((particle) => {
+        if (particle.mesh) {
+          this.game.sceneManager.remove(particle.mesh);
+          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
+          if (particle.mesh.material) particle.mesh.material.dispose();
+        }
+      });
+      this.activeParticles = [];
+    }
+  }
+
+  // Override dispose to ensure cleanup
+  dispose() {
+    this.particleData = null; // Stop particle emission
+    this.forceCleanupAllParticles(); // Force cleanup all remaining particles
+    super.dispose();
   }
 
   dealDamage() {

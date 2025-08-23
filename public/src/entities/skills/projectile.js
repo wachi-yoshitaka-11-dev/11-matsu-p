@@ -32,6 +32,30 @@ export class Projectile extends Skill {
     super.update(deltaTime);
 
     if (this.hasHit) {
+      // Begin fade out process instead of immediate stop
+      if (!this.fadeOutStarted) {
+        this.fadeOutStarted = true;
+        this.fadeOutTime = 0.3; // Fade out over 300ms
+        this.fadeOutTimer = this.fadeOutTime;
+      }
+
+      this.fadeOutTimer -= deltaTime;
+
+      if (this.fadeOutTimer <= 0) {
+        this.particleData = null;
+        this.cleanupTrail();
+        this.forceCleanupAllParticles();
+        return;
+      }
+
+      // Gradually reduce particle emission during fade out
+      if (this.particleData) {
+        this.particleData.fadeRatio = this.fadeOutTimer / this.fadeOutTime;
+      }
+      // Also fade trail
+      if (this.trailSystem) {
+        this.trailSystem.fadeRatio = this.fadeOutTimer / this.fadeOutTime;
+      }
       return;
     }
 
@@ -48,6 +72,69 @@ export class Projectile extends Skill {
     // Remove if lifespan expired
     if (this.lifespan <= 0) {
       this.lifespan = 0;
+
+      // Begin fade out process instead of immediate stop
+      if (!this.fadeOutStarted) {
+        this.fadeOutStarted = true;
+        this.fadeOutTime = 0.2; // Shorter fade for expiry
+        this.fadeOutTimer = this.fadeOutTime;
+
+        if (this.particleData) {
+          this.particleData.fadeRatio = 1.0;
+        }
+      }
+
+      this.fadeOutTimer -= deltaTime;
+
+      if (this.fadeOutTimer <= 0) {
+        this.particleData = null;
+        this.cleanupTrail();
+        this.forceCleanupAllParticles();
+        this.shouldDispose = true;
+        return;
+      }
+
+      // Gradually reduce particle emission during fade out
+      if (this.particleData) {
+        this.particleData.fadeRatio = this.fadeOutTimer / this.fadeOutTime;
+      }
+      // Also fade trail
+      if (this.trailSystem) {
+        this.trailSystem.fadeRatio = this.fadeOutTimer / this.fadeOutTime;
+      }
+    }
+  }
+
+  // Clean up trail system when projectile ends
+  cleanupTrail() {
+    if (this.trailSystem && this.trailSystem.worldMesh) {
+      this.game.sceneManager.remove(this.trailSystem.worldMesh);
+      this.trailSystem.worldMesh.geometry.dispose();
+      this.trailSystem.worldMesh.material.dispose();
+      this.trailSystem.worldMesh = null;
+      this.trailSystem.positions = [];
+    }
+  }
+
+  // Override dispose to ensure cleanup
+  dispose() {
+    this.particleData = null; // Stop particle emission
+    this.cleanupTrail(); // Clean up trail system
+    this.forceCleanupAllParticles(); // Force cleanup all remaining particles
+    super.dispose();
+  }
+
+  // Force cleanup all remaining particles immediately
+  forceCleanupAllParticles() {
+    if (this.activeParticles) {
+      this.activeParticles.forEach((particle) => {
+        if (particle.mesh) {
+          this.game.sceneManager.remove(particle.mesh);
+          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
+          if (particle.mesh.material) particle.mesh.material.dispose();
+        }
+      });
+      this.activeParticles = [];
     }
   }
 
@@ -99,6 +186,11 @@ export class Projectile extends Skill {
     if (this.data.debuffs) {
       this.applyDebuffToTarget(target);
     }
+
+    // Stop particle emission and clean trail immediately
+    this.particleData = null;
+    this.cleanupTrail();
+    this.forceCleanupAllParticles();
 
     // Mark for removal
     this.lifespan = 0;

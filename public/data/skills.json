@@ -10,10 +10,16 @@
       "size": 2.0,
       "opacity": 0.6,
       "particle": {
-        "color": "#FFFFFF",
-        "count": 30,
-        "spread": 2.0,
-        "speed": 1.5
+        "color": "#FFD700",
+        "count": 200,
+        "spread": 5.0,
+        "speed": 2.0,
+        "size": 0.12,
+        "lifetime": 1.2,
+        "gravity": -0.5,
+        "pattern": "spiral",
+        "pulseIntensity": 0.8,
+        "glowEffect": true
       }
     },
     "fpCost": 30,
@@ -38,13 +44,27 @@
     "image": "skills/magic-missile.png",
     "description": "魔力を込めた遠距離攻撃",
     "effect": {
-      "shape": "cone",
+      "shape": "sphere",
       "color": "#9370DB",
       "size": 1.2,
+      "particle": {
+        "color": "#9370DB",
+        "count": 120,
+        "spread": 2.5,
+        "speed": 4.0,
+        "size": 0.06,
+        "lifetime": 0.5,
+        "gravity": 0.3,
+        "pattern": "helix",
+        "sparkleEffect": true,
+        "energyRings": 3
+      },
       "trail": {
-        "color": "#DDA0DD",
-        "length": 2.0,
-        "opacity": 0.8
+        "color": "#B19CD9",
+        "length": 6.0,
+        "opacity": 0.85,
+        "width": 0.4,
+        "segments": 15
       },
       "rotation": {
         "x": 1.5708,
@@ -72,9 +92,16 @@
       "opacity": 0.9,
       "particle": {
         "color": "#FFFFFF",
-        "count": 50,
-        "spread": 3.0,
-        "speed": 8.0
+        "count": 300,
+        "spread": 8.0,
+        "speed": 15.0,
+        "size": 0.15,
+        "lifetime": 2.0,
+        "gravity": 2.0,
+        "pattern": "explosion",
+        "shockwaveRings": 4,
+        "flashIntensity": 1.5,
+        "emberEffect": true
       }
     },
     "fpCost": 40,
@@ -95,9 +122,16 @@
       "opacity": 0.5,
       "particle": {
         "color": "#D2691E",
-        "count": 20,
-        "spread": 1.5,
-        "speed": 2.0
+        "count": 180,
+        "spread": 6.0,
+        "speed": 5.0,
+        "size": 0.1,
+        "lifetime": 1.0,
+        "gravity": 0.2,
+        "pattern": "soundwave",
+        "vibrationEffect": true,
+        "dustClouds": true,
+        "howlIntensity": 0.9
       }
     },
     "fpCost": 0,
@@ -122,13 +156,28 @@
     "image": "skills/bone-bite.png",
     "description": "犬が骨のような飛び道具を放つ遠距離攻撃",
     "effect": {
-      "shape": "cone",
+      "shape": "capsule",
       "color": "#F5DEB3",
       "size": 1.0,
+      "particle": {
+        "color": "#F5DEB3",
+        "count": 100,
+        "spread": 2.0,
+        "speed": 3.0,
+        "size": 0.08,
+        "lifetime": 0.7,
+        "gravity": 0.6,
+        "pattern": "fang",
+        "boneShards": true,
+        "savageEffect": true,
+        "gnawing": 0.8
+      },
       "trail": {
         "color": "#DEB887",
-        "length": 1.8,
-        "opacity": 0.7
+        "length": 5.0,
+        "opacity": 0.8,
+        "width": 0.3,
+        "segments": 12
       },
       "rotation": {
         "x": 1.5708,
@@ -156,9 +205,17 @@
       "opacity": 0.6,
       "particle": {
         "color": "#FFD700",
-        "count": 35,
-        "spread": 2.5,
-        "speed": 4.0
+        "count": 200,
+        "spread": 6.0,
+        "speed": 12.0,
+        "size": 0.16,
+        "lifetime": 1.2,
+        "gravity": 3.0,
+        "pattern": "sonic",
+        "soundRipples": true,
+        "barkTexture": true,
+        "wildness": 1.2,
+        "canineRage": 0.9
       }
     },
     "fpCost": 0,
@@ -173,13 +230,28 @@
     "image": "skills/poison-spray.png",
     "description": "毒キノコが毒胞子を直線上に噴射する遠距離攻撃",
     "effect": {
-      "shape": "cone",
+      "shape": "icosahedron",
       "color": "#9ACD32",
       "size": 0.8,
+      "particle": {
+        "color": "#9ACD32",
+        "count": 150,
+        "spread": 3.0,
+        "speed": 2.5,
+        "size": 0.08,
+        "lifetime": 1.0,
+        "gravity": 0.1,
+        "pattern": "spray",
+        "bubbleEffect": true,
+        "toxicTrail": true,
+        "acidSizzle": 0.7
+      },
       "trail": {
         "color": "#ADFF2F",
-        "length": 1.5,
-        "opacity": 0.6
+        "length": 5.5,
+        "opacity": 0.8,
+        "width": 0.35,
+        "segments": 14
       },
       "rotation": {
         "x": 1.5708,
@@ -215,9 +287,17 @@
       "opacity": 0.4,
       "particle": {
         "color": "#ADFF2F",
-        "count": 60,
-        "spread": 4.0,
-        "speed": 1.0
+        "count": 350,
+        "spread": 9.0,
+        "speed": 1.5,
+        "size": 0.04,
+        "lifetime": 6.0,
+        "gravity": 0.1,
+        "pattern": "cloud",
+        "mistEffect": true,
+        "sporeFloat": true,
+        "density": 0.8,
+        "swirling": 0.6
       }
     },
     "fpCost": 0,
@@ -246,9 +326,17 @@
       "opacity": 0.7,
       "particle": {
         "color": "#A0522D",
-        "count": 40,
-        "spread": 3.0,
-        "speed": 2.0
+        "count": 200,
+        "spread": 8.0,
+        "speed": 3.0,
+        "size": 0.15,
+        "lifetime": 3.0,
+        "gravity": 2.5,
+        "pattern": "roots",
+        "vineEffect": true,
+        "groundBurst": true,
+        "entanglement": 0.9,
+        "earthShake": 0.4
       }
     },
     "fpCost": 0,
@@ -276,9 +364,17 @@
       "opacity": 0.8,
       "particle": {
         "color": "#D2691E",
-        "count": 25,
-        "spread": 2.0,
-        "speed": 1.5
+        "count": 180,
+        "spread": 5.0,
+        "speed": 2.0,
+        "size": 0.18,
+        "lifetime": 4.0,
+        "gravity": 0.5,
+        "pattern": "barrier",
+        "crystalFormation": true,
+        "armorPlating": true,
+        "defenseAura": 1.0,
+        "fortification": 0.8
       }
     },
     "fpCost": 0,

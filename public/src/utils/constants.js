@@ -224,6 +224,16 @@ export const SkillShape = {
   TORUS_KNOT: 'torusKnot',
 };
 
+export const ParticlePatternTypes = {
+  SPIRAL: 'spiral',
+  HELIX: 'helix',
+  EXPLOSION: 'explosion',
+  SOUNDWAVE: 'soundwave',
+  SPRAY: 'spray',
+  CLOUD: 'cloud',
+  DEFAULT: 'default',
+};
+
 export const AudioConstants = {
   BGM_VOLUME: 0.5, // Background music volume
   VOICE_VOLUME: 1.0, // Voice audio volume for sequences
