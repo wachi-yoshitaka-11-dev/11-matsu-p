@@ -11,15 +11,15 @@
     "weakAttack": {
       "damage": 3,
       "range": 0.8,
-      "cooldown": 2.0,
-      "castTime": 0.1
+      "cooldown": 2000,
+      "castTime": 100
     },
     "strongAttack": {
       "damage": 6,
       "range": 1.0,
-      "cooldown": 5.0,
-      "castTime": 0.3,
-      "probability": 0.15
+      "cooldown": 5000,
+      "castTime": 300,
+      "probability": 150
     }
   },
   "crow": {
@@ -34,15 +34,15 @@
     "weakAttack": {
       "damage": 4,
       "range": 1.2,
-      "cooldown": 1.8,
-      "castTime": 0.2
+      "cooldown": 1800,
+      "castTime": 200
     },
     "strongAttack": {
       "damage": 8,
       "range": 1.5,
-      "cooldown": 4.5,
-      "castTime": 0.4,
-      "probability": 0.2
+      "cooldown": 4500,
+      "castTime": 400,
+      "probability": 200
     }
   },
   "weasel": {
@@ -57,15 +57,15 @@
     "weakAttack": {
       "damage": 5,
       "range": 1.0,
-      "cooldown": 1.5,
-      "castTime": 0.15
+      "cooldown": 1500,
+      "castTime": 150
     },
     "strongAttack": {
       "damage": 10,
       "range": 1.3,
-      "cooldown": 4.0,
-      "castTime": 0.35,
-      "probability": 0.25
+      "cooldown": 4000,
+      "castTime": 350,
+      "probability": 250
     }
   },
   "dog": {
@@ -80,28 +80,28 @@
     "weakAttack": {
       "damage": 12,
       "range": 1.5,
-      "cooldown": 2.0,
-      "castTime": 0.25
+      "cooldown": 2000,
+      "castTime": 250
     },
     "strongAttack": {
       "damage": 25,
       "range": 2.0,
-      "cooldown": 5.0,
-      "castTime": 0.5,
-      "probability": 0.4
+      "cooldown": 5000,
+      "castTime": 500,
+      "probability": 400
     },
     "skills": {
       "packHowl": {
-        "cooldown": 12.0,
-        "probability": 0.25
+        "cooldown": 12000,
+        "probability": 250
       },
       "boneBite": {
-        "cooldown": 6.0,
-        "probability": 0.35
+        "cooldown": 6000,
+        "probability": 350
       },
       "barkBlast": {
-        "cooldown": 8.0,
-        "probability": 0.3
+        "cooldown": 8000,
+        "probability": 300
       }
     }
   },
@@ -117,15 +117,15 @@
     "weakAttack": {
       "damage": 8,
       "range": 1.3,
-      "cooldown": 1.8,
-      "castTime": 0.2
+      "cooldown": 1800,
+      "castTime": 200
     },
     "strongAttack": {
       "damage": 16,
       "range": 1.6,
-      "cooldown": 4.0,
-      "castTime": 0.4,
-      "probability": 0.3
+      "cooldown": 4000,
+      "castTime": 400,
+      "probability": 300
     }
   },
   "poisonMushroom": {
@@ -140,20 +140,20 @@
     "weakAttack": {
       "damage": 5,
       "range": 1.0,
-      "cooldown": 2.5,
-      "castTime": 0.3
+      "cooldown": 2500,
+      "castTime": 300
     },
     "strongAttack": {
       "damage": 10,
       "range": 1.5,
-      "cooldown": 5.0,
-      "castTime": 0.5,
-      "probability": 0.25
+      "cooldown": 5000,
+      "castTime": 500,
+      "probability": 250
     },
     "skills": {
       "poisonSpray": {
-        "cooldown": 6.0,
-        "probability": 0.4
+        "cooldown": 6000,
+        "probability": 400
       }
     }
   },
@@ -169,28 +169,28 @@
     "weakAttack": {
       "damage": 15,
       "range": 2.0,
-      "cooldown": 3.0,
-      "castTime": 0.4
+      "cooldown": 3000,
+      "castTime": 400
     },
     "strongAttack": {
       "damage": 30,
       "range": 2.5,
-      "cooldown": 6.0,
-      "castTime": 0.6,
-      "probability": 0.3
+      "cooldown": 6000,
+      "castTime": 600,
+      "probability": 300
     },
     "skills": {
       "poisonSpores": {
-        "cooldown": 10.0,
-        "probability": 0.3
+        "cooldown": 10000,
+        "probability": 300
       },
       "rootBind": {
-        "cooldown": 8.0,
-        "probability": 0.35
+        "cooldown": 8000,
+        "probability": 350
       },
       "barkShield": {
-        "cooldown": 15.0,
-        "probability": 0.2
+        "cooldown": 15000,
+        "probability": 200
       }
     }
   }

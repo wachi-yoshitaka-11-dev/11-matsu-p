@@ -32,16 +32,22 @@ class ParticleManager {
       scene.traverse((child) => {
         if (child.userData && child.userData.isSkillParticle) {
           const age = (now - (child.userData.creationTime || 0)) / 1000;
-          if (age > 5) {
-            // Remove particles older than 5 seconds
+          // Use particle's maxLifetime if available, fallback to 5 seconds
+          const maxLifetime = child.userData.maxLifetime || 5;
+          if (age > maxLifetime) {
             objectsToRemove.push(child);
           }
         }
       });
 
       objectsToRemove.forEach((obj) => {
-        scene.remove(obj);
-        if (obj.geometry) obj.geometry.dispose();
+        // Use parent.remove if available for proper scene graph cleanup
+        if (obj.parent) {
+          obj.parent.remove(obj);
+        } else {
+          scene.remove(obj);
+        }
+        // Only dispose material, not geometry (Sprite geometry is shared)
         if (obj.material) obj.material.dispose();
       });
     }
@@ -434,7 +440,7 @@ export class Skill extends BaseEntity {
         // Remove expired particle
         if (particle.mesh) {
           this.game.sceneManager.remove(particle.mesh);
-          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
+          // Only dispose material, not geometry (Sprite geometry is shared)
           if (particle.mesh.material) particle.mesh.material.dispose();
           particle.mesh = null;
         }
@@ -544,7 +550,7 @@ export class Skill extends BaseEntity {
     // Remove particle system when all particles are expired
     if (allExpired && this.mesh) {
       this.mesh.remove(this.particleSystem);
-      this.particleSystem.geometry.dispose();
+      // Only dispose material, not geometry (Sprite geometry is shared)
       this.particleSystem.material.dispose();
       this.particleSystem = null;
     }
@@ -882,12 +888,7 @@ export class Skill extends BaseEntity {
       this.activeParticles.forEach((particle) => {
         if (particle && particle.mesh) {
           this.game.sceneManager.remove(particle.mesh);
-          if (
-            particle.mesh.geometry &&
-            typeof particle.mesh.geometry.dispose === 'function'
-          ) {
-            particle.mesh.geometry.dispose();
-          }
+          // Skip geometry disposal (Sprite geometry is shared)
           if (
             particle.mesh.material &&
             typeof particle.mesh.material.dispose === 'function'
@@ -901,12 +902,7 @@ export class Skill extends BaseEntity {
 
     // Clean up old particle system (legacy) with safe disposal
     if (this.particleSystem) {
-      if (
-        this.particleSystem.geometry &&
-        typeof this.particleSystem.geometry.dispose === 'function'
-      ) {
-        this.particleSystem.geometry.dispose();
-      }
+      // Skip geometry disposal (Sprite geometry is shared)
       if (
         this.particleSystem.material &&
         typeof this.particleSystem.material.dispose === 'function'
@@ -919,12 +915,7 @@ export class Skill extends BaseEntity {
     // Clean up trail system with enhanced safety
     if (this.trailSystem && this.trailSystem.worldMesh) {
       this.game.sceneManager.remove(this.trailSystem.worldMesh);
-      if (
-        this.trailSystem.worldMesh.geometry &&
-        typeof this.trailSystem.worldMesh.geometry.dispose === 'function'
-      ) {
-        this.trailSystem.worldMesh.geometry.dispose();
-      }
+      // Skip geometry disposal (Sprite geometry is shared)
       if (
         this.trailSystem.worldMesh.material &&
         typeof this.trailSystem.worldMesh.material.dispose === 'function'
@@ -974,7 +965,7 @@ export class Skill extends BaseEntity {
       this.activeParticles.forEach((particle) => {
         if (particle.mesh) {
           this.game.sceneManager.remove(particle.mesh);
-          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
+          // Only dispose material, not geometry (Sprite geometry is shared)
           if (particle.mesh.material) particle.mesh.material.dispose();
         }
       });

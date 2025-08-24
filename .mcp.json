@@ -30,7 +30,7 @@
         "--enable-web-dashboard",
         "false",
         "--project",
-        "(Get-Location)"
+        "$(pwd)"
       ]
     }
   }

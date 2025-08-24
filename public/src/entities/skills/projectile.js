@@ -112,7 +112,7 @@ export class Projectile extends Skill {
   cleanupTrail() {
     if (this.trailSystem && this.trailSystem.worldMesh) {
       this.game.sceneManager.remove(this.trailSystem.worldMesh);
-      this.trailSystem.worldMesh.geometry.dispose();
+      // Only dispose material, not geometry (Sprite geometry is shared)
       this.trailSystem.worldMesh.material.dispose();
       this.trailSystem.worldMesh = null;
       this.trailSystem.positions = [];

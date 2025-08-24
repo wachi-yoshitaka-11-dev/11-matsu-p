@@ -115,10 +115,13 @@ export class Enemy extends Character {
 
     this.mesh.lookAt(this.game.player.mesh.position);
 
-    this.weakAttackCooldown = Math.max(0, this.weakAttackCooldown - deltaTime);
+    this.weakAttackCooldown = Math.max(
+      0,
+      this.weakAttackCooldown - deltaTime * 1000
+    );
     this.strongAttackCooldown = Math.max(
       0,
-      this.strongAttackCooldown - deltaTime
+      this.strongAttackCooldown - deltaTime * 1000
     );
 
     this.chooseAndPerformAction(distance);
@@ -212,7 +215,7 @@ export class Enemy extends Character {
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.weakAttack.damage);
-    }, this.data.weakAttack.castTime * 1000);
+    }, this.data.weakAttack.castTime);
   }
 
   performStrongAttack() {
@@ -226,7 +229,7 @@ export class Enemy extends Character {
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.strongAttack.damage);
-    }, this.data.strongAttack.castTime * 1000);
+    }, this.data.strongAttack.castTime);
   }
 
   dealDamageToPlayer(damage) {
@@ -280,7 +283,7 @@ export class Enemy extends Character {
     for (const skillId of Object.keys(this.skillCooldowns)) {
       this.skillCooldowns[skillId] = Math.max(
         0,
-        this.skillCooldowns[skillId] - deltaTime
+        this.skillCooldowns[skillId] - deltaTime * 1000
       );
     }
   }
