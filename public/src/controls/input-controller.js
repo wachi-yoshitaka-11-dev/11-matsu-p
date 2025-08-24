@@ -24,6 +24,9 @@ export class InputController {
     this.shortPressThreshold = 400; // milliseconds for short press
     this.movementKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
 
+    // Initialize attack timeout for proper cleanup
+    this.attackTimeout = null;
+
     this.setupEventListeners();
   }
 
@@ -200,33 +203,37 @@ export class InputController {
           }
 
           if (isStrongAttack) {
-            this.player.isAttackingStrong = true;
-            this.player.isAttackingWeak = false;
+            this.player.isPerformingStrongAttack = true;
+            this.player.isPerformingWeakAttack = false;
             this.player.showAttackEffect();
-            this.player.playAnimation(AnimationNames.ATTACK_STRONG);
-            this.game.playSFX(AssetPaths.SFX_ATTACK_STRONG);
+            this.player.performAction(
+              AnimationNames.ATTACK_STRONG,
+              AssetPaths.SFX_ATTACK_STRONG
+            );
             this.performAttack(params.damageStrong, params.attackRangeStrong);
 
             // Safety timeout for strong attack (typically ~1-2 seconds)
             this.attackTimeout = setTimeout(() => {
               this.player.isAttacking = false;
-              this.player.isAttackingStrong = false;
-              this.player.isAttackingWeak = false;
+              this.player.isPerformingStrongAttack = false;
+              this.player.isPerformingWeakAttack = false;
               this.player.updateAnimation();
             }, 3000);
           } else {
-            this.player.isAttackingWeak = true;
-            this.player.isAttackingStrong = false;
+            this.player.isPerformingWeakAttack = true;
+            this.player.isPerformingStrongAttack = false;
             this.player.showAttackEffect();
-            this.player.playAnimation(AnimationNames.ATTACK_WEAK);
-            this.game.playSFX(AssetPaths.SFX_ATTACK_WEAK);
+            this.player.performAction(
+              AnimationNames.ATTACK_WEAK,
+              AssetPaths.SFX_ATTACK_WEAK
+            );
             this.performAttack(params.damage, params.attackRange);
 
             // Safety timeout for weak attack (typically ~0.5-1 second)
             this.attackTimeout = setTimeout(() => {
               this.player.isAttacking = false;
-              this.player.isAttackingWeak = false;
-              this.player.isAttackingStrong = false;
+              this.player.isPerformingWeakAttack = false;
+              this.player.isPerformingStrongAttack = false;
               this.player.updateAnimation();
             }, 2000);
           }
@@ -253,7 +260,7 @@ export class InputController {
 
   update(deltaTime) {
     if (!this._canProcessInput()) {
-      if (this.player.isDead) {
+      if (this.player.isDead && this.player.physics) {
         this.player.physics.velocity.x = 0;
         this.player.physics.velocity.z = 0;
       }
@@ -445,8 +452,7 @@ export class InputController {
       this.player.isJumping = true;
       this.player.physics.velocity.y = this.game.data.player.jumpPower;
       this.player.stamina -= this.game.data.player.staminaCostJump;
-      this.player.playAnimation(AnimationNames.JUMP);
-      this.game.playSFX(AssetPaths.SFX_JUMP);
+      this.player.performAction(AnimationNames.JUMP, AssetPaths.SFX_JUMP);
 
       setTimeout(() => {
         this.player.isJumping = false;
@@ -475,8 +481,7 @@ export class InputController {
     ) {
       this.player.isRolling = true;
       this.player.stamina -= this.game.data.player.staminaCostRolling;
-      this.player.playAnimation(AnimationNames.ROLLING);
-      this.game.playSFX(AssetPaths.SFX_ROLLING);
+      this.player.performAction(AnimationNames.ROLLING, AssetPaths.SFX_ROLLING);
 
       const direction = this.getMovementDirection();
 
@@ -505,8 +510,10 @@ export class InputController {
     ) {
       this.player.isBackStepping = true;
       this.player.stamina -= this.game.data.player.staminaCostBackStep;
-      this.player.playAnimation(AnimationNames.BACK_STEP);
-      this.game.playSFX(AssetPaths.SFX_BACK_STEP);
+      this.player.performAction(
+        AnimationNames.BACK_STEP,
+        AssetPaths.SFX_BACK_STEP
+      );
 
       const playerForward = new THREE.Vector3(0, 0, 1);
       playerForward.applyQuaternion(this.player.mesh.quaternion);
@@ -704,5 +711,17 @@ export class InputController {
         this.keys[key] = true;
       }
     });
+  }
+
+  // Clean up method for proper resource management
+  dispose() {
+    // Clear attack timeout to prevent memory leaks
+    if (this.attackTimeout) {
+      clearTimeout(this.attackTimeout);
+      this.attackTimeout = null;
+    }
+
+    // Clear all key states
+    this.keys = {};
   }
 }

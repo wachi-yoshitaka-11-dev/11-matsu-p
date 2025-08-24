@@ -9,7 +9,7 @@
     "attackSpeed": 300,
     "staminaCostAttackWeak": 10,
     "damageAttackWeak": 10,
-    "damageAttackStrongMax": 50,
+    "damageAttackStrongMax": 25,
     "attackRangeStrong": 2
   },
   "claws": {
@@ -22,7 +22,7 @@
     "attackSpeed": 200,
     "staminaCostAttackWeak": 7,
     "damageAttackWeak": 8,
-    "damageAttackStrongMax": 40,
+    "damageAttackStrongMax": 20,
     "attackRangeStrong": 1.8
   }
 }

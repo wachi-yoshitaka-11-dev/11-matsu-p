@@ -34,12 +34,12 @@ export class SelfTarget extends Skill {
     }
 
     // Apply self-target effect after cast time
-    setTimeout(() => {
+    this._castTimer = setTimeout(() => {
       this.activateSelfTarget();
     }, this.castTime);
 
     // Remove self-target effect after duration
-    setTimeout(() => {
+    this._endTimer = setTimeout(() => {
       this.deactivateSelfTarget();
       // Stop particle emission and cleanup
       this.particleData = null;
@@ -99,22 +99,16 @@ export class SelfTarget extends Skill {
     this.mesh.scale.setScalar(0);
   }
 
-  // Force cleanup all remaining particles immediately
-  forceCleanupAllParticles() {
-    if (this.activeParticles) {
-      this.activeParticles.forEach((particle) => {
-        if (particle.mesh) {
-          this.game.sceneManager.remove(particle.mesh);
-          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
-          if (particle.mesh.material) particle.mesh.material.dispose();
-        }
-      });
-      this.activeParticles = [];
-    }
-  }
-
   // Override dispose to ensure cleanup
   dispose() {
+    if (this._castTimer) {
+      clearTimeout(this._castTimer);
+      this._castTimer = null;
+    }
+    if (this._endTimer) {
+      clearTimeout(this._endTimer);
+      this._endTimer = null;
+    }
     this.particleData = null; // Stop particle emission
     this.forceCleanupAllParticles(); // Force cleanup all remaining particles
     super.dispose();

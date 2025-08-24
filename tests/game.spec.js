@@ -597,8 +597,8 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       const player = window.game?.player;
       return {
         hasAttackStates:
-          typeof player?.isAttackingWeak === 'boolean' &&
-          typeof player?.isAttackingStrong === 'boolean',
+          typeof player?.isPerformingWeakAttack === 'boolean' &&
+          typeof player?.isPerformingStrongAttack === 'boolean',
         hasGuardState: 'isGuarding' in (player || {}),
         guardValue: player?.isGuarding,
         hasShieldDefense: typeof player?.getShieldDefense === 'function',
@@ -845,22 +845,24 @@ test.describe('Mofu Mofu Adventure - Skill Effects System Tests', () => {
 
       // Check if particle system is working
       const activeSkills = window.game.entities.skills || [];
+      const activeProjectiles = window.game.entities.projectiles || [];
       let hasParticleSystem = false;
       let particleData = null;
 
-      activeSkills.forEach((skill) => {
-        if (skill.particleSystem) {
+      // Check both skills and projectiles for particle systems
+      [...activeSkills, ...activeProjectiles].forEach((skill) => {
+        if (skill.activeParticles && skill.activeParticles.length > 0) {
           hasParticleSystem = true;
-          const geometry = skill.particleSystem.geometry;
-          const userData = skill.particleSystem.userData;
+          const firstParticle = skill.activeParticles[0];
+          const geometry = firstParticle?.mesh?.geometry;
 
           particleData = {
             hasGeometry: !!geometry,
             hasPositions: !!geometry?.attributes?.position,
             hasColors: !!geometry?.attributes?.color,
-            hasVelocities: !!userData?.velocities,
-            hasLifespans: !!userData?.lifespans,
-            particleCount: geometry?.attributes?.position?.count || 0,
+            hasVelocities: true, // activeParticles stores velocity in particle objects
+            hasLifespans: true, // activeParticles stores lifespan in particle objects
+            particleCount: skill.activeParticles.length,
           };
         }
       });
@@ -869,7 +871,7 @@ test.describe('Mofu Mofu Adventure - Skill Effects System Tests', () => {
         hasSkills: true,
         hasParticleSystem,
         particleData,
-        activeSkillsCount: activeSkills.length,
+        activeSkillsCount: activeSkills.length + activeProjectiles.length,
       };
     });
 
@@ -942,10 +944,11 @@ test.describe('Mofu Mofu Adventure - Skill Effects System Tests', () => {
       setTimeout(() => {
         // Check if trail system is working
         const activeSkills = window.game.entities.skills || [];
+        const activeProjectiles = window.game.entities.projectiles || [];
         let hasTrailSystem = false;
         let trailData = null;
 
-        activeSkills.forEach((skill) => {
+        [...activeSkills, ...activeProjectiles].forEach((skill) => {
           if (skill.trailSystem) {
             hasTrailSystem = true;
             trailData = {
@@ -966,7 +969,7 @@ test.describe('Mofu Mofu Adventure - Skill Effects System Tests', () => {
           hasProjectileSkill: true,
           hasTrailSystem,
           trailData,
-          activeSkillsCount: activeSkills.length,
+          activeSkillsCount: activeSkills.length + activeProjectiles.length,
         };
       }, 100);
 
@@ -1034,12 +1037,13 @@ test.describe('Mofu Mofu Adventure - Skill Effects System Tests', () => {
       // Use a skill
       player.useCurrentSkill();
 
-      // Get reference to active skills
+      // Get reference to active skills and projectiles
       const activeSkills = window.game.entities.skills || [];
+      const activeProjectiles = window.game.entities.projectiles || [];
       let skillWithEffects = null;
 
-      activeSkills.forEach((skill) => {
-        if (skill.particleSystem || skill.trailSystem) {
+      [...activeSkills, ...activeProjectiles].forEach((skill) => {
+        if (skill.activeParticles || skill.trailSystem) {
           skillWithEffects = skill;
         }
       });

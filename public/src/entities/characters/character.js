@@ -47,7 +47,14 @@ export class Character extends BaseEntity {
     this.maxHp = options.hp ?? defaults.hp;
     this.hp = this.maxHp;
     this.speed = options.speed ?? defaults.speed;
+
+    // Guard state for damage sound control
+    this.isGuarding = false;
     this.isDead = false;
+
+    // Attack states (common to all characters)
+    this.isPerformingWeakAttack = false;
+    this.isPerformingStrongAttack = false;
 
     // Initialize buff multipliers
     this.attackBuffMultiplier = 1.0;
@@ -417,15 +424,21 @@ export class Character extends BaseEntity {
     this._startEffectTimeout(150);
   }
 
-  showSkillProjectileEffect() {
+  showSelfTargetSkillEffect() {
+    this.clearEffectTimeout();
+    this._setMeshColor(EffectColors.SKILL_SELF_TARGET);
+    this._startEffectTimeout(100);
+  }
+
+  showProjectileSkillEffect() {
     this.clearEffectTimeout();
     this._setMeshColor(EffectColors.SKILL_PROJECTILE);
     this._startEffectTimeout(100);
   }
 
-  showSkillBuffEffect() {
+  showAreaAttackSkillEffect() {
     this.clearEffectTimeout();
-    this._setMeshColor(EffectColors.SKILL_BUFF);
+    this._setMeshColor(EffectColors.SKILL_AREA_ATTACK);
     this._startEffectTimeout(100);
   }
 
@@ -443,19 +456,22 @@ export class Character extends BaseEntity {
   }
 
   playAnimation(name) {
-    if (!this.mixer || !this.animations || this.currentAnimationName === name)
-      return;
+    if (!this.mixer || !this.animations) return;
+
+    // Allow re-execution of one-shot animations even if it's the same animation
+    const isOneShot = ONE_SHOT_ANIMATIONS.includes(name);
+    if (!isOneShot && this.currentAnimationName === name) return;
 
     const clip = THREE.AnimationClip.findByName(this.animations, name);
     if (clip) {
       const newAction = this.mixer.clipAction(clip);
 
-      const isOneShot = ONE_SHOT_ANIMATIONS.includes(name);
       if (isOneShot) {
         newAction.setLoop(THREE.LoopOnce);
         newAction.clampWhenFinished = true;
 
         // For one-shot animations, stop current action immediately and start new one
+        // This allows for seamless re-execution of the same animation
         if (this.currentAction) {
           this.currentAction.stop();
         }
@@ -506,7 +522,11 @@ export class Character extends BaseEntity {
 
     this.hp -= finalAmount;
     this.showDamageEffect();
-    this.game.playSFX(AssetPaths.SFX_DAMAGE);
+
+    // Play damage sound unless guarding
+    if (!this.isGuarding) {
+      this.playSound(AssetPaths.SFX_DAMAGE);
+    }
 
     if (this.hp <= 0) {
       this.hp = 0;
@@ -518,7 +538,9 @@ export class Character extends BaseEntity {
   onDeath() {}
 
   update(deltaTime) {
-    this.physics.update(deltaTime);
+    if (this.physics) {
+      this.physics.update(deltaTime);
+    }
     this.updateBuffsAndDebuffs(deltaTime);
 
     if (this.mixer) {
@@ -708,6 +730,9 @@ export class Character extends BaseEntity {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
+    // Play sound effect for skill usage
+    this.playSound(AssetPaths.SFX_USE_SKILL_SELF_TARGET);
+
     this.playAnimation(this.getSkillAnimation(SkillTypes.SELF_TARGET));
 
     setTimeout(() => {
@@ -722,6 +747,9 @@ export class Character extends BaseEntity {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
+    // Play sound effect for skill usage
+    this.playSound(AssetPaths.SFX_USE_SKILL_PROJECTILE);
+
     this.playAnimation(this.getSkillAnimation(SkillTypes.PROJECTILE));
 
     setTimeout(() => {
@@ -735,6 +763,9 @@ export class Character extends BaseEntity {
     const skillData = this.game.data.skills[skillId];
     if (!skillData) return;
 
+    // Play sound effect for skill usage
+    this.playSound(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
+
     this.playAnimation(this.getSkillAnimation(SkillTypes.AREA_ATTACK));
 
     setTimeout(() => {
@@ -747,7 +778,7 @@ export class Character extends BaseEntity {
   getSkillAnimation(skillType) {
     switch (skillType) {
       case SkillTypes.SELF_TARGET:
-        return AnimationNames.USE_SKILL_BUFF;
+        return AnimationNames.USE_SKILL_SELF_TARGET;
       case SkillTypes.PROJECTILE:
         return AnimationNames.USE_SKILL_PROJECTILE;
       case SkillTypes.AREA_ATTACK:
@@ -757,6 +788,20 @@ export class Character extends BaseEntity {
           `Unknown skill type: ${skillType}, falling back to idle animation`
         );
         return AnimationNames.IDLE;
+    }
+  }
+
+  // Play positioned sound (3D for enemies, regular for player)
+  playSound(soundAsset) {
+    const soundPosition = this === this.game.player ? null : this.mesh.position;
+    this.game.playSFX(soundAsset, soundPosition);
+  }
+
+  // Unified action method: play animation + sound for various actions
+  performAction(actionName, soundAsset = null) {
+    this.playAnimation(actionName);
+    if (soundAsset) {
+      this.playSound(soundAsset);
     }
   }
 

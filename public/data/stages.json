@@ -88,7 +88,7 @@
           },
           {
             "id": "cloud",
-            "count": 50,
+            "count": 1000,
             "minScale": 5.0,
             "maxScale": 50.0,
             "opacity": 0.4,
@@ -262,7 +262,7 @@
           },
           {
             "id": "cloud",
-            "count": 30,
+            "count": 600,
             "minScale": 8.0,
             "maxScale": 25.0,
             "opacity": 0.6,

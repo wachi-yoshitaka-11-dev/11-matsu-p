@@ -66,20 +66,6 @@ export class AreaAttack extends Skill {
     }
   }
 
-  // Force cleanup all remaining particles immediately (similar to projectile)
-  forceCleanupAllParticles() {
-    if (this.activeParticles) {
-      this.activeParticles.forEach((particle) => {
-        if (particle.mesh) {
-          this.game.sceneManager.remove(particle.mesh);
-          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
-          if (particle.mesh.material) particle.mesh.material.dispose();
-        }
-      });
-      this.activeParticles = [];
-    }
-  }
-
   // Override dispose to ensure cleanup
   dispose() {
     this.particleData = null; // Stop particle emission

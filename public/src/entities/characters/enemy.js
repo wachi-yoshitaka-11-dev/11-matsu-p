@@ -48,8 +48,6 @@ export class Enemy extends Character {
     this.weakAttackCooldown = 0;
     this.strongAttackCooldown = 0;
     this.experience = this.data.experience;
-    this.isPerformingWeakAttack = false;
-    this.isPerformingStrongAttack = false;
     this.nextAction = null;
 
     // Skill cooldown management (Enemy-specific)
@@ -210,11 +208,10 @@ export class Enemy extends Character {
     this.isPerformingWeakAttack = true;
     this.weakAttackCooldown = this.data.weakAttack.cooldown;
 
-    this.playAnimation(AnimationNames.ATTACK_WEAK);
+    this.performAction(AnimationNames.ATTACK_WEAK, AssetPaths.SFX_ATTACK_WEAK);
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.weakAttack.damage);
-      this.game.playSFX(AssetPaths.SFX_ATTACK_WEAK);
     }, this.data.weakAttack.castTime * 1000);
   }
 
@@ -222,11 +219,13 @@ export class Enemy extends Character {
     this.isPerformingStrongAttack = true;
     this.strongAttackCooldown = this.data.strongAttack.cooldown;
 
-    this.playAnimation(AnimationNames.ATTACK_STRONG);
+    this.performAction(
+      AnimationNames.ATTACK_STRONG,
+      AssetPaths.SFX_ATTACK_STRONG
+    );
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.strongAttack.damage);
-      this.game.playSFX(AssetPaths.SFX_ATTACK_STRONG);
     }, this.data.strongAttack.castTime * 1000);
   }
 

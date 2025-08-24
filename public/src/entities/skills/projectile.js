@@ -45,6 +45,8 @@ export class Projectile extends Skill {
         this.particleData = null;
         this.cleanupTrail();
         this.forceCleanupAllParticles();
+        // Now remove after fade-out
+        this.lifespan = 0;
         return;
       }
 
@@ -90,7 +92,8 @@ export class Projectile extends Skill {
         this.particleData = null;
         this.cleanupTrail();
         this.forceCleanupAllParticles();
-        this.shouldDispose = true;
+        // Now remove after fade-out
+        this.lifespan = 0;
         return;
       }
 
@@ -122,20 +125,6 @@ export class Projectile extends Skill {
     this.cleanupTrail(); // Clean up trail system
     this.forceCleanupAllParticles(); // Force cleanup all remaining particles
     super.dispose();
-  }
-
-  // Force cleanup all remaining particles immediately
-  forceCleanupAllParticles() {
-    if (this.activeParticles) {
-      this.activeParticles.forEach((particle) => {
-        if (particle.mesh) {
-          this.game.sceneManager.remove(particle.mesh);
-          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
-          if (particle.mesh.material) particle.mesh.material.dispose();
-        }
-      });
-      this.activeParticles = [];
-    }
   }
 
   checkCollisions() {
@@ -187,12 +176,13 @@ export class Projectile extends Skill {
       this.applyDebuffToTarget(target);
     }
 
-    // Stop particle emission and clean trail immediately
-    this.particleData = null;
-    this.cleanupTrail();
-    this.forceCleanupAllParticles();
-
-    // Mark for removal
-    this.lifespan = 0;
+    // Begin fade-out; update() will handle teardown & removal
+    if (!this.fadeOutStarted) {
+      this.fadeOutStarted = true;
+      this.fadeOutTime = 0.3; // 300ms fade
+      this.fadeOutTimer = this.fadeOutTime;
+    }
+    // Keep lifespan > 0 so the manager doesn't cull us before fade completes
+    this.lifespan = Number.EPSILON;
   }
 }

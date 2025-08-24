@@ -262,6 +262,10 @@ export class Game {
     if (this.titleScreen) {
       this.titleScreen.hideAll();
     }
+
+    // Stop any playing voices immediately when starting game
+    this.stopAllVoices();
+
     this.loadingScreen.show();
     if (this.bgmAudios[AssetPaths.BGM_TITLE]?.isPlaying) {
       this.bgmAudios[AssetPaths.BGM_TITLE].stop();
@@ -293,9 +297,6 @@ export class Game {
       this.loadingScreen.hide();
       this.sceneManager.showCanvas();
       this.gameState = GameState.PLAYING;
-
-      // Stop any remaining sequence voices and BGM to prevent overlap with gameplay
-      this.stopAllVoices();
 
       this.hud?.show();
 
@@ -352,7 +353,63 @@ export class Game {
   }
 
   reloadGame() {
+    // Clean up resources before reload
+    this.dispose();
     location.reload();
+  }
+
+  dispose() {
+    // Clean up all entities first (InputController depends on Player)
+    // Clean up all entities
+    if (this.entities) {
+      // Clean up characters
+      if (this.entities.characters) {
+        [
+          this.player,
+          ...this.entities.characters.enemies,
+          ...this.entities.characters.npcs,
+        ].forEach((character) => {
+          if (character && character.dispose) {
+            character.dispose();
+          }
+        });
+      }
+
+      // Clean up skills
+      if (this.entities.skills) {
+        [
+          ...this.entities.skills.projectiles,
+          ...this.entities.skills.selfTargets,
+          ...this.entities.skills.areaAttacks,
+        ].forEach((skill) => {
+          if (skill && skill.dispose) {
+            skill.dispose();
+          }
+        });
+      }
+    }
+
+    // Stop all audio
+    this.stopBGM();
+
+    // Clean up input controller after entities
+    if (this.inputController) {
+      this.inputController.dispose();
+    }
+
+    // Clean up scene manager
+    if (this.sceneManager) {
+      this.sceneManager.dispose();
+    }
+
+    // Clean up UI components
+    if (this.pauseMenu) {
+      this.pauseMenu.dispose();
+    }
+
+    if (this.hud && this.hud.enemyHealthBar) {
+      this.hud.enemyHealthBar.dispose();
+    }
   }
 
   // BGM management methods
@@ -597,13 +654,36 @@ export class Game {
   }
 
   // Play sound effects with fixed SFX_VOLUME
-  playSFX(name) {
+  playSFX(name, sourcePosition = null) {
     const buffer = this.assetLoader.getAudio(name);
     if (buffer) {
-      const sound = new THREE.Audio(this.listener);
-      sound.setBuffer(buffer);
-      sound.setVolume(AudioConstants.SFX_VOLUME);
-      sound.play();
+      if (sourcePosition && this.player) {
+        // 3D positional audio with distance attenuation
+        const sound = new THREE.PositionalAudio(this.listener);
+        sound.setBuffer(buffer);
+        sound.setVolume(AudioConstants.SFX_VOLUME);
+        sound.setRefDistance(5); // Reference distance for volume falloff
+        sound.setMaxDistance(50); // Max distance beyond which sound is not heard
+        sound.setRolloffFactor(2); // Rate of volume falloff with distance
+
+        // Set position of the sound source
+        sound.position.copy(sourcePosition);
+
+        // Temporarily add to scene for 3D audio positioning
+        this.sceneManager.add(sound);
+        sound.play();
+
+        // Remove the audio object after playing
+        sound.onEnded = () => {
+          this.sceneManager.remove(sound);
+        };
+      } else {
+        // Standard non-positional audio (for UI sounds, etc.)
+        const sound = new THREE.Audio(this.listener);
+        sound.setBuffer(buffer);
+        sound.setVolume(AudioConstants.SFX_VOLUME);
+        sound.play();
+      }
     }
   }
 

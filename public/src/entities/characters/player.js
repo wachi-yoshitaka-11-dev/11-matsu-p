@@ -58,10 +58,9 @@ export class Player extends Character {
     this.currentItemIndex = 0;
     this.isUsingSkill = false;
     this.isAttacking = false;
-    this.isAttackingWeak = false;
-    this.isAttackingStrong = false;
     this.isRolling = false;
-    this.isGuarding = false;
+
+    this.isPickingUp = false;
 
     this.isJumping = false;
     this.isBackStepping = false;
@@ -82,8 +81,8 @@ export class Player extends Character {
           clipName === AnimationNames.ATTACK_STRONG
         ) {
           this.isAttacking = false;
-          this.isAttackingWeak = false;
-          this.isAttackingStrong = false;
+          this.isPerformingWeakAttack = false;
+          this.isPerformingStrongAttack = false;
 
           // Clear attack timeout if animation finished normally
           if (
@@ -144,14 +143,14 @@ export class Player extends Character {
 
   updateAnimation() {
     if (this.isDead) {
-      this.playAnimation(AnimationNames.DIE);
+      // Death animation is set once in onDeath(), so nothing to do here
       return;
     }
 
     if (
       this.isAttacking ||
-      this.isAttackingWeak ||
-      this.isAttackingStrong ||
+      this.isPerformingWeakAttack ||
+      this.isPerformingStrongAttack ||
       this.isRolling ||
       this.isBackStepping ||
       this.isPickingUp ||
@@ -186,6 +185,7 @@ export class Player extends Character {
   }
 
   onDeath() {
+    this.playAnimation(AnimationNames.DIE);
     this.game.playSFX(AssetPaths.SFX_DEATH);
     this.game.hud.showDeathScreen();
     setTimeout(() => this.respawn(), this.data.respawnDelay);
@@ -207,7 +207,6 @@ export class Player extends Character {
 
       this.game.playSFX(AssetPaths.SFX_GUARD);
     } else {
-      this.game.playSFX(AssetPaths.SFX_DAMAGE);
       if (this.game.hud) {
         this.game.hud.showHpDamageEffect();
       }
@@ -410,8 +409,7 @@ export class Player extends Character {
     super.executeSelfTargetSkill(skillId);
 
     setTimeout(() => {
-      this.game.playSFX(AssetPaths.SFX_USE_SKILL_SELF_TARGET);
-      this.showSkillBuffEffect();
+      this.showSelfTargetSkillEffect();
     }, skillData.castTime || 0);
   }
 
@@ -424,8 +422,7 @@ export class Player extends Character {
 
     setTimeout(() => {
       if (!this.isDead) {
-        this.game.playSFX(AssetPaths.SFX_USE_SKILL_PROJECTILE);
-        this.showSkillProjectileEffect();
+        this.showProjectileSkillEffect();
       }
     }, skillData.castTime || 0);
   }
@@ -439,7 +436,7 @@ export class Player extends Character {
 
     setTimeout(() => {
       if (!this.isDead) {
-        this.game.playSFX(AssetPaths.SFX_USE_SKILL_AREA_ATTACK);
+        this.showAreaAttackSkillEffect();
       }
     }, skillData.castTime || 0);
   }

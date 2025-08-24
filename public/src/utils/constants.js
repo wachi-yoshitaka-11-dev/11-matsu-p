@@ -178,7 +178,7 @@ export const AnimationNames = {
   GUARD: 'holding-right',
   TALK: 'interact-left',
   USE_ITEM: 'interact-right',
-  USE_SKILL_BUFF: 'holding-left',
+  USE_SKILL_SELF_TARGET: 'holding-left',
   USE_SKILL_PROJECTILE: 'holding-right',
   USE_SKILL_AREA_ATTACK: 'holding-both',
   PICK_UP: 'pick-up',
@@ -192,7 +192,7 @@ export const ONE_SHOT_ANIMATIONS = [
   AnimationNames.ROLLING,
   AnimationNames.BACK_STEP,
   AnimationNames.PICK_UP,
-  AnimationNames.USE_SKILL_BUFF,
+  AnimationNames.USE_SKILL_SELF_TARGET,
   AnimationNames.USE_SKILL_PROJECTILE,
   AnimationNames.USE_SKILL_AREA_ATTACK,
 ];
@@ -202,7 +202,7 @@ export const ONE_SHOT_ANIMATIONS = [
 export const EffectColors = {
   DAMAGE: 0xff0000,
   ATTACK: 0xffff00,
-  SKILL_BUFF: 0x00ffff,
+  SKILL_SELF_TARGET: 0x00ffff,
   SKILL_PROJECTILE: 0x8a2be2,
   SKILL_AREA_ATTACK: 0xff4500,
   ITEM_USE: 0x00ff00,
@@ -229,8 +229,12 @@ export const ParticlePatternTypes = {
   HELIX: 'helix',
   EXPLOSION: 'explosion',
   SOUNDWAVE: 'soundwave',
+  SONIC: 'sonic',
   SPRAY: 'spray',
   CLOUD: 'cloud',
+  ROOTS: 'roots',
+  BARRIER: 'barrier',
+  FANG: 'fang',
   DEFAULT: 'default',
 };
 

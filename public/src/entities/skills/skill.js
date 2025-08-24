@@ -61,7 +61,9 @@ export class Skill extends BaseEntity {
     }
 
     // Generate geometry and material based on effect data
-    const { geometry, material } = Skill.createEffectMesh(skillData.effect);
+    const { geometry, material } = Skill.createEffectMesh(
+      skillData.effect || {}
+    );
 
     // Pass the generated geometry and material to BaseEntity
     super(game, skillId, skillData, geometry, material, options);
@@ -245,8 +247,18 @@ export class Skill extends BaseEntity {
 
   // Create particle system based on skill effect data
   createParticleSystem(particleData) {
-    this.particleData = particleData;
-    this.particleEmissionRate = 0.03; // Emit particles every 30ms for more dense effect
+    // Clone to avoid mutating shared JSON in game.data
+    try {
+      this.particleData =
+        typeof structuredClone === 'function'
+          ? structuredClone(particleData)
+          : JSON.parse(JSON.stringify(particleData));
+    } catch {
+      // Fallback to shallow clone if deep clone fails (e.g., on circular refs)
+      this.particleData = { ...particleData };
+    }
+
+    this.particleEmissionRate = 0.05; // Emit particles every 50ms for balanced effect
     this.lastParticleEmission = 0;
     this.activeParticles = [];
   }
@@ -307,7 +319,7 @@ export class Skill extends BaseEntity {
           position: new THREE.Vector3().fromArray(positions),
           velocity: new THREE.Vector3().fromArray(velocities),
           color: new THREE.Color().fromArray(colors),
-          lifespan: Math.random() * baseLifetime + baseLifetime * 0.2, // Shorter random variation
+          lifespan: baseLifetime * (0.8 + Math.random() * 0.4), // 80%-120% of base lifetime
           maxLifespan: baseLifetime,
           size: particleSize * (0.7 + Math.random() * 0.6), // Size variation for naturalness
           gravity: gravity,
@@ -472,6 +484,7 @@ export class Skill extends BaseEntity {
       segments,
       positions: [],
       maxPositions: Math.max(10, Math.floor(length * segments)),
+      fadeRatio: 1.0,
       worldMesh: null, // Will be added to scene directly
     };
   }
@@ -563,19 +576,29 @@ export class Skill extends BaseEntity {
   updateTrailMesh() {
     if (!this.trailSystem) return;
 
-    // Remove existing trail mesh from scene
-    if (this.trailSystem.worldMesh) {
-      this.game.sceneManager.remove(this.trailSystem.worldMesh);
-      this.trailSystem.worldMesh.geometry.dispose();
-      this.trailSystem.worldMesh.material.dispose();
-      this.trailSystem.worldMesh = null;
+    // Lazily create trail once and update attributes in-place
+    let line = this.trailSystem.worldMesh;
+    if (!line) {
+      const geometry = new THREE.BufferGeometry();
+      const material = new THREE.LineBasicMaterial({
+        vertexColors: true,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        opacity: this.trailSystem.opacity * (this.trailSystem.fadeRatio ?? 1),
+      });
+      line = new THREE.Line(geometry, material);
+      this.game.sceneManager.add(line);
+      this.trailSystem.worldMesh = line;
+    } else {
+      // Update overall opacity
+      line.material.opacity =
+        this.trailSystem.opacity * (this.trailSystem.fadeRatio ?? 1);
     }
 
     const positions = this.trailSystem.positions;
     if (positions.length < 2) return;
 
     // Create simple line trail for better performance and visibility
-    const geometry = new THREE.BufferGeometry();
     const points = [];
     const colors = [];
 
@@ -589,37 +612,21 @@ export class Skill extends BaseEntity {
 
       points.push(position.x, position.y, position.z);
 
-      // Fade pattern - older positions are more transparent
-      const fadeRatio = Math.pow(ratio, 0.5);
-      const trailFadeRatio = this.trailSystem.fadeRatio ?? 1.0;
-      const opacity = fadeRatio * this.trailSystem.opacity * trailFadeRatio;
-
+      // Encode RGB only; LineBasicMaterial ignores per-vertex alpha
+      const t = Math.pow(ratio, 0.5);
       colors.push(
-        this.trailSystem.color.r,
-        this.trailSystem.color.g,
-        this.trailSystem.color.b,
-        opacity
+        this.trailSystem.color.r * t,
+        this.trailSystem.color.g * t,
+        this.trailSystem.color.b * t
       );
     }
 
-    geometry.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(points, 3)
-    );
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 4));
-
-    // Use LineBasicMaterial but with multiple parallel lines for thickness effect
-    const material = new THREE.LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-    });
-
-    const line = new THREE.Line(geometry, material);
-
-    // Add trail directly to scene in world coordinates
-    this.game.sceneManager.add(line);
-    this.trailSystem.worldMesh = line;
+    // Update the existing geometry attributes on the single, persistent line
+    const geom = line.geometry;
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+    geom.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    geom.attributes.position.needsUpdate = true;
+    geom.attributes.color.needsUpdate = true;
   }
 
   applyRotation(casterQuaternion) {
@@ -742,6 +749,107 @@ export class Skill extends BaseEntity {
         break;
       }
 
+      case ParticlePatternTypes.SONIC: {
+        const sonicAngle = (index / totalCount) * Math.PI * 2;
+        // Apply soundRipples effect - more pronounced wave patterns
+        const rippleIntensity = this.particleData.soundRipples ? 1.5 : 1.0;
+        // Apply wildness - more chaotic movement
+        const wildnessMultiplier = this.particleData.wildness || 1.0;
+        const waveRadius =
+          Math.sin(time * 8 + index * 0.5) * spread * 0.3 * rippleIntensity +
+          spread * 0.4;
+        positions[0] = Math.cos(sonicAngle) * waveRadius;
+        positions[1] =
+          Math.sin(time * 6 + index * 0.3) * 0.6 * wildnessMultiplier;
+        positions[2] = Math.sin(sonicAngle) * waveRadius;
+        // Apply canineRage - more aggressive movement
+        const rageMultiplier = (this.particleData.canineRage || 1.0) * 0.9;
+        velocities[0] = Math.cos(sonicAngle) * speed * 0.8 * rageMultiplier;
+        velocities[1] =
+          (Math.random() - 0.5) * speed * 0.4 * wildnessMultiplier;
+        velocities[2] = Math.sin(sonicAngle) * speed * 0.8 * rageMultiplier;
+        break;
+      }
+
+      case ParticlePatternTypes.FANG: {
+        const fangAngle = (index / totalCount) * Math.PI * 0.3; // Narrow cone
+        const fangRadius = (index / totalCount) * spread * 0.2;
+        // Apply boneShards effect - more jagged, sharp movement
+        const shardIntensity = this.particleData.boneShards ? 1.3 : 1.0;
+        // Apply savageEffect - more aggressive positioning
+        const savageOffset = this.particleData.savageEffect
+          ? (Math.random() - 0.5) * 0.4
+          : 0;
+        positions[0] =
+          Math.cos(fangAngle) * fangRadius * shardIntensity + savageOffset;
+        positions[1] = (Math.random() - 0.5) * spread * 0.1;
+        positions[2] =
+          Math.sin(fangAngle) * fangRadius * shardIntensity + savageOffset;
+        // Apply gnawing effect - erratic velocity changes
+        const gnawingMultiplier = this.particleData.gnawing || 0.8;
+        const gnawingVariation =
+          Math.sin(time * 10 + index) * gnawingMultiplier * 0.3;
+        velocities[0] = Math.cos(fangAngle) * speed * (1.2 + gnawingVariation);
+        velocities[1] = (Math.random() - 0.5) * speed * 0.3 * shardIntensity;
+        velocities[2] = Math.sin(fangAngle) * speed * (1.2 + gnawingVariation);
+        break;
+      }
+
+      case ParticlePatternTypes.ROOTS: {
+        const rootAngle = (index / totalCount) * Math.PI * 2;
+        const rootLength = (index / totalCount) * spread * 0.5;
+        // Apply vineEffect - more serpentine, organic movement
+        const vineMultiplier = this.particleData.vineEffect ? 1.4 : 1.0;
+        const branchOffset = Math.sin(time * 2 + index) * 0.3 * vineMultiplier;
+        // Apply entanglement - complex interweaving patterns
+        const entanglementFactor = this.particleData.entanglement || 0.9;
+        const entangleOffset =
+          Math.cos(time * 3 + index * 1.5) * entanglementFactor * 0.2;
+        positions[0] =
+          Math.cos(rootAngle) * (rootLength + branchOffset) + entangleOffset;
+        positions[1] = -(index / totalCount) * spread * 0.4; // Grow downward
+        positions[2] =
+          Math.sin(rootAngle) * (rootLength + branchOffset) + entangleOffset;
+        // Apply groundBurst - initial upward motion before settling
+        const burstEffect =
+          this.particleData.groundBurst && time < 0.5 ? 0.8 : 0;
+        // Apply earthShake - subtle random vibration
+        const shakeIntensity = (this.particleData.earthShake || 0.4) * 0.1;
+        const shake = (Math.random() - 0.5) * shakeIntensity;
+        velocities[0] = Math.cos(rootAngle) * speed * 0.4 + shake;
+        velocities[1] = -speed * 0.3 + burstEffect + shake;
+        velocities[2] = Math.sin(rootAngle) * speed * 0.4 + shake;
+        break;
+      }
+
+      case ParticlePatternTypes.BARRIER: {
+        const barrierAngle = (index / totalCount) * Math.PI * 2;
+        const barrierRadius = spread * 0.6;
+        // Apply crystalFormation - more structured, geometric positioning
+        const crystalPrecision = this.particleData.crystalFormation
+          ? 0.95
+          : 0.4;
+        const barrierHeight = Math.sin(barrierAngle * 2) * crystalPrecision;
+        // Apply armorPlating - more defensive arrangement
+        const plateAlignment = this.particleData.armorPlating ? 0.9 : 0.6;
+        const plateOffset =
+          Math.cos(barrierAngle * 3) * (1 - plateAlignment) * 0.2;
+        positions[0] = Math.cos(barrierAngle) * barrierRadius + plateOffset;
+        positions[1] = barrierHeight;
+        positions[2] = Math.sin(barrierAngle) * barrierRadius + plateOffset;
+        // Apply defenseAura - steady, protective movement
+        const auraStability = this.particleData.defenseAura || 1.0;
+        // Apply fortification - more solid, less chaotic movement
+        const fortificationLevel = this.particleData.fortification || 0.8;
+        velocities[0] =
+          Math.cos(barrierAngle) * speed * 0.2 * fortificationLevel;
+        velocities[1] =
+          Math.abs(Math.sin(time * 4)) * speed * 0.3 * auraStability;
+        velocities[2] =
+          Math.sin(barrierAngle) * speed * 0.2 * fortificationLevel;
+        break;
+      }
+
       default: // Original random pattern
         positions[0] = (Math.random() - 0.5) * spread * 0.2;
         positions[1] = (Math.random() - 0.5) * spread * 0.2;
@@ -769,28 +877,62 @@ export class Skill extends BaseEntity {
 
   // Clean up resources
   dispose() {
-    // Clean up active particles
+    // Clean up active particles with null safety
     if (this.activeParticles) {
       this.activeParticles.forEach((particle) => {
-        this.game.sceneManager.remove(particle.mesh);
-        particle.mesh.geometry.dispose();
-        particle.mesh.material.dispose();
+        if (particle && particle.mesh) {
+          this.game.sceneManager.remove(particle.mesh);
+          if (
+            particle.mesh.geometry &&
+            typeof particle.mesh.geometry.dispose === 'function'
+          ) {
+            particle.mesh.geometry.dispose();
+          }
+          if (
+            particle.mesh.material &&
+            typeof particle.mesh.material.dispose === 'function'
+          ) {
+            particle.mesh.material.dispose();
+          }
+        }
       });
       this.activeParticles = [];
     }
 
-    // Clean up old particle system (legacy)
+    // Clean up old particle system (legacy) with safe disposal
     if (this.particleSystem) {
-      this.particleSystem.geometry.dispose();
-      this.particleSystem.material.dispose();
+      if (
+        this.particleSystem.geometry &&
+        typeof this.particleSystem.geometry.dispose === 'function'
+      ) {
+        this.particleSystem.geometry.dispose();
+      }
+      if (
+        this.particleSystem.material &&
+        typeof this.particleSystem.material.dispose === 'function'
+      ) {
+        this.particleSystem.material.dispose();
+      }
+      this.particleSystem = null; // Prevent duplicate disposal
     }
 
-    // Clean up trail system
+    // Clean up trail system with enhanced safety
     if (this.trailSystem && this.trailSystem.worldMesh) {
       this.game.sceneManager.remove(this.trailSystem.worldMesh);
-      this.trailSystem.worldMesh.geometry.dispose();
-      this.trailSystem.worldMesh.material.dispose();
+      if (
+        this.trailSystem.worldMesh.geometry &&
+        typeof this.trailSystem.worldMesh.geometry.dispose === 'function'
+      ) {
+        this.trailSystem.worldMesh.geometry.dispose();
+      }
+      if (
+        this.trailSystem.worldMesh.material &&
+        typeof this.trailSystem.worldMesh.material.dispose === 'function'
+      ) {
+        this.trailSystem.worldMesh.material.dispose();
+      }
       this.trailSystem.worldMesh = null;
+      this.trailSystem = null; // Prevent duplicate disposal
     }
   }
 
@@ -824,5 +966,19 @@ export class Skill extends BaseEntity {
       }
     };
     animate();
+  }
+
+  // Force cleanup all particles (consolidated from subclasses)
+  forceCleanupAllParticles() {
+    if (this.activeParticles) {
+      this.activeParticles.forEach((particle) => {
+        if (particle.mesh) {
+          this.game.sceneManager.remove(particle.mesh);
+          if (particle.mesh.geometry) particle.mesh.geometry.dispose();
+          if (particle.mesh.material) particle.mesh.material.dispose();
+        }
+      });
+      this.activeParticles = [];
+    }
   }
 }

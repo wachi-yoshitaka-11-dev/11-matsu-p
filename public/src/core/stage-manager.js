@@ -473,13 +473,12 @@ export class StageManager {
       // Handle terrain/environment style with areas array and count
       const count = config.count || 1;
 
-      if (config.areas && areas) {
-        for (const areaName of config.areas) {
+      if (config.areas && areas && config.areas.length > 0) {
+        for (let i = 0; i < count; i++) {
+          // Cycle through areas to distribute objects
+          const areaName = config.areas[i % config.areas.length];
           const areaInfo = areas[areaName];
-          if (!areaInfo) continue;
-
-          const areaCount = Math.floor(count / config.areas.length);
-          for (let i = 0; i < areaCount; i++) {
+          if (areaInfo) {
             const pos = this.generateRandomPositionInArea(areaInfo);
             positions.push(pos);
           }
