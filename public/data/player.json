@@ -17,7 +17,7 @@
   "initialSpawnPoint": { "x": 0, "y": 0, "z": 0 },
   "respawnDelay": 3000,
 
-  "levelUpExpMultiplier": 1.5,
+  "levelUpExpMultiplier": 2.0,
   "statusPointsPerLevel": 5,
 
   "jumpPower": 7,

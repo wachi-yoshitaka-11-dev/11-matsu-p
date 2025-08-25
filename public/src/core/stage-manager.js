@@ -473,13 +473,12 @@ export class StageManager {
       // Handle terrain/environment style with areas array and count
       const count = config.count || 1;
 
-      if (config.areas && areas) {
-        for (const areaName of config.areas) {
+      if (config.areas && areas && config.areas.length > 0) {
+        for (let i = 0; i < count; i++) {
+          // Cycle through areas to distribute objects
+          const areaName = config.areas[i % config.areas.length];
           const areaInfo = areas[areaName];
-          if (!areaInfo) continue;
-
-          const areaCount = Math.floor(count / config.areas.length);
-          for (let i = 0; i < areaCount; i++) {
+          if (areaInfo) {
             const pos = this.generateRandomPositionInArea(areaInfo);
             positions.push(pos);
           }
@@ -801,8 +800,8 @@ export class StageManager {
       }
     }
 
-    // Return safe ground level (0) instead of MAX_FALL_DEPTH for spawn safety
-    return highestY > Fall.MAX_FALL_DEPTH ? highestY : 0;
+    // Return actual height or MAX_FALL_DEPTH if no ground found (allows proper falling)
+    return highestY;
   }
 
   /**
@@ -815,8 +814,13 @@ export class StageManager {
       this.game.player.mesh.position.set(startPos[0], startPos[1], startPos[2]);
 
       // Always adjust Y position to ground level for consistency
-      this.game.player.mesh.position.y =
-        this.getHeightAt(startPos[0], startPos[2]) + 1;
+      const groundHeight = this.getHeightAt(startPos[0], startPos[2]);
+      if (groundHeight > Fall.MAX_FALL_DEPTH) {
+        this.game.player.mesh.position.y = groundHeight + 1;
+      } else {
+        // Fallback to spawn position Y if no ground found at spawn point
+        this.game.player.mesh.position.y = startPos[1];
+      }
     }
 
     // Start BGM

@@ -597,8 +597,8 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       const player = window.game?.player;
       return {
         hasAttackStates:
-          typeof player?.isAttackingWeak === 'boolean' &&
-          typeof player?.isAttackingStrong === 'boolean',
+          typeof player?.isPerformingWeakAttack === 'boolean' &&
+          typeof player?.isPerformingStrongAttack === 'boolean',
         hasGuardState: 'isGuarding' in (player || {}),
         guardValue: player?.isGuarding,
         hasShieldDefense: typeof player?.getShieldDefense === 'function',

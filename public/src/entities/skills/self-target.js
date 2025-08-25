@@ -34,13 +34,16 @@ export class SelfTarget extends Skill {
     }
 
     // Apply self-target effect after cast time
-    setTimeout(() => {
+    this._castTimer = setTimeout(() => {
       this.activateSelfTarget();
     }, this.castTime);
 
     // Remove self-target effect after duration
-    setTimeout(() => {
+    this._endTimer = setTimeout(() => {
       this.deactivateSelfTarget();
+      // Stop particle emission and cleanup
+      this.particleData = null;
+      this.forceCleanupAllParticles();
       this.lifespan = 0;
     }, this.duration);
   }
@@ -94,5 +97,20 @@ export class SelfTarget extends Skill {
 
     // Fade out effect
     this.mesh.scale.setScalar(0);
+  }
+
+  // Override dispose to ensure cleanup
+  dispose() {
+    if (this._castTimer) {
+      clearTimeout(this._castTimer);
+      this._castTimer = null;
+    }
+    if (this._endTimer) {
+      clearTimeout(this._endTimer);
+      this._endTimer = null;
+    }
+    this.particleData = null; // Stop particle emission
+    this.forceCleanupAllParticles(); // Force cleanup all remaining particles
+    super.dispose();
   }
 }

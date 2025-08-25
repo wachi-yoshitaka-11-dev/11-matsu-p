@@ -48,8 +48,6 @@ export class Enemy extends Character {
     this.weakAttackCooldown = 0;
     this.strongAttackCooldown = 0;
     this.experience = this.data.experience;
-    this.isPerformingWeakAttack = false;
-    this.isPerformingStrongAttack = false;
     this.nextAction = null;
 
     // Skill cooldown management (Enemy-specific)
@@ -117,10 +115,13 @@ export class Enemy extends Character {
 
     this.mesh.lookAt(this.game.player.mesh.position);
 
-    this.weakAttackCooldown = Math.max(0, this.weakAttackCooldown - deltaTime);
+    this.weakAttackCooldown = Math.max(
+      0,
+      this.weakAttackCooldown - deltaTime * 1000
+    );
     this.strongAttackCooldown = Math.max(
       0,
-      this.strongAttackCooldown - deltaTime
+      this.strongAttackCooldown - deltaTime * 1000
     );
 
     this.chooseAndPerformAction(distance);
@@ -210,24 +211,25 @@ export class Enemy extends Character {
     this.isPerformingWeakAttack = true;
     this.weakAttackCooldown = this.data.weakAttack.cooldown;
 
-    this.playAnimation(AnimationNames.ATTACK_WEAK);
+    this.performAction(AnimationNames.ATTACK_WEAK, AssetPaths.SFX_ATTACK_WEAK);
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.weakAttack.damage);
-      this.game.playSFX(AssetPaths.SFX_ATTACK_WEAK);
-    }, this.data.weakAttack.castTime * 1000);
+    }, this.data.weakAttack.castTime);
   }
 
   performStrongAttack() {
     this.isPerformingStrongAttack = true;
     this.strongAttackCooldown = this.data.strongAttack.cooldown;
 
-    this.playAnimation(AnimationNames.ATTACK_STRONG);
+    this.performAction(
+      AnimationNames.ATTACK_STRONG,
+      AssetPaths.SFX_ATTACK_STRONG
+    );
 
     setTimeout(() => {
       this.dealDamageToPlayer(this.data.strongAttack.damage);
-      this.game.playSFX(AssetPaths.SFX_ATTACK_STRONG);
-    }, this.data.strongAttack.castTime * 1000);
+    }, this.data.strongAttack.castTime);
   }
 
   dealDamageToPlayer(damage) {
@@ -281,7 +283,7 @@ export class Enemy extends Character {
     for (const skillId of Object.keys(this.skillCooldowns)) {
       this.skillCooldowns[skillId] = Math.max(
         0,
-        this.skillCooldowns[skillId] - deltaTime
+        this.skillCooldowns[skillId] - deltaTime * 1000
       );
     }
   }

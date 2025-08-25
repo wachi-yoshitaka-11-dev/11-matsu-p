@@ -5,7 +5,7 @@
     "texture": "items/potion.png",
     "image": "items/potion.png",
     "description": "体力を回復するポーション",
-    "healAmount": 20
+    "healAmount": 80
   },
   "fpPotion": {
     "name": "FPポーション",
@@ -13,6 +13,6 @@
     "texture": "items/fp-potion.png",
     "image": "items/fp-potion.png",
     "description": "FPを回復するポーション",
-    "fpHealAmount": 30
+    "fpHealAmount": 60
   }
 }
