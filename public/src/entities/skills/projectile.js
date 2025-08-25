@@ -23,7 +23,14 @@ export class Projectile extends Skill {
         ? direction.clone().normalize()
         : new THREE.Vector3(0, 0, -1);
 
-    this.applyRotation(caster.mesh.quaternion);
+    if (caster?.mesh?.quaternion) {
+      this.applyRotation(caster.mesh.quaternion);
+    } else if (unitDir) {
+      // Align -Z forward to flight direction
+      const from = new THREE.Vector3(0, 0, -1);
+      const q = new THREE.Quaternion().setFromUnitVectors(from, unitDir);
+      this.mesh.quaternion.copy(q);
+    }
 
     this.direction = unitDir;
   }
@@ -71,15 +78,15 @@ export class Projectile extends Skill {
     // Check for collisions
     this.checkCollisions();
 
-    // Remove if lifespan expired
+    // Expiry: trigger fade-out when lifespan drops to zero or below
     if (this.lifespan <= 0) {
-      this.lifespan = 0;
-
-      // Begin fade out process instead of immediate stop
+      // Begin fade-out instead of immediate cull
       if (!this.fadeOutStarted) {
         this.fadeOutStarted = true;
         this.fadeOutTime = 0.2; // Shorter fade for expiry
         this.fadeOutTimer = this.fadeOutTime;
+        // Keep alive during fade-out; manager prunes on <= 0
+        this.lifespan = Number.EPSILON;
 
         if (this.particleData) {
           this.particleData.fadeRatio = 1.0;
@@ -112,10 +119,17 @@ export class Projectile extends Skill {
   cleanupTrail() {
     if (this.trailSystem && this.trailSystem.worldMesh) {
       this.game.sceneManager.remove(this.trailSystem.worldMesh);
-      // Only dispose material, not geometry (Sprite geometry is shared)
-      this.trailSystem.worldMesh.material.dispose();
+      // Dispose both material and geometry; this is a THREE.Line, not a Sprite
+      if (this.trailSystem.worldMesh.geometry) {
+        this.trailSystem.worldMesh.geometry.dispose();
+      }
+      if (this.trailSystem.worldMesh.material) {
+        this.trailSystem.worldMesh.material.dispose();
+      }
       this.trailSystem.worldMesh = null;
       this.trailSystem.positions = [];
+      // Null out the container to break references and allow GC
+      this.trailSystem = null;
     }
   }
 
