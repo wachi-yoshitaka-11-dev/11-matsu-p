@@ -134,7 +134,7 @@
         "howlIntensity": 0.9
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "duration": 2000,
     "castTime": 500,
     "buffs": [
@@ -185,7 +185,7 @@
         "z": 0
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "duration": 1200,
     "castTime": 400,
     "speed": 12,
@@ -218,7 +218,7 @@
         "canineRage": 0.9
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "damage": 20,
     "range": 3.5,
     "duration": 1000,
@@ -259,7 +259,7 @@
         "z": 0
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "duration": 800,
     "castTime": 500,
     "speed": 8,
@@ -300,7 +300,7 @@
         "swirling": 0.6
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "damage": 12,
     "range": 5.0,
     "duration": 2000,
@@ -339,7 +339,7 @@
         "earthShake": 0.4
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "damage": 8,
     "range": 4.0,
     "duration": 1500,
@@ -377,7 +377,7 @@
         "fortification": 0.8
       }
     },
-    "fpCost": 0,
+    "fpCost": 15,
     "duration": 2500,
     "castTime": 1000,
     "buffs": [
@@ -385,6 +385,597 @@
         "type": "defenseEnhancement",
         "duration": 12000,
         "defenseBuffMultiplier": 2.0
+      }
+    ]
+  },
+  "stoneShield": {
+    "name": "石の盾",
+    "type": "selfTarget",
+    "image": "skills/stone-shield.png",
+    "description": "石化して防御力を向上させる",
+    "effect": {
+      "shape": "sphere",
+      "color": "#708090",
+      "size": 2.5,
+      "opacity": 0.8,
+      "particle": {
+        "color": "#A9A9A9",
+        "count": 60,
+        "spread": 4.0,
+        "speed": 1.5,
+        "size": 0.12,
+        "lifetime": 3.0,
+        "gravity": 1.0,
+        "pattern": "stone"
+      }
+    },
+    "fpCost": 15,
+    "duration": 2000,
+    "castTime": 500,
+    "buffs": [
+      {
+        "type": "defenseEnhancement",
+        "duration": 8000,
+        "defenseBuffMultiplier": 1.8
+      }
+    ]
+  },
+  "phaseShift": {
+    "name": "位相移動",
+    "type": "selfTarget",
+    "image": "skills/phase-shift.png",
+    "description": "霊体化して攻撃を回避",
+    "effect": {
+      "shape": "sphere",
+      "color": "#B19CD9",
+      "size": 3.0,
+      "opacity": 0.5,
+      "particle": {
+        "color": "#DDA0DD",
+        "count": 100,
+        "spread": 6.0,
+        "speed": 3.0,
+        "size": 0.08,
+        "lifetime": 2.5,
+        "gravity": -0.5,
+        "pattern": "ethereal"
+      }
+    },
+    "fpCost": 15,
+    "duration": 1500,
+    "castTime": 300,
+    "buffs": [
+      {
+        "type": "speedReduction",
+        "duration": 4000,
+        "speedMultiplier": 1.2
+      }
+    ]
+  },
+  "ancientMagic": {
+    "name": "古代魔法",
+    "type": "projectile",
+    "image": "skills/ancient-magic.png",
+    "description": "古代の力を込めた強力な魔法弾",
+    "effect": {
+      "shape": "sphere",
+      "color": "#8A2BE2",
+      "size": 2.0,
+      "particle": {
+        "color": "#9932CC",
+        "count": 150,
+        "spread": 3.0,
+        "speed": 5.0,
+        "size": 0.1,
+        "lifetime": 2.0,
+        "gravity": 0.2,
+        "pattern": "ancient"
+      }
+    },
+    "fpCost": 15,
+    "damage": 45,
+    "speed": 8,
+    "lifespan": 3000,
+    "hitRange": 4.0,
+    "duration": 1800,
+    "castTime": 800
+  },
+  "guardianBarrier": {
+    "name": "守護者の障壁",
+    "type": "selfTarget",
+    "image": "skills/guardian-barrier.png",
+    "description": "古代の力で強固な障壁を展開",
+    "effect": {
+      "shape": "sphere",
+      "color": "#4169E1",
+      "size": 4.0,
+      "opacity": 0.9,
+      "particle": {
+        "color": "#6495ED",
+        "count": 120,
+        "spread": 8.0,
+        "speed": 2.5,
+        "size": 0.15,
+        "lifetime": 4.0,
+        "gravity": 0,
+        "pattern": "barrier"
+      }
+    },
+    "fpCost": 15,
+    "duration": 3000,
+    "castTime": 1200,
+    "buffs": [
+      {
+        "type": "defenseEnhancement",
+        "duration": 15000,
+        "defenseBuffMultiplier": 3.0
+      }
+    ]
+  },
+  "iceSpike": {
+    "name": "氷の槍",
+    "type": "projectile",
+    "image": "skills/ice-spike.png",
+    "description": "鋭い氷の槍を射出",
+    "damageType": "ice",
+    "effect": {
+      "shape": "cone",
+      "color": "#87CEEB",
+      "size": 1.5,
+      "particle": {
+        "color": "#B0E0E6",
+        "count": 80,
+        "spread": 2.0,
+        "speed": 6.0,
+        "size": 0.12,
+        "lifetime": 1.8,
+        "gravity": 0.5,
+        "pattern": "ice"
+      }
+    },
+    "fpCost": 15,
+    "damage": 25,
+    "speed": 12,
+    "lifespan": 2000,
+    "hitRange": 2.5,
+    "duration": 1200,
+    "castTime": 400
+  },
+  "packHunt": {
+    "name": "群れ狩り",
+    "type": "selfTarget",
+    "image": "skills/pack-hunt.png",
+    "description": "群れの力で攻撃力と速度を上昇",
+    "effect": {
+      "shape": "sphere",
+      "color": "#DC143C",
+      "size": 2.8,
+      "opacity": 0.7,
+      "particle": {
+        "color": "#FF4500",
+        "count": 90,
+        "spread": 5.0,
+        "speed": 4.0,
+        "size": 0.1,
+        "lifetime": 2.5,
+        "gravity": 0.3,
+        "pattern": "hunting"
+      }
+    },
+    "fpCost": 15,
+    "duration": 2200,
+    "castTime": 600,
+    "buffs": [
+      {
+        "type": "attackEnhancement",
+        "duration": 10000,
+        "attackBuffMultiplier": 1.6
+      },
+      {
+        "type": "speedReduction",
+        "duration": 10000,
+        "speedMultiplier": 1.4
+      }
+    ]
+  },
+  "frostBolt": {
+    "name": "霜の矢",
+    "type": "projectile",
+    "image": "skills/frost-bolt.png",
+    "description": "氷の魔法弾を放つ",
+    "damageType": "ice",
+    "effect": {
+      "shape": "sphere",
+      "color": "#E0FFFF",
+      "size": 1.0,
+      "particle": {
+        "color": "#F0F8FF",
+        "count": 60,
+        "spread": 2.5,
+        "speed": 4.5,
+        "size": 0.08,
+        "lifetime": 1.5,
+        "gravity": 0.3,
+        "pattern": "frost"
+      }
+    },
+    "fpCost": 15,
+    "damage": 18,
+    "speed": 10,
+    "lifespan": 2500,
+    "hitRange": 2.0,
+    "duration": 1000,
+    "castTime": 300
+  },
+  "iceBreath": {
+    "name": "氷のブレス",
+    "type": "areaAttack",
+    "image": "skills/ice-breath.png",
+    "description": "前方広範囲に氷のブレスを吐く",
+    "damageType": "ice",
+    "effect": {
+      "shape": "cone",
+      "color": "#B0E0E6",
+      "size": 6.0,
+      "opacity": 0.8,
+      "particle": {
+        "color": "#E6E6FA",
+        "count": 200,
+        "spread": 12.0,
+        "speed": 8.0,
+        "size": 0.15,
+        "lifetime": 3.0,
+        "gravity": 1.0,
+        "pattern": "breath"
+      }
+    },
+    "fpCost": 15,
+    "damage": 35,
+    "range": 8.0,
+    "duration": 2500,
+    "castTime": 1000,
+    "debuffs": [
+      {
+        "type": "freeze",
+        "duration": 3000,
+        "freezeIntensity": 0.7
+      }
+    ]
+  },
+  "blizzardCall": {
+    "name": "吹雪召喚",
+    "type": "areaAttack",
+    "image": "skills/blizzard-call.png",
+    "description": "周囲一帯に猛吹雪を発生させる",
+    "effect": {
+      "shape": "sphere",
+      "color": "#F0F8FF",
+      "size": 10.0,
+      "opacity": 0.6,
+      "particle": {
+        "color": "#FFFAFA",
+        "count": 300,
+        "spread": 15.0,
+        "speed": 6.0,
+        "size": 0.12,
+        "lifetime": 4.0,
+        "gravity": 2.0,
+        "pattern": "blizzard"
+      }
+    },
+    "fpCost": 15,
+    "damage": 20,
+    "range": 12.0,
+    "duration": 4000,
+    "castTime": 1500,
+    "debuffs": [
+      {
+        "type": "speedReduction",
+        "duration": 8000,
+        "speedMultiplier": 0.4
+      }
+    ]
+  },
+  "lavaSplash": {
+    "name": "溶岩飛沫",
+    "type": "areaAttack",
+    "image": "skills/lava-splash.png",
+    "description": "溶岩を周囲に飛び散らせる",
+    "damageType": "fire",
+    "effect": {
+      "shape": "sphere",
+      "color": "#FF4500",
+      "size": 4.0,
+      "opacity": 0.9,
+      "particle": {
+        "color": "#FF6347",
+        "count": 120,
+        "spread": 8.0,
+        "speed": 7.0,
+        "size": 0.18,
+        "lifetime": 2.5,
+        "gravity": 3.0,
+        "pattern": "lava"
+      }
+    },
+    "fpCost": 15,
+    "damage": 22,
+    "range": 5.0,
+    "duration": 2000,
+    "castTime": 500,
+    "debuffs": [
+      {
+        "type": "burn",
+        "duration": 6000,
+        "damagePerTick": 4,
+        "tickInterval": 1000
+      }
+    ]
+  },
+  "rockThrow": {
+    "name": "岩石投擲",
+    "type": "projectile",
+    "image": "skills/rock-throw.png",
+    "description": "大きな岩を投げつける",
+    "effect": {
+      "shape": "sphere",
+      "color": "#A0522D",
+      "size": 2.5,
+      "particle": {
+        "color": "#8B4513",
+        "count": 40,
+        "spread": 3.0,
+        "speed": 3.0,
+        "size": 0.2,
+        "lifetime": 2.0,
+        "gravity": 5.0,
+        "pattern": "rock"
+      }
+    },
+    "fpCost": 15,
+    "damage": 30,
+    "speed": 6,
+    "lifespan": 3000,
+    "hitRange": 3.0,
+    "duration": 1500,
+    "castTime": 700
+  },
+  "shadowBind": {
+    "name": "影縛り",
+    "type": "areaAttack",
+    "image": "skills/shadow-bind.png",
+    "description": "影で敵の動きを封じる",
+    "effect": {
+      "shape": "ring",
+      "color": "#2F4F4F",
+      "size": 5.0,
+      "opacity": 0.8,
+      "particle": {
+        "color": "#191970",
+        "count": 100,
+        "spread": 10.0,
+        "speed": 2.0,
+        "size": 0.1,
+        "lifetime": 3.5,
+        "gravity": 0,
+        "pattern": "shadow"
+      }
+    },
+    "fpCost": 15,
+    "damage": 15,
+    "range": 6.0,
+    "duration": 2800,
+    "castTime": 800,
+    "debuffs": [
+      {
+        "type": "speedReduction",
+        "duration": 4000,
+        "speedMultiplier": 0.3
+      }
+    ]
+  },
+  "dragonBreath": {
+    "name": "竜のブレス",
+    "type": "areaAttack",
+    "image": "skills/dragon-breath.png",
+    "description": "炎のブレスで前方広範囲を焼き尽くす",
+    "damageType": "fire",
+    "effect": {
+      "shape": "cone",
+      "color": "#FF4500",
+      "size": 8.0,
+      "opacity": 0.9,
+      "particle": {
+        "color": "#FF6347",
+        "count": 250,
+        "spread": 15.0,
+        "speed": 10.0,
+        "size": 0.2,
+        "lifetime": 3.5,
+        "gravity": 2.0,
+        "pattern": "dragonfire"
+      }
+    },
+    "fpCost": 15,
+    "damage": 50,
+    "range": 10.0,
+    "duration": 3000,
+    "castTime": 1200,
+    "debuffs": [
+      {
+        "type": "burn",
+        "duration": 8000,
+        "damagePerTick": 6,
+        "tickInterval": 1000
+      }
+    ]
+  },
+  "wingStorm": {
+    "name": "翼嵐",
+    "type": "areaAttack",
+    "image": "skills/wing-storm.png",
+    "description": "翼で突風を起こし、敵を吹き飛ばす",
+    "effect": {
+      "shape": "sphere",
+      "color": "#87CEEB",
+      "size": 12.0,
+      "opacity": 0.7,
+      "particle": {
+        "color": "#B0C4DE",
+        "count": 200,
+        "spread": 20.0,
+        "speed": 12.0,
+        "size": 0.15,
+        "lifetime": 2.5,
+        "gravity": 0,
+        "pattern": "tornado"
+      }
+    },
+    "fpCost": 15,
+    "damage": 30,
+    "range": 15.0,
+    "duration": 2500,
+    "castTime": 1000,
+    "debuffs": [
+      {
+        "type": "speedReduction",
+        "duration": 3000,
+        "speedMultiplier": 0.5
+      }
+    ]
+  },
+  "dragonRoar": {
+    "name": "竜の咆哮",
+    "type": "areaAttack",
+    "image": "skills/dragon-roar.png",
+    "description": "威圧的な咆哮で敵を恐怖させる",
+    "effect": {
+      "shape": "sphere",
+      "color": "#8B0000",
+      "size": 15.0,
+      "opacity": 0.5,
+      "particle": {
+        "color": "#DC143C",
+        "count": 150,
+        "spread": 25.0,
+        "speed": 8.0,
+        "size": 0.12,
+        "lifetime": 3.0,
+        "gravity": 0,
+        "pattern": "soundwave"
+      }
+    },
+    "fpCost": 15,
+    "damage": 25,
+    "range": 20.0,
+    "duration": 3000,
+    "castTime": 800,
+    "debuffs": [
+      {
+        "type": "speedReduction",
+        "duration": 5000,
+        "speedMultiplier": 0.6
+      }
+    ]
+  },
+  "curseBlast": {
+    "name": "呪いの爆発",
+    "type": "areaAttack",
+    "image": "skills/curse-blast.png",
+    "description": "呪いの力を放ち、広範囲にダメージを与える",
+    "effect": {
+      "shape": "sphere",
+      "color": "#800080",
+      "size": 8.0,
+      "opacity": 0.9,
+      "particle": {
+        "color": "#9932CC",
+        "count": 180,
+        "spread": 12.0,
+        "speed": 9.0,
+        "size": 0.18,
+        "lifetime": 3.0,
+        "gravity": 1.0,
+        "pattern": "curse"
+      }
+    },
+    "fpCost": 15,
+    "damage": 60,
+    "range": 10.0,
+    "duration": 3500,
+    "castTime": 1500,
+    "debuffs": [
+      {
+        "type": "burn",
+        "duration": 10000,
+        "damagePerTick": 8,
+        "tickInterval": 2000
+      }
+    ]
+  },
+  "shadowClone": {
+    "name": "影分身",
+    "type": "selfTarget",
+    "image": "skills/shadow-clone.png",
+    "description": "影分身を作り出し、複数方向から攻撃する",
+    "effect": {
+      "shape": "sphere",
+      "color": "#2F4F4F",
+      "size": 5.0,
+      "opacity": 0.6,
+      "particle": {
+        "color": "#4682B4",
+        "count": 200,
+        "spread": 10.0,
+        "speed": 5.0,
+        "size": 0.1,
+        "lifetime": 4.0,
+        "gravity": 0,
+        "pattern": "clone"
+      }
+    },
+    "fpCost": 15,
+    "duration": 5000,
+    "castTime": 2000,
+    "buffs": [
+      {
+        "type": "attackEnhancement",
+        "duration": 8000,
+        "attackBuffMultiplier": 2.0
+      }
+    ]
+  },
+  "nineTails": {
+    "name": "九尾乱舞",
+    "type": "areaAttack",
+    "image": "skills/nine-tails.png",
+    "description": "九本の尻尾による連続攻撃",
+    "effect": {
+      "shape": "ring",
+      "color": "#FF1493",
+      "size": 12.0,
+      "opacity": 0.8,
+      "particle": {
+        "color": "#FF69B4",
+        "count": 300,
+        "spread": 18.0,
+        "speed": 15.0,
+        "size": 0.2,
+        "lifetime": 2.8,
+        "gravity": 1.5,
+        "pattern": "ninetails"
+      }
+    },
+    "fpCost": 15,
+    "damage": 80,
+    "range": 15.0,
+    "duration": 4000,
+    "castTime": 2500,
+    "debuffs": [
+      {
+        "type": "stunned",
+        "duration": 3000,
+        "stunIntensity": 1.0
       }
     ]
   }

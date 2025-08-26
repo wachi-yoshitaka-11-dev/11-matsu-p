@@ -22,8 +22,24 @@ export const GameState = {
   ENDING: 'ending',
 };
 
-export const StageClearConditionTypes = {
-  KILL_ALL: 'killAll',
+export const ConditionTypes = {
+  ENEMY_COUNT: 'enemyCount',
+  COLLECT_ITEM: 'collectItem',
+  COMPOSITE: 'composite',
+};
+
+export const ConditionOperators = {
+  // Logical operators
+  AND: 'and',
+  OR: 'or',
+  // Comparison operators
+  EQUAL: 'equal',
+  LESS_THAN: 'lessThan',
+  LESS_THAN_OR_EQUAL: 'lessThanOrEqual',
+  GREATER_THAN: 'greaterThan',
+  GREATER_THAN_OR_EQUAL: 'greaterThanOrEqual',
+  // Special operators
+  ONLY: 'only',
 };
 
 export const StageMessageTypes = {
@@ -52,10 +68,19 @@ export const CollisionTypes = {
   MESH: 'mesh',
 };
 
+export const DamageTypes = {
+  PHYSICAL: 'physical',
+  FIRE: 'fire',
+  ICE: 'ice',
+};
+
 export const BuffTypes = {
   ATTACK_ENHANCEMENT: 'attackEnhancement',
   DEFENSE_ENHANCEMENT: 'defenseEnhancement',
   SPEED_ENHANCEMENT: 'speedEnhancement',
+  INVINCIBLE: 'invincible',
+  FIRE_RESISTANCE: 'fireResistance',
+  ICE_RESISTANCE: 'iceResistance',
 };
 
 export const DebuffTypes = {
@@ -63,6 +88,9 @@ export const DebuffTypes = {
   DEFENSE_REDUCTION: 'defenseReduction',
   SPEED_REDUCTION: 'speedReduction',
   POISON: 'poison',
+  BURN: 'burn',
+  FREEZE: 'freeze',
+  STUNNED: 'stunned',
 };
 
 export const BuffDebuffCategories = {
@@ -73,19 +101,6 @@ export const BuffDebuffCategories = {
 export const EnemyTypes = {
   GRUNT: 'grunt',
   BOSS: 'boss',
-};
-
-export const BGMConditionTypes = {
-  ENEMY_COUNT: 'enemyCount',
-};
-
-export const BGMConditionOperators = {
-  LESS_THAN: 'lessThan',
-  LESS_THAN_OR_EQUAL: 'lessThanOrEqual',
-  EQUAL: 'equal',
-  GREATER_THAN: 'greaterThan',
-  GREATER_THAN_OR_EQUAL: 'greaterThanOrEqual',
-  ONLY: 'only',
 };
 
 export const EnvironmentTypes = {
@@ -157,6 +172,7 @@ export const AssetPaths = {
   SFX_SWITCH_SKILL: 'sfx/switch-skill.mp3',
   SFX_TALK: 'sfx/talk.mp3',
   SFX_USE_ITEM: 'sfx/use-item.mp3',
+  SFX_ITEM_USE_FAIL: 'sfx/item-use-fail.mp3',
   SFX_PICKUP_ITEM: 'sfx/pickup-item.mp3',
   SFX_USE_SKILL_SELF_TARGET: 'sfx/use-skill-self-target.mp3',
   SFX_USE_SKILL_PROJECTILE: 'sfx/use-skill-projectile.mp3',
@@ -225,17 +241,40 @@ export const SkillShape = {
 };
 
 export const ParticlePatternTypes = {
-  SPIRAL: 'spiral',
-  HELIX: 'helix',
+  // Basic patterns
+  DEFAULT: 'default',
   EXPLOSION: 'explosion',
-  SOUNDWAVE: 'soundwave',
-  SONIC: 'sonic',
   SPRAY: 'spray',
   CLOUD: 'cloud',
+  // Geometric patterns
+  SPIRAL: 'spiral',
+  HELIX: 'helix',
+  // Audio-based patterns
+  SOUNDWAVE: 'soundwave',
+  SONIC: 'sonic',
+  // Nature patterns
   ROOTS: 'roots',
   BARRIER: 'barrier',
   FANG: 'fang',
-  DEFAULT: 'default',
+  // Elemental patterns
+  ICE: 'ice',
+  FROST: 'frost',
+  BLIZZARD: 'blizzard',
+  LAVA: 'lava',
+  STONE: 'stone',
+  ROCK: 'rock',
+  // Combat patterns
+  BREATH: 'breath',
+  DRAGONFIRE: 'dragonfire',
+  TORNADO: 'tornado',
+  SHADOW: 'shadow',
+  CURSE: 'curse',
+  // Special patterns
+  ETHEREAL: 'ethereal',
+  ANCIENT: 'ancient',
+  HUNTING: 'hunting',
+  CLONE: 'clone',
+  NINETAILS: 'ninetails',
 };
 
 export const AudioConstants = {

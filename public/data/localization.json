@@ -47,11 +47,26 @@
       },
       "cursedForest": {
         "description": "・薄暗く霧深い呪われた森。\n・毒の胞子が漂う危険なエリア。\n・森の奥に潜む大樹を倒そう。"
+      },
+      "ancientRuins": {
+        "description": "・古びた石造りの城塞廃墟。\n・ガーゴイルと亡霊が徘徊する。\n・守護者を倒し、鍵を入手しよう。"
+      },
+      "snowyPeaks": {
+        "description": "・雪と氷に覆われた険しい山岳地帯。\n・氷の精霊と雪狼が住む極寒の世界。\n・ドラゴンを倒し、結晶を集めよう。"
+      },
+      "abyssCavern": {
+        "description": "・溶岩と暗闇に満ちた地底洞窟。\n・ドラゴンが待ち受ける最終エリア。\n・ラスボス猫又との決戦に備えよう。"
       }
     },
     "items": {
       "potion": "ポーション",
       "fpPotion": "FPポーション",
+      "ancientKey": "古代の鍵",
+      "icePotion": "氷結ポーション",
+      "frostCrystal": "霜の結晶",
+      "lavaResistPotion": "耐熱ポーション",
+      "abyssCrystal": "深淵の水晶",
+      "dragonScale": "竜の鱗",
       "empty": "-"
     },
     "controls": {
@@ -98,6 +113,48 @@
       "keyArrowUp": "上矢印",
       "keyE": "E",
       "keyEscape": "Escape"
+    },
+    "npcs": {
+      "guide": {
+        "name": "案内人",
+        "dialogue": [
+          "ようこそ、冒険者よ！\nこの世界は危険に満ちている。",
+          "WASDキーで移動\nマウスで視点を動かせるぞ。\n\nスペースキーでジャンプだ！",
+          "敵を倒してレベルアップしよう！\n経験を積めば強くなれる。"
+        ]
+      },
+      "hermit": {
+        "name": "森の隠者",
+        "dialogue": [
+          "ここは呪われた森じゃ...\n危険な毒の胞子が漂っておる。",
+          "毒に侵されても時が経てば自然に回復するじゃろう。\n慌てることはない。",
+          "古い大樹が森の番人となっておる。\n気をつけるのじゃ、冒険者よ。"
+        ]
+      },
+      "archaeologist": {
+        "name": "考古学者",
+        "dialogue": [
+          "この古城は千年以上前の建造物だ。\n石造りの技術が素晴らしい。",
+          "ガーゴイルは石像が魔力で動き出したものらしい。\n古代の魔法の影響だろう。",
+          "古代の守護者を倒せば、きっと古代の鍵が手に入るはずだ。\n気をつけて行きたまえ。"
+        ]
+      },
+      "mountaineer": {
+        "name": "登山家",
+        "dialogue": [
+          "この雪山は極寒の地だ。\n防寒対策を忘れずにな。",
+          "氷の精霊は美しいが危険だ。\n霜の矢で凍らせてくる。",
+          "フロストドラゴンは山の奥に住んでいる。\n霜の結晶を守っているぞ。"
+        ]
+      },
+      "dwarfMiner": {
+        "name": "ドワーフ鉱夫",
+        "dialogue": [
+          "この洞窟は危険じゃ！\n溶岩が流れておって、熱くてたまらん。",
+          "深淵の水晶は貴重な鉱石だ。\n だが深いところにしかない。",
+          "深淵ドラゴンと猫又が最奥にいる。\n ワシでも近づけんのじゃ。"
+        ]
+      }
     }
   },
   "en": {
@@ -148,11 +205,26 @@
       },
       "cursedForest": {
         "description": "・A dark, misty cursed forest.\n・A dangerous area with poisonous spores.\n・Defeat the great tree lurking deep in the forest."
+      },
+      "ancientRuins": {
+        "description": "・Ancient stone fortress ruins.\n・Dangerous territory roamed by gargoyles and ghosts.\n・Defeat the guardian and obtain the key."
+      },
+      "snowyPeaks": {
+        "description": "・Rugged mountain terrain covered in snow and ice.\n・A frigid world inhabited by ice spirits and snow wolves.\n・Defeat the dragon and collect crystals."
+      },
+      "abyssCavern": {
+        "description": "・Underground cavern filled with lava and darkness.\n・The final area where the Dragon awaits.\n・Prepare for the final battle against the boss Nekomata."
       }
     },
     "items": {
       "potion": "Potion",
       "fpPotion": "FP Potion",
+      "ancientKey": "Ancient Key",
+      "icePotion": "Ice Potion",
+      "frostCrystal": "Frost Crystal",
+      "lavaResistPotion": "Lava Resist Potion",
+      "abyssCrystal": "Abyss Crystal",
+      "dragonScale": "Dragon Scale",
       "empty": "-"
     },
     "controls": {
@@ -199,6 +271,48 @@
       "keyArrowUp": "Up Arrow",
       "keyE": "E",
       "keyEscape": "Escape"
+    },
+    "npcs": {
+      "guide": {
+        "name": "Guide",
+        "dialogue": [
+          "Welcome, adventurer!\nThis world is full of dangers.",
+          "Use WASD keys to move\nMove the mouse to look around.\n\nPress Space to jump!",
+          "Defeat enemies to level up!\nGain experience to become stronger."
+        ]
+      },
+      "hermit": {
+        "name": "Forest Hermit",
+        "dialogue": [
+          "This is a cursed forest...\nDangerous poisonous spores drift through the air.",
+          "Even if you're poisoned, you'll recover naturally over time.\nDon't panic.",
+          "An ancient great tree serves as the forest's guardian.\nBe careful, adventurer."
+        ]
+      },
+      "archaeologist": {
+        "name": "Archaeologist",
+        "dialogue": [
+          "This ancient castle was built over a thousand years ago.\nThe stonework is magnificent.",
+          "The gargoyles are stone statues brought to life by magic.\nIt must be the influence of ancient sorcery.",
+          "If you defeat the ancient guardian, you should be able to obtain the ancient key.\nBe careful."
+        ]
+      },
+      "mountaineer": {
+        "name": "Mountaineer",
+        "dialogue": [
+          "These snowy peaks are frigid lands.\nDon't forget to protect yourself from the cold.",
+          "Ice spirits are beautiful but dangerous.\nThey'll freeze you with frost arrows.",
+          "The frost dragon lives deep in the mountains.\nIt's guarding the frost crystal."
+        ]
+      },
+      "dwarfMiner": {
+        "name": "Dwarf Miner",
+        "dialogue": [
+          "This cavern is dangerous!\nLava flows through it, unbearably hot.",
+          "The abyss crystal is a precious mineral.\nBut it's only found in the deepest parts.",
+          "The abyss dragon and nekomata dwell in the deepest depths.\nEven I can't get close to them."
+        ]
+      }
     }
   }
 }

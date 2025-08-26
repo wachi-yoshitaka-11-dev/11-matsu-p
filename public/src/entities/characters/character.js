@@ -7,6 +7,8 @@ import {
   AssetPaths,
   AudioConstants,
   BuffDebuffCategories,
+  BuffTypes,
+  DamageTypes,
   DebuffTypes,
   EffectColors,
   Fall,
@@ -112,6 +114,20 @@ export class Character extends BaseEntity {
 
   // Update buff and debuff properties
   updateBuffsAndDebuffs(deltaTime) {
+    // Manage buff duration
+    const buffEntries = Array.from(this.buffTimers.entries());
+    buffEntries.forEach(([id, endTime]) => {
+      if (Date.now() >= endTime) {
+        this.removeBuff(id);
+        // Update HUD immediately after removing a buff
+        if (this === this.game.player && this.game.hud) {
+          this.game.hud.updateBuffsAndDebuffsDisplay(
+            this.getActiveBuffsAndDebuffs()
+          );
+        }
+      }
+    });
+
     // Process debuff properties
     this.activeDebuffs.forEach((debuff, id) => {
       if (debuff.type === DebuffTypes.POISON) {
@@ -125,19 +141,15 @@ export class Character extends BaseEntity {
             this.game.hud.showHpPoisonEffect();
           }
         }
-      }
-    });
+      } else if (debuff.type === DebuffTypes.BURN) {
+        debuff.tickTimer -= deltaTime;
+        if (debuff.tickTimer <= 0) {
+          this.takeDamage(debuff.damagePerTick);
+          debuff.tickTimer = debuff.tickInterval;
 
-    // Manage buff duration
-    const buffEntries = Array.from(this.buffTimers.entries());
-    buffEntries.forEach(([id, endTime]) => {
-      if (Date.now() >= endTime) {
-        this.removeBuff(id);
-        // Update HUD immediately after removing a buff
-        if (this === this.game.player && this.game.hud) {
-          this.game.hud.updateBuffsAndDebuffsDisplay(
-            this.getActiveBuffsAndDebuffs()
-          );
+          if (this === this.game.player && this.game.hud) {
+            this.game.hud.showHpPoisonEffect();
+          }
         }
       }
     });
@@ -210,15 +222,16 @@ export class Character extends BaseEntity {
 
   // Apply debuff effect
   applyDebuff(config) {
-    // Check if poison debuff already exists
-    if (config.type === DebuffTypes.POISON) {
-      const existingPoison = Array.from(this.activeDebuffs.values()).find(
-        (debuff) => debuff.type === DebuffTypes.POISON
-      );
-      if (existingPoison) {
-        return null; // Don't apply duplicate poison
+    // Remove existing debuff of the same type first
+    const existingIds = [];
+    this.activeDebuffs.forEach((debuff, id) => {
+      if (debuff.type === config.type) {
+        existingIds.push(id);
       }
-    }
+    });
+    existingIds.forEach((id) => {
+      this.removeDebuff(id);
+    });
 
     // Generate a unique ID with safe fallback
     const genId = () =>
@@ -233,7 +246,10 @@ export class Character extends BaseEntity {
       ...config,
     };
 
-    if (config.type === DebuffTypes.POISON) {
+    if (
+      config.type === DebuffTypes.POISON ||
+      config.type === DebuffTypes.BURN
+    ) {
       debuffData.tickTimer = config.tickInterval / 1000; // Convert milliseconds to seconds
       debuffData.tickInterval = config.tickInterval / 1000; // Store as seconds for consistency
     }
@@ -309,6 +325,27 @@ export class Character extends BaseEntity {
     this.debuffTimers.delete(id);
   }
 
+  // Check if character is invincible
+  get isInvincible() {
+    return Array.from(this.activeBuffs.values()).some(
+      (buff) => buff.type === BuffTypes.INVINCIBLE
+    );
+  }
+
+  // Check if character is frozen
+  get isFrozen() {
+    return Array.from(this.activeDebuffs.values()).some(
+      (debuff) => debuff.type === DebuffTypes.FREEZE
+    );
+  }
+
+  // Check if character is stunned
+  get isStunned() {
+    return Array.from(this.activeDebuffs.values()).some(
+      (debuff) => debuff.type === DebuffTypes.STUNNED
+    );
+  }
+
   // Get movement speed with buff/debuff properties
   getMovementSpeed() {
     let speedMultiplier = 1.0;
@@ -320,6 +357,8 @@ export class Character extends BaseEntity {
         debuff.speedMultiplier
       ) {
         speedMultiplier *= debuff.speedMultiplier;
+      } else if (debuff.type === DebuffTypes.FREEZE && debuff.freezeIntensity) {
+        speedMultiplier *= 1.0 - debuff.freezeIntensity;
       }
     });
 
@@ -497,7 +536,7 @@ export class Character extends BaseEntity {
   }
 
   // Deal damage with attack buffs applied
-  dealDamage(target, baseAmount) {
+  dealDamage(target, baseAmount, damageType = DamageTypes.PHYSICAL) {
     if (!target || target.isDead) {
       return;
     }
@@ -507,25 +546,54 @@ export class Character extends BaseEntity {
       baseAmount *
       (this.attackBuffMultiplier || 1) *
       (this.attackDebuffMultiplier || 1);
-    target.takeDamage(finalDamage);
+    target.takeDamage(finalDamage, { damageType });
   }
 
-  takeDamage(amount) {
+  takeDamage(amount, options = {}) {
     if (this.isDead) {
       return;
     }
 
+    // Check for invincibility buff
+    if (this.isInvincible) {
+      return; // No damage taken when invincible
+    }
+
+    let processedAmount = amount;
+    const { damageType = DamageTypes.PHYSICAL } = options;
+
+    // Apply resistance buffs
+    if (damageType === DamageTypes.FIRE) {
+      this.activeBuffs.forEach((buff) => {
+        if (
+          buff.type === BuffTypes.FIRE_RESISTANCE &&
+          buff.resistanceMultiplier
+        ) {
+          processedAmount *= buff.resistanceMultiplier;
+        }
+      });
+    } else if (damageType === DamageTypes.ICE) {
+      this.activeBuffs.forEach((buff) => {
+        if (
+          buff.type === BuffTypes.ICE_RESISTANCE &&
+          buff.resistanceMultiplier
+        ) {
+          processedAmount *= buff.resistanceMultiplier;
+        }
+      });
+    }
+
     // Apply defense buff and debuff multipliers
     const finalAmount =
-      (amount / (this.defenseBuffMultiplier || 1)) *
+      (processedAmount / (this.defenseBuffMultiplier || 1)) *
       (this.defenseDebuffMultiplier || 1);
 
     this.hp -= finalAmount;
     this.showDamageEffect();
 
-    // Play damage sound unless guarding
+    // Play damage sound unless guarding (non-positional)
     if (!this.isGuarding) {
-      this.playSound(AssetPaths.SFX_DAMAGE);
+      this.game.playSFX(AssetPaths.SFX_DAMAGE);
     }
 
     if (this.hp <= 0) {

@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import {
   AnimationNames,
   AssetPaths,
+  BuffTypes,
+  DamageTypes,
   MovementState,
   SkillTypes,
 } from '../../utils/constants.js';
@@ -124,7 +126,11 @@ export class Player extends Character {
 
   update(deltaTime) {
     super.update(deltaTime);
-    this.updateAnimation();
+
+    // Skip animation update if stunned or frozen
+    if (!this.isFrozen && !this.isStunned) {
+      this.updateAnimation();
+    }
 
     if (
       !this.isDashing &&
@@ -132,7 +138,9 @@ export class Player extends Character {
       !this.isAttacking &&
       !this.isRolling &&
       !this.isBackStepping &&
-      !this.isPickingUp
+      !this.isPickingUp &&
+      !this.isFrozen &&
+      !this.isStunned
     ) {
       this.stamina += this.data.staminaRegenRate * deltaTime;
       if (this.stamina > this.maxStamina) {
@@ -195,7 +203,28 @@ export class Player extends Character {
     if (this.isInvincible || this.isRolling) return;
 
     let finalDamage = amount;
-    const { canGuard = true } = options;
+    const { canGuard = true, damageType = DamageTypes.PHYSICAL } = options;
+
+    // Apply resistance buffs
+    if (damageType === DamageTypes.FIRE) {
+      this.activeBuffs.forEach((buff) => {
+        if (
+          buff.type === BuffTypes.FIRE_RESISTANCE &&
+          buff.resistanceMultiplier
+        ) {
+          finalDamage *= buff.resistanceMultiplier;
+        }
+      });
+    } else if (damageType === DamageTypes.ICE) {
+      this.activeBuffs.forEach((buff) => {
+        if (
+          buff.type === BuffTypes.ICE_RESISTANCE &&
+          buff.resistanceMultiplier
+        ) {
+          finalDamage *= buff.resistanceMultiplier;
+        }
+      });
+    }
 
     if (this.isGuarding && canGuard) {
       const shieldDefense = this.getShieldDefense();
@@ -333,6 +362,14 @@ export class Player extends Character {
       itemUsed = true;
     }
 
+    // Apply buffs from buffs array
+    if (itemData.buffs && Array.isArray(itemData.buffs)) {
+      for (const buffConfig of itemData.buffs) {
+        this.applyBuff(buffConfig);
+      }
+      itemUsed = true;
+    }
+
     if (itemUsed) {
       this.playAnimation(AnimationNames.USE_ITEM);
       this.game.playSFX(AssetPaths.SFX_USE_ITEM);
@@ -352,7 +389,18 @@ export class Player extends Character {
       return true;
     }
 
+    // Play error sound for unusable items
+    this.game.playSFX(AssetPaths.SFX_ITEM_USE_FAIL);
     return false;
+  }
+
+  /**
+   * Get count of specific item in inventory
+   * @param {string} itemId - The item ID to count
+   * @returns {number} - Number of items found
+   */
+  getItemCount(itemId) {
+    return this.inventory.filter((item) => item === itemId).length;
   }
 
   useCurrentSkill() {

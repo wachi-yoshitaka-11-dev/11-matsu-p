@@ -31,9 +31,11 @@ export class Boss extends Enemy {
     if (!playerPos) return;
     const distance = this.mesh.position.distanceTo(playerPos);
 
+    // Apply scale to attack ranges
+    const scaleMultiplier = this.originalScale[0]; // Use X scale as base
     const basicAttackRange = Math.min(
-      this.data.weakAttack.range,
-      this.data.strongAttack.range
+      this.data.weakAttack.range * scaleMultiplier,
+      this.data.strongAttack.range * scaleMultiplier
     );
 
     if (distance > basicAttackRange) {

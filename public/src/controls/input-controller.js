@@ -2,7 +2,12 @@
 import * as THREE from 'three';
 
 // Utils
-import { AnimationNames, AssetPaths, GameState } from '../utils/constants.js';
+import {
+  AnimationNames,
+  AssetPaths,
+  BuffTypes,
+  GameState,
+} from '../utils/constants.js';
 
 export class InputController {
   constructor(player, camera, game, canvas) {
@@ -60,7 +65,12 @@ export class InputController {
   }
 
   _canProcessInput() {
-    return this.game.gameState === GameState.PLAYING && !this.player.isDead;
+    return (
+      this.game.gameState === GameState.PLAYING &&
+      !this.player.isDead &&
+      !this.player.isFrozen &&
+      !this.player.isStunned
+    );
   }
 
   setupEventListeners() {
@@ -116,12 +126,13 @@ export class InputController {
       this.keys[e.code] = true;
     });
     document.addEventListener('keyup', (e) => {
-      if (!this._canProcessInput()) return;
-
+      // Always reset key state even when input processing is disabled
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         if (this.isShiftPressed) {
-          const pressDuration = Date.now() - this.shiftPressTime;
-          this.handleShiftRelease(pressDuration);
+          if (this._canProcessInput()) {
+            const pressDuration = Date.now() - this.shiftPressTime;
+            this.handleShiftRelease(pressDuration);
+          }
           this.isShiftPressed = false;
         }
       }
@@ -441,6 +452,16 @@ export class InputController {
     if (this.keys['KeyF']) {
       this.player.useCurrentSkill();
       this.keys['KeyF'] = false;
+    }
+
+    // Debug: I key for invincible buff
+    if (this.keys['KeyI']) {
+      this.player.applyBuff({
+        type: BuffTypes.INVINCIBLE,
+        duration: 60000, // 60 seconds
+      });
+      this.game.playSFX(AssetPaths.SFX_USE_SKILL_SELF_TARGET);
+      this.keys['KeyI'] = false;
     }
   }
 

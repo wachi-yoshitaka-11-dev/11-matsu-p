@@ -1,3 +1,7 @@
+// Utils
+import { DamageTypes } from '../../utils/constants.js';
+
+// Entities
 import { Skill } from './skill.js';
 
 export class AreaAttack extends Skill {
@@ -82,7 +86,8 @@ export class AreaAttack extends Skill {
         this.game.player.mesh.position
       );
       if (distance <= this.range) {
-        this.caster.dealDamage(this.game.player, this.damage);
+        const damageType = this.data.damageType || DamageTypes.PHYSICAL;
+        this.caster.dealDamage(this.game.player, this.damage, damageType);
         this.showDamageEffect(this.game.player.mesh.position);
 
         // Apply debuffs
@@ -95,7 +100,8 @@ export class AreaAttack extends Skill {
       this.game.entities.characters.enemies.forEach((enemy) => {
         const distance = centerPosition.distanceTo(enemy.mesh.position);
         if (distance <= this.range) {
-          this.caster.dealDamage(enemy, this.damage);
+          const damageType = this.data.damageType || DamageTypes.PHYSICAL;
+          this.caster.dealDamage(enemy, this.damage, damageType);
           this.showDamageEffect(enemy.mesh.position);
 
           // Apply debuff to enemies

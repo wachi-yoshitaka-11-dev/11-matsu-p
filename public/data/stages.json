@@ -22,7 +22,7 @@
           "loop": true
         },
         {
-          "file": "stages/starting-plains/combat.mp3",
+          "file": "stages/starting-plains/climax.mp3",
           "condition": {
             "type": "enemyCount",
             "targets": ["grunt", "boss"],
@@ -167,8 +167,10 @@
         }
       },
       "clearConditions": {
-        "type": "killAll",
+        "type": "enemyCount",
         "targets": ["grunt", "boss"],
+        "count": 0,
+        "operator": "equal",
         "optional": false,
         "reward": {
           "experience": 100,
@@ -197,7 +199,7 @@
           "loop": true
         },
         {
-          "file": "stages/cursed-forest/combat.mp3",
+          "file": "stages/cursed-forest/climax.mp3",
           "condition": {
             "type": "enemyCount",
             "targets": ["grunt"],
@@ -339,8 +341,10 @@
         }
       },
       "clearConditions": {
-        "type": "killAll",
+        "type": "enemyCount",
         "targets": ["boss"],
+        "count": 0,
+        "operator": "equal",
         "optional": false,
         "reward": {
           "experience": 150,

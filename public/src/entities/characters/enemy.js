@@ -43,6 +43,22 @@ export class Enemy extends Character {
 
     // Player reference will be accessed via this.game.player when needed
 
+    // Apply scale settings from enemy data
+    if (
+      enemyData.scale &&
+      Array.isArray(enemyData.scale) &&
+      enemyData.scale.length === 3
+    ) {
+      this.mesh.scale.set(
+        enemyData.scale[0],
+        enemyData.scale[1],
+        enemyData.scale[2]
+      );
+      this.originalScale = [...enemyData.scale]; // Store original scale for calculations
+    } else {
+      this.originalScale = [1, 1, 1]; // Default scale
+    }
+
     this.placeOnGround(position.x, position.z);
 
     this.weakAttackCooldown = 0;
@@ -100,9 +116,11 @@ export class Enemy extends Character {
     const distance = this.mesh.position.distanceTo(
       this.game.player.mesh.position
     );
+    // Apply scale to attack ranges
+    const scaleMultiplier = this.originalScale[0]; // Use X scale as base
     const minAttackRange = Math.min(
-      this.data.weakAttack.range,
-      this.data.strongAttack.range
+      this.data.weakAttack.range * scaleMultiplier,
+      this.data.strongAttack.range * scaleMultiplier
     );
 
     if (distance > minAttackRange) {
@@ -190,14 +208,14 @@ export class Enemy extends Character {
     } else if (
       this.nextAction === AttackTypes.STRONG &&
       this.strongAttackCooldown <= 0 &&
-      distance <= this.data.strongAttack.range
+      distance <= this.data.strongAttack.range * this.originalScale[0]
     ) {
       this.performStrongAttack();
       this.nextAction = null;
     } else if (
       this.nextAction === AttackTypes.WEAK &&
       this.weakAttackCooldown <= 0 &&
-      distance <= this.data.weakAttack.range
+      distance <= this.data.weakAttack.range * this.originalScale[0]
     ) {
       this.performWeakAttack();
       this.nextAction = null;
@@ -296,7 +314,7 @@ export class Enemy extends Character {
 
     if (this.skillPerformanceStates[skillId]) return false;
 
-    if (skillData.range && distance > skillData.range) {
+    if (skillData.range && distance > skillData.range * this.originalScale[0]) {
       return false;
     }
 
@@ -374,9 +392,11 @@ export class Enemy extends Character {
     const distance = this.mesh.position.distanceTo(
       this.game.player.mesh.position
     );
+    // Apply scale to attack ranges
+    const scaleMultiplier = this.originalScale[0]; // Use X scale as base
     const minAttackRange = Math.min(
-      this.data.weakAttack.range,
-      this.data.strongAttack.range
+      this.data.weakAttack.range * scaleMultiplier,
+      this.data.strongAttack.range * scaleMultiplier
     );
 
     const isMoving = distance > minAttackRange;

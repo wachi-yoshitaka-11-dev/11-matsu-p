@@ -221,6 +221,7 @@
   background-position: center;
 }
 
+/* Buff Icons */
 .buff-debuff-icon.buff-attack-enhancement {
   background-image: url('../../assets/images/ui/buff-attack-enhancement.png');
 }
@@ -233,6 +234,19 @@
   background-image: url('../../assets/images/ui/buff-speed-enhancement.png');
 }
 
+.buff-debuff-icon.buff-invincible {
+  background-image: url('../../assets/images/ui/buff-invincible.png');
+}
+
+.buff-debuff-icon.buff-fire-resistance {
+  background-image: url('../../assets/images/ui/buff-fire-resistance.jpg');
+}
+
+.buff-debuff-icon.buff-ice-resistance {
+  background-image: url('../../assets/images/ui/buff-ice-resistance.jpg');
+}
+
+/* Debuff Icons */
 .buff-debuff-icon.debuff-attack-reduction {
   background-image: url('../../assets/images/ui/debuff-attack-reduction.png');
 }
@@ -247,6 +261,18 @@
 
 .buff-debuff-icon.debuff-poison {
   background-image: url('../../assets/images/ui/debuff-poison.png');
+}
+
+.buff-debuff-icon.debuff-burn {
+  background-image: url('../../assets/images/ui/debuff-burn.jpg');
+}
+
+.buff-debuff-icon.debuff-freeze {
+  background-image: url('../../assets/images/ui/debuff-freeze.jpg');
+}
+
+.buff-debuff-icon.debuff-stunned {
+  background-image: url('../../assets/images/ui/debuff-stunned.jpg');
 }
 
 .buff-debuff-info {
