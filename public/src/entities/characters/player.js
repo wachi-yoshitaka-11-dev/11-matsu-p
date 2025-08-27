@@ -132,6 +132,8 @@ export class Player extends Character {
       this.updateAnimation();
     }
 
+    if (this.isInvincible) return;
+
     if (
       !this.isDashing &&
       !this.isGuarding &&
@@ -245,10 +247,24 @@ export class Player extends Character {
   }
 
   takeStaminaDamage(amount) {
+    if (this.isInvincible) return;
+
     this.stamina -= amount;
     if (this.stamina < 0) {
       this.stamina = 0;
     }
+  }
+
+  consumeStamina(amount) {
+    if (this.isInvincible) return true; // Allow action but don't consume
+    if (this.stamina < amount) return false;
+
+    this.stamina -= amount;
+    return true;
+  }
+
+  hasStamina(amount) {
+    return this.stamina >= amount;
   }
 
   addExperience(amount) {
@@ -421,7 +437,17 @@ export class Player extends Character {
 
     const skillType = currentSkill.type;
 
-    this.fp -= currentSkill.fpCost;
+    if (this.isInvincible) {
+      // Still show FP use effect for UI feedback
+      if (this.game.hud) {
+        this.game.hud.showFpUseEffect();
+      }
+    } else {
+      this.fp -= currentSkill.fpCost;
+      if (this.game.hud) {
+        this.game.hud.showFpUseEffect();
+      }
+    }
 
     if (this.game.hud) {
       this.game.hud.showFpUseEffect();

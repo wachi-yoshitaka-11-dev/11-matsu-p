@@ -204,9 +204,9 @@ export class InputController {
           ? params.staminaCostStrong
           : params.staminaCost;
 
-        if (this.player.stamina >= staminaCost) {
+        if (this.player.hasStamina(staminaCost)) {
           this.player.isAttacking = true;
-          this.player.stamina -= staminaCost;
+          this.player.consumeStamina(staminaCost);
 
           // Clear any existing attack timeout
           if (this.attackTimeout) {
@@ -290,8 +290,9 @@ export class InputController {
         !this.player.isBackStepping &&
         !this.player.isJumping;
       if (this.player.isDashing) {
-        this.player.stamina -=
-          this.game.data.player.staminaCostDash * deltaTime;
+        this.player.consumeStamina(
+          this.game.data.player.staminaCostDash * deltaTime
+        );
       }
 
       const baseSpeed = 5.0;
@@ -335,8 +336,9 @@ export class InputController {
     }
 
     if (this.player.isGuarding) {
-      this.player.stamina -=
-        (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
+      this.player.consumeStamina(
+        (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime
+      );
     }
 
     if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
@@ -472,7 +474,7 @@ export class InputController {
     ) {
       this.player.isJumping = true;
       this.player.physics.velocity.y = this.game.data.player.jumpPower;
-      this.player.stamina -= this.game.data.player.staminaCostJump;
+      this.player.consumeStamina(this.game.data.player.staminaCostJump);
       this.player.performAction(AnimationNames.JUMP, AssetPaths.SFX_JUMP);
 
       setTimeout(() => {
@@ -501,7 +503,7 @@ export class InputController {
       this.player.onGround
     ) {
       this.player.isRolling = true;
-      this.player.stamina -= this.game.data.player.staminaCostRolling;
+      this.player.consumeStamina(this.game.data.player.staminaCostRolling);
       this.player.performAction(AnimationNames.ROLLING, AssetPaths.SFX_ROLLING);
 
       const direction = this.getMovementDirection();
@@ -530,7 +532,7 @@ export class InputController {
       this.player.onGround
     ) {
       this.player.isBackStepping = true;
-      this.player.stamina -= this.game.data.player.staminaCostBackStep;
+      this.player.consumeStamina(this.game.data.player.staminaCostBackStep);
       this.player.performAction(
         AnimationNames.BACK_STEP,
         AssetPaths.SFX_BACK_STEP

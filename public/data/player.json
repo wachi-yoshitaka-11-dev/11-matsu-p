@@ -29,7 +29,7 @@
   "backStepSpeed": 6,
   "backStepDuration": 300,
 
-  "staminaRegenRate": 15,
+  "staminaRegenRate": 30,
   "staminaCostJump": 10,
   "staminaCostDash": 5,
   "staminaCostRoll": 20,

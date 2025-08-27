@@ -252,8 +252,8 @@
           {
             "id": "grass",
             "count": 100,
-            "minScale": 0.3,
-            "maxScale": 2.0,
+            "minScale": 2.0,
+            "maxScale": 4.0,
             "areas": ["forest"]
           }
         ],
@@ -418,8 +418,8 @@
           {
             "id": "grass",
             "count": 120,
-            "minScale": 0.4,
-            "maxScale": 2.5,
+            "minScale": 2.0,
+            "maxScale": 5.0,
             "areas": ["courtyard"]
           },
           {
@@ -615,8 +615,8 @@
           {
             "id": "grass",
             "count": 50,
-            "minScale": 0.3,
-            "maxScale": 1.5,
+            "minScale": 2.0,
+            "maxScale": 4.0,
             "areas": ["valley"]
           }
         ],
