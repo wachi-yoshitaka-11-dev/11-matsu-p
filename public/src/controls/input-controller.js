@@ -2,7 +2,12 @@
 import * as THREE from 'three';
 
 // Utils
-import { AnimationNames, AssetPaths, GameState } from '../utils/constants.js';
+import {
+  AnimationNames,
+  AssetPaths,
+  BuffTypes,
+  GameState,
+} from '../utils/constants.js';
 
 export class InputController {
   constructor(player, camera, game, canvas) {
@@ -60,7 +65,12 @@ export class InputController {
   }
 
   _canProcessInput() {
-    return this.game.gameState === GameState.PLAYING && !this.player.isDead;
+    return (
+      this.game.gameState === GameState.PLAYING &&
+      !this.player.isDead &&
+      !this.player.isFrozen &&
+      !this.player.isStunned
+    );
   }
 
   setupEventListeners() {
@@ -116,12 +126,13 @@ export class InputController {
       this.keys[e.code] = true;
     });
     document.addEventListener('keyup', (e) => {
-      if (!this._canProcessInput()) return;
-
+      // Always reset key state even when input processing is disabled
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         if (this.isShiftPressed) {
-          const pressDuration = Date.now() - this.shiftPressTime;
-          this.handleShiftRelease(pressDuration);
+          if (this._canProcessInput()) {
+            const pressDuration = Date.now() - this.shiftPressTime;
+            this.handleShiftRelease(pressDuration);
+          }
           this.isShiftPressed = false;
         }
       }
@@ -193,9 +204,9 @@ export class InputController {
           ? params.staminaCostStrong
           : params.staminaCost;
 
-        if (this.player.stamina >= staminaCost) {
+        if (this.player.hasStamina(staminaCost)) {
           this.player.isAttacking = true;
-          this.player.stamina -= staminaCost;
+          this.player.consumeStamina(staminaCost);
 
           // Clear any existing attack timeout
           if (this.attackTimeout) {
@@ -279,8 +290,9 @@ export class InputController {
         !this.player.isBackStepping &&
         !this.player.isJumping;
       if (this.player.isDashing) {
-        this.player.stamina -=
-          this.game.data.player.staminaCostDash * deltaTime;
+        this.player.consumeStamina(
+          this.game.data.player.staminaCostDash * deltaTime
+        );
       }
 
       const baseSpeed = 5.0;
@@ -324,8 +336,9 @@ export class InputController {
     }
 
     if (this.player.isGuarding) {
-      this.player.stamina -=
-        (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime;
+      this.player.consumeStamina(
+        (this.game.data.player.staminaCostGuardPerSecond || 10) * deltaTime
+      );
     }
 
     if (this.player.lockedTarget && !this.player.lockedTarget.isDead) {
@@ -442,6 +455,16 @@ export class InputController {
       this.player.useCurrentSkill();
       this.keys['KeyF'] = false;
     }
+
+    // Debug: I key for invincible buff
+    if (this.keys['KeyI']) {
+      this.player.applyBuff({
+        type: BuffTypes.INVINCIBLE,
+        duration: 60000, // 60 seconds
+      });
+      this.game.playSFX(AssetPaths.SFX_USE_SKILL_SELF_TARGET);
+      this.keys['KeyI'] = false;
+    }
   }
 
   handleJump() {
@@ -451,7 +474,7 @@ export class InputController {
     ) {
       this.player.isJumping = true;
       this.player.physics.velocity.y = this.game.data.player.jumpPower;
-      this.player.stamina -= this.game.data.player.staminaCostJump;
+      this.player.consumeStamina(this.game.data.player.staminaCostJump);
       this.player.performAction(AnimationNames.JUMP, AssetPaths.SFX_JUMP);
 
       setTimeout(() => {
@@ -480,7 +503,7 @@ export class InputController {
       this.player.onGround
     ) {
       this.player.isRolling = true;
-      this.player.stamina -= this.game.data.player.staminaCostRolling;
+      this.player.consumeStamina(this.game.data.player.staminaCostRolling);
       this.player.performAction(AnimationNames.ROLLING, AssetPaths.SFX_ROLLING);
 
       const direction = this.getMovementDirection();
@@ -509,7 +532,7 @@ export class InputController {
       this.player.onGround
     ) {
       this.player.isBackStepping = true;
-      this.player.stamina -= this.game.data.player.staminaCostBackStep;
+      this.player.consumeStamina(this.game.data.player.staminaCostBackStep);
       this.player.performAction(
         AnimationNames.BACK_STEP,
         AssetPaths.SFX_BACK_STEP

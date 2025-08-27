@@ -5,11 +5,7 @@
     "texture": "npcs/guide.png",
     "description": "冒険の案内をしてくれる",
     "interactionRange": 5,
-    "dialogue": [
-      "ようこそ、冒険者よ！\nこの世界は危険に満ちている。",
-      "WASDキーで移動\nマウスで視点を動かせるぞ。\n\nスペースキーでジャンプだ！",
-      "敵を倒してレベルアップしよう！\n経験を積めば強くなれる。"
-    ]
+    "dialogue": "npcs.guide"
   },
   "hermit": {
     "name": "森の隠者",
@@ -17,10 +13,30 @@
     "texture": "npcs/hermit.png",
     "description": "呪われた森に住む賢者",
     "interactionRange": 5,
-    "dialogue": [
-      "ここは呪われた森じゃ...\n危険な毒の胞子が漂っておる。",
-      "毒に侵されても時が経てば自然に回復するじゃろう。\n慌てることはない。",
-      "古い大樹が森の番人となっておる。\n気をつけるのじゃ、冒険者よ。"
-    ]
+    "dialogue": "npcs.hermit"
+  },
+  "archaeologist": {
+    "name": "考古学者",
+    "model": "npcs/archaeologist.glb",
+    "texture": "npcs/archaeologist.png",
+    "description": "古城の謎を研究する学者",
+    "interactionRange": 5,
+    "dialogue": "npcs.archaeologist"
+  },
+  "mountaineer": {
+    "name": "登山家",
+    "model": "npcs/mountaineer.glb",
+    "texture": "npcs/mountaineer.png",
+    "description": "雪山を知り尽くした案内人",
+    "interactionRange": 5,
+    "dialogue": "npcs.mountaineer"
+  },
+  "dwarfMiner": {
+    "name": "ドワーフ鉱夫",
+    "model": "npcs/dwarf-miner.glb",
+    "texture": "npcs/dwarf-miner.png",
+    "description": "地底洞窟で鉱石を採掘するドワーフ",
+    "interactionRange": 5,
+    "dialogue": "npcs.dwarfMiner"
   }
 }

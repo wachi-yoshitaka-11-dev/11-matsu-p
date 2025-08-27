@@ -49,7 +49,13 @@ export class Npc extends Character {
       super(game, npcId, npcData, geometry, material, {});
     }
 
-    this.dialogue = npcData.dialogue || ['...'];
+    // Get dialogue from localization using the dialogue key from npcData
+    if (npcData.dialogue) {
+      const localizedDialogue = localization.getText(npcData.dialogue);
+      this.dialogue = localizedDialogue?.dialogue || ['...'];
+    } else {
+      this.dialogue = ['...'];
+    }
     this.currentDialogueIndex = 0;
 
     this.placeOnGround(position.x, position.z);

@@ -36,7 +36,8 @@
       "mcp__playwright__browser_close",
       "mcp__serena__list_dir",
       "mcp__serena__find_file",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(gh repo view:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -3,10 +3,11 @@ import * as THREE from 'three';
 import {
   AssetPaths,
   CollisionTypes,
+  ConditionOperators,
+  ConditionTypes,
   EnvironmentTypes,
   EnemyTypes,
   Fall,
-  StageClearConditionTypes,
   StageMessageTypes,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
@@ -946,52 +947,130 @@ export class StageManager {
 
     const conditions = this.currentStageData.clearConditions;
 
-    switch (conditions.type) {
-      case StageClearConditionTypes.KILL_ALL:
-        return this.checkKillAllCondition(conditions);
+    return this.checkCondition(conditions);
+  }
+
+  /**
+   * Check condition (unified condition checker)
+   * @param {Object} condition - The condition to check
+   * @returns {boolean} - True if condition is met
+   */
+  checkCondition(condition) {
+    if (!condition || typeof condition !== 'object' || !condition.type) {
+      return false;
+    }
+
+    switch (condition.type) {
+      case ConditionTypes.ENEMY_COUNT:
+        return this.checkEnemyCountCondition(condition);
+      case ConditionTypes.COLLECT_ITEM:
+        return this.checkCollectItemCondition(condition);
+      case ConditionTypes.COMPOSITE:
+        return this.checkCompositeCondition(condition);
       default:
-        console.warn(`Unknown clear condition type: ${conditions.type}`);
+        console.warn(`Unknown condition type: ${condition.type}`);
         return false;
     }
   }
 
   /**
-   * Check kill all enemies condition
-   * @param {Object} conditions - The clear conditions
-   * @returns {boolean} - True if all required enemies are defeated
+   * Check enemy count condition
+   * @param {Object} condition - The enemy count condition
+   * @returns {boolean} - True if enemy count requirement is met
    */
-  checkKillAllCondition(conditions) {
-    const targets = conditions.targets || [EnemyTypes.GRUNT];
+  checkEnemyCountCondition(condition) {
+    const enemies = this.game.entities.characters.enemies;
+    const aliveEnemies = enemies.filter((enemy) => !enemy.isDead);
 
-    for (const target of targets) {
-      switch (target) {
-        case EnemyTypes.GRUNT: {
-          // Count only living grunt enemies (type === EnemyTypes.GRUNT && !isDead)
-          const gruntEnemies = this.game.entities.characters.enemies.filter(
-            (enemy) => enemy.data.type === EnemyTypes.GRUNT && !enemy.isDead
-          );
-          if (gruntEnemies.length > 0) {
-            return false;
-          }
-          break;
-        }
-        case EnemyTypes.BOSS: {
-          // Count only living boss enemies (type === EnemyTypes.BOSS && !isDead)
-          const bossEnemies = this.game.entities.characters.enemies.filter(
-            (enemy) => enemy.data.type === EnemyTypes.BOSS && !enemy.isDead
-          );
-          if (bossEnemies.length > 0) {
-            return false;
-          }
-          break;
-        }
-        default:
-          console.warn(`Unknown kill target: ${target}`);
+    // Filter by target types
+    const targetEnemies = condition.targets
+      ? aliveEnemies.filter((enemy) =>
+          condition.targets.includes(enemy.data.type)
+        )
+      : aliveEnemies;
+
+    // Apply operator
+    switch (condition.operator) {
+      case ConditionOperators.EQUAL:
+        return targetEnemies.length === (condition.count || 0);
+      case ConditionOperators.LESS_THAN:
+        return targetEnemies.length < (condition.count || 0);
+      case ConditionOperators.LESS_THAN_OR_EQUAL:
+        return targetEnemies.length <= (condition.count || 0);
+      case ConditionOperators.GREATER_THAN:
+        return targetEnemies.length > (condition.count || 0);
+      case ConditionOperators.GREATER_THAN_OR_EQUAL:
+        return targetEnemies.length >= (condition.count || 0);
+      case ConditionOperators.ONLY:
+        // Only the specified enemy types remain
+        return (
+          aliveEnemies.length > 0 &&
+          targetEnemies.length === aliveEnemies.length
+        );
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Check collect item condition
+   * @param {Object} conditions - The collect item conditions
+   * @returns {boolean} - True if item collection requirement is met
+   */
+  checkCollectItemCondition(conditions) {
+    if (!conditions.itemId) {
+      console.warn('Collect item condition missing itemId');
+      return false;
+    }
+
+    // Check if player has the required item in inventory
+    const player = this.game.player;
+    if (!player || !player.inventory) {
+      return false;
+    }
+
+    const requiredCount = conditions.count || 1;
+    const currentCount = player.getItemCount(conditions.itemId) || 0;
+
+    return currentCount >= requiredCount;
+  }
+
+  /**
+   * Check composite conditions (multiple conditions with AND/OR logic)
+   * @param {Object} conditions - The composite clear conditions
+   * @returns {boolean} - True if composite conditions are met
+   */
+  checkCompositeCondition(conditions) {
+    if (!conditions.conditions || !Array.isArray(conditions.conditions)) {
+      console.warn('Composite condition missing conditions array');
+      return false;
+    }
+
+    const operator = conditions.operator || ConditionOperators.AND; // default to AND logic
+
+    for (const condition of conditions.conditions) {
+      let conditionMet = false;
+
+      // Check individual condition
+      conditionMet = this.checkCondition(condition);
+
+      // Apply logic based on operator
+      if (operator === ConditionOperators.AND) {
+        // AND logic: all conditions must be true
+        if (!conditionMet && condition.required !== false) {
           return false;
+        }
+      } else if (operator === ConditionOperators.OR) {
+        // OR logic: at least one condition must be true
+        if (conditionMet) {
+          return true;
+        }
       }
     }
 
-    return true;
+    // For AND logic, if we reach here, all required conditions are met
+    // For OR logic, if we reach here, no condition was met
+    return operator === ConditionOperators.AND;
   }
 
   /**

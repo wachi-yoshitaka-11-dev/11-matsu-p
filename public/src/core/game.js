@@ -5,8 +5,6 @@ import * as THREE from 'three';
 import {
   AssetPaths,
   AudioConstants,
-  BGMConditionOperators,
-  BGMConditionTypes,
   GameState,
   ItemConstants,
 } from '../utils/constants.js';
@@ -192,32 +190,33 @@ export class Game {
       AssetPaths.BGM_TITLE,
       AssetPaths.SFX_ATTACK_STRONG,
       AssetPaths.SFX_ATTACK_WEAK,
-      AssetPaths.SFX_BACK_STEP,
       AssetPaths.SFX_CLICK,
       AssetPaths.SFX_DAMAGE,
-      AssetPaths.SFX_DASH,
       AssetPaths.SFX_DEATH,
-      AssetPaths.SFX_FP_INSUFFICIENT,
       AssetPaths.SFX_GUARD,
       AssetPaths.SFX_JUMP,
       AssetPaths.SFX_KILL,
       AssetPaths.SFX_LEVEL_UP,
       AssetPaths.SFX_LOCK_ON,
       AssetPaths.SFX_PAUSE,
-      AssetPaths.SFX_PICKUP_ITEM,
+      AssetPaths.SFX_UNPAUSE,
       AssetPaths.SFX_ROLLING,
+      AssetPaths.SFX_BACK_STEP,
+      AssetPaths.SFX_DASH,
       AssetPaths.SFX_STAGE_START,
       AssetPaths.SFX_STAGE_CLEAR,
-      AssetPaths.SFX_SWITCH_ITEM,
-      AssetPaths.SFX_SWITCH_SHIELD,
-      AssetPaths.SFX_SWITCH_SKILL,
       AssetPaths.SFX_SWITCH_WEAPON,
+      AssetPaths.SFX_SWITCH_SHIELD,
+      AssetPaths.SFX_SWITCH_ITEM,
+      AssetPaths.SFX_SWITCH_SKILL,
       AssetPaths.SFX_TALK,
-      AssetPaths.SFX_UNPAUSE,
       AssetPaths.SFX_USE_ITEM,
+      AssetPaths.SFX_ITEM_USE_FAIL,
+      AssetPaths.SFX_PICKUP_ITEM,
       AssetPaths.SFX_USE_SKILL_SELF_TARGET,
       AssetPaths.SFX_USE_SKILL_PROJECTILE,
       AssetPaths.SFX_USE_SKILL_AREA_ATTACK,
+      AssetPaths.SFX_FP_INSUFFICIENT,
       AssetPaths.SFX_WALK,
     ];
 
@@ -563,7 +562,10 @@ export class Game {
 
     // Check each BGM condition
     for (const bgmConfig of stageData.bgm) {
-      if (bgmConfig.condition && this.checkBGMCondition(bgmConfig.condition)) {
+      if (
+        bgmConfig.condition &&
+        this.stageManager.checkCondition(bgmConfig.condition)
+      ) {
         return bgmConfig.file;
       }
     }
@@ -575,48 +577,6 @@ export class Game {
     }
 
     return null;
-  }
-
-  checkBGMCondition(condition) {
-    // Object-based conditions (clearConditions style)
-    if (typeof condition === 'object' && condition.type) {
-      if (condition.type === BGMConditionTypes.ENEMY_COUNT) {
-        const enemies = this.entities.characters.enemies;
-        const aliveEnemies = enemies.filter((enemy) => !enemy.isDead);
-
-        // Filter by target types
-        const targetEnemies = condition.targets
-          ? aliveEnemies.filter((enemy) =>
-              condition.targets.includes(enemy.data.type)
-            )
-          : aliveEnemies;
-
-        // Apply operator
-        switch (condition.operator) {
-          case BGMConditionOperators.LESS_THAN:
-            return targetEnemies.length < (condition.count || 0);
-          case BGMConditionOperators.LESS_THAN_OR_EQUAL:
-            return targetEnemies.length <= (condition.count || 0);
-          case BGMConditionOperators.EQUAL:
-            return targetEnemies.length === (condition.count || 0);
-          case BGMConditionOperators.GREATER_THAN:
-            return targetEnemies.length > (condition.count || 0);
-          case BGMConditionOperators.GREATER_THAN_OR_EQUAL:
-            return targetEnemies.length >= (condition.count || 0);
-          case BGMConditionOperators.ONLY:
-            // Only the specified enemy types remain
-            return (
-              aliveEnemies.length > 0 &&
-              targetEnemies.length === aliveEnemies.length
-            );
-          default:
-            return false;
-        }
-      }
-      return false;
-    }
-
-    return false;
   }
 
   stopBGM() {

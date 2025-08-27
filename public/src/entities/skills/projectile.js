@@ -1,6 +1,9 @@
 // External libraries
 import * as THREE from 'three';
 
+// Utils
+import { DamageTypes } from '../../utils/constants.js';
+
 // Entities
 import { Skill } from './skill.js';
 
@@ -172,14 +175,15 @@ export class Projectile extends Skill {
     this.hasHit = true;
 
     // Deal damage with attack buffs applied or fallback to raw damage
+    const damageType = this.data.damageType || DamageTypes.PHYSICAL;
     if (this.caster && this.caster.dealDamage) {
-      this.caster.dealDamage(target, this.damage);
+      this.caster.dealDamage(target, this.damage, damageType);
     } else if (this.game.player && this.game.player.dealDamage) {
       // Fallback to player damage dealing
-      this.game.player.dealDamage(target, this.damage);
+      this.game.player.dealDamage(target, this.damage, damageType);
     } else {
       // Final fallback to raw damage
-      target.takeDamage(this.damage);
+      target.takeDamage(this.damage, { damageType });
     }
 
     // Show damage effect
