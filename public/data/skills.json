@@ -446,9 +446,9 @@
     "castTime": 300,
     "buffs": [
       {
-        "type": "speedReduction",
+        "type": "speedEnhancement",
         "duration": 4000,
-        "speedMultiplier": 1.2
+        "speedBuffMultiplier": 1.2
       }
     ]
   },
@@ -572,9 +572,9 @@
         "attackBuffMultiplier": 1.6
       },
       {
-        "type": "speedReduction",
+        "type": "speedEnhancement",
         "duration": 10000,
-        "speedMultiplier": 1.4
+        "speedBuffMultiplier": 1.4
       }
     ]
   },

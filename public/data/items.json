@@ -39,7 +39,7 @@
       {
         "type": "speedEnhancement",
         "duration": 20000,
-        "speedMultiplier": 1.2
+        "speedBuffMultiplier": 1.2
       }
     ]
   },
