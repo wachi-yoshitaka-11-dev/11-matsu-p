@@ -421,19 +421,20 @@ export class Player extends Character {
   }
 
   removeKeyItems() {
-    if (!this.game.data.items) return;
+    if (!this.game.data.items) return [];
 
     let removedItems = [];
 
-    // Find and remove all key items
-    this.inventory = this.inventory.filter((itemId) => {
+    // Remove key items from inventory in reverse order to avoid index issues
+    for (let i = this.inventory.length - 1; i >= 0; i--) {
+      const itemId = this.inventory[i];
       const itemData = this.game.data.items[itemId];
+
       if (itemData && itemData.type === ItemTypes.KEY) {
         removedItems.push(itemData.name);
-        return false; // Remove this item
+        this.inventory.splice(i, 1);
       }
-      return true; // Keep this item
-    });
+    }
 
     // Adjust current item index if necessary
     if (
@@ -444,8 +445,6 @@ export class Player extends Character {
     } else if (this.inventory.length === 0) {
       this.currentItemIndex = 0;
     }
-
-    // Items successfully removed from inventory
 
     return removedItems;
   }
