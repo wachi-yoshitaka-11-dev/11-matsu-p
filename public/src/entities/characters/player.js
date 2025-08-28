@@ -431,7 +431,7 @@ export class Player extends Character {
       const itemData = this.game.data.items[itemId];
 
       if (itemData && itemData.type === ItemTypes.KEY) {
-        removedItems.push(itemData.name);
+        removedItems.push(itemId);
         this.inventory.splice(i, 1);
       }
     }
