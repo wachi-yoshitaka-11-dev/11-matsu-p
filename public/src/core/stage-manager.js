@@ -1127,6 +1127,18 @@ export class StageManager {
       // Could show a stage clear dialog here
     }
 
+    // Remove key items from player inventory when stage is cleared
+    if (
+      this.game.player &&
+      typeof this.game.player.removeKeyItems === 'function'
+    ) {
+      const removedItems = this.game.player.removeKeyItems();
+      if (removedItems.length > 0) {
+        // Could show notification about removed items here
+        // Key items removed from inventory on stage clear
+      }
+    }
+
     // Auto-transition to next stage after delay, but wait for level up processing
     if (this.hasNextStage()) {
       this.startStageTransitionTimer();
