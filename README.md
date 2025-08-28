@@ -137,12 +137,18 @@ npm test
 # コード品質チェック
 npm run lint
 npm run format
+
+# Electronデスクトップアプリ
+npm run electron        # 開発環境で実行
+npm run package         # 配布用パッケージ作成
+npm run make           # インストーラー作成
 ```
 
 ### 使用技術
 
 - **Three.js**: 3Dレンダリングライブラリ
 - **HTML/CSS/JavaScript**: フロントエンド開発
+- **Electron**: デスクトップアプリケーション化
 
 ## ライセンス
 
