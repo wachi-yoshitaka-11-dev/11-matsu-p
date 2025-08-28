@@ -103,6 +103,11 @@ export const EnemyTypes = {
   BOSS: 'boss',
 };
 
+export const ItemTypes = {
+  CONSUMABLE: 'consumable',
+  KEY: 'key',
+};
+
 export const EnvironmentTypes = {
   CLOUD: 'cloud',
   GROUND: 'ground',

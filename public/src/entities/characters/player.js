@@ -7,6 +7,7 @@ import {
   AssetPaths,
   BuffTypes,
   DamageTypes,
+  ItemTypes,
   MovementState,
   SkillTypes,
 } from '../../utils/constants.js';
@@ -417,6 +418,35 @@ export class Player extends Character {
    */
   getItemCount(itemId) {
     return this.inventory.filter((item) => item === itemId).length;
+  }
+
+  removeKeyItems() {
+    if (!this.game.data.items) return [];
+
+    let removedItems = [];
+
+    // Remove key items from inventory in reverse order to avoid index issues
+    for (let i = this.inventory.length - 1; i >= 0; i--) {
+      const itemId = this.inventory[i];
+      const itemData = this.game.data.items[itemId];
+
+      if (itemData && itemData.type === ItemTypes.KEY) {
+        removedItems.push(itemId);
+        this.inventory.splice(i, 1);
+      }
+    }
+
+    // Adjust current item index if necessary
+    if (
+      this.currentItemIndex >= this.inventory.length &&
+      this.inventory.length > 0
+    ) {
+      this.currentItemIndex = this.inventory.length - 1;
+    } else if (this.inventory.length === 0) {
+      this.currentItemIndex = 0;
+    }
+
+    return removedItems;
   }
 
   useCurrentSkill() {

@@ -1,6 +1,7 @@
 {
   "potion": {
     "name": "ポーション",
+    "type": "consumable",
     "model": "items/potion.glb",
     "texture": "items/potion.png",
     "image": "items/potion.png",
@@ -9,6 +10,7 @@
   },
   "fpPotion": {
     "name": "FPポーション",
+    "type": "consumable",
     "model": "items/fp-potion.glb",
     "texture": "items/fp-potion.png",
     "image": "items/fp-potion.png",
@@ -17,14 +19,15 @@
   },
   "ancientKey": {
     "name": "古代の鍵",
+    "type": "key",
     "model": "items/ancient-key.glb",
     "texture": "items/ancient-key.png",
     "image": "items/ancient-key.png",
-    "description": "古城の最深部への扉を開く神秘の鍵",
-    "type": "key"
+    "description": "古城の最深部への扉を開く神秘の鍵"
   },
   "icePotion": {
     "name": "氷結ポーション",
+    "type": "consumable",
     "model": "items/ice-potion.glb",
     "texture": "items/ice-potion.png",
     "image": "items/ice-potion.png",
@@ -45,14 +48,15 @@
   },
   "frostCrystal": {
     "name": "霜の結晶",
+    "type": "key",
     "model": "items/frost-crystal.glb",
     "texture": "items/frost-crystal.png",
     "image": "items/frost-crystal.png",
-    "description": "雪山の最深部で凍りついた神秘の結晶。ステージクリアの証",
-    "type": "key"
+    "description": "雪山の最深部で凍りついた神秘の結晶。ステージクリアの証"
   },
   "lavaResistPotion": {
     "name": "耐熱ポーション",
+    "type": "consumable",
     "model": "items/lava-resist-potion.glb",
     "texture": "items/lava-resist-potion.png",
     "image": "items/lava-resist-potion.png",
@@ -68,18 +72,18 @@
   },
   "abyssCrystal": {
     "name": "深淵の水晶",
+    "type": "key",
     "model": "items/abyss-crystal.glb",
     "texture": "items/abyss-crystal.png",
     "image": "items/abyss-crystal.png",
-    "description": "地底洞窟の奥深くに眠る漆黒の水晶。ステージクリアの証",
-    "type": "key"
+    "description": "地底洞窟の奥深くに眠る漆黒の水晶。ステージクリアの証"
   },
   "dragonScale": {
     "name": "竜の鱗",
+    "type": "key",
     "model": "items/dragon-scale.glb",
     "texture": "items/dragon-scale.png",
     "image": "items/dragon-scale.png",
-    "description": "深淵ドラゴンから剥がれ落ちた貴重な鱗。最終決戦への道しるべ",
-    "type": "key"
+    "description": "深淵ドラゴンから剥がれ落ちた貴重な鱗。最終決戦への道しるべ"
   }
 }
