@@ -116,43 +116,88 @@
     },
     "npcs": {
       "guide": {
-        "name": "案内人",
         "dialogue": [
-          "ようこそ、冒険者よ！\nこの世界は危険に満ちている。",
-          "WASDキーで移動\nマウスで視点を動かせるぞ。\n\nスペースキーでジャンプだ！",
-          "敵を倒してレベルアップしよう！\n経験を積めば強くなれる。"
+          "ようこそ、冒険者よ！\nここは空気が美味しい場所だな。",
+          "ワシは昔からここで冒険者を案内しておるんじゃ。\nみんないい人たちばかりでのう。",
+          "この辺りは小さな花がたくさん咲いておる。\n春になるとさらに綺麗じゃよ。"
         ]
       },
       "hermit": {
-        "name": "森の隠者",
         "dialogue": [
-          "ここは呪われた森じゃ...\n危険な毒の胞子が漂っておる。",
-          "毒に侵されても時が経てば自然に回復するじゃろう。\n慌てることはない。",
-          "古い大樹が森の番人となっておる。\n気をつけるのじゃ、冒険者よ。"
+          "わしは昔からこの森に住んでおる。\n静かで良いところじゃ。",
+          "この森のキノコは美味しいんじゃよ。\n毒キノコには気をつけるがな。",
+          "この森の鳥たちは人懐っこいんじゃよ。\n手を差し出すと肩に止まることもある。"
         ]
       },
       "archaeologist": {
-        "name": "考古学者",
         "dialogue": [
           "この古城は千年以上前の建造物だ。\n石造りの技術が素晴らしい。",
-          "ガーゴイルは石像が魔力で動き出したものらしい。\n古代の魔法の影響だろう。",
-          "古代の守護者を倒せば、きっと古代の鍵が手に入るはずだ。\n気をつけて行きたまえ。"
+          "古代の壁画を研究しているんだが、\n文字が読めなくて困っている。",
+          "発掘作業は地道な仕事でね。\n一日中土を掘っていることもある。"
         ]
       },
       "mountaineer": {
-        "name": "登山家",
         "dialogue": [
           "この雪山は極寒の地だ。\n防寒対策を忘れずにな。",
-          "氷の精霊は美しいが危険だ。\n霜の矢で凍らせてくる。",
-          "フロストドラゴンは山の奥に住んでいる。\n霜の結晶を守っているぞ。"
+          "山小屋に温かいスープがあるんだ。\n疲れたら休んでいけ。",
+          "この山の頂上からの景色は絶景だぞ。\n晴れた日には遠くの海まで見えるんだ。"
         ]
       },
       "dwarfMiner": {
-        "name": "ドワーフ鉱夫",
         "dialogue": [
           "この洞窟は危険じゃ！\n溶岩が流れておって、熱くてたまらん。",
-          "深淵の水晶は貴重な鉱石だ。\n だが深いところにしかない。",
-          "深淵ドラゴンと猫又が最奥にいる。\n ワシでも近づけんのじゃ。"
+          "ドワーフの酒は最高じゃぞ！\n岩塩で作ったつまみも美味いんじゃ。",
+          "ワシの祖父も鉱夫だった。\n代々この仕事をしておるんじゃ。"
+        ]
+      },
+      "plainsStoryteller": {
+        "dialogue": [
+          "おお、目覚めたか、勇敢なる者よ...\nこの始まりの地で君に、真実を語ろう。",
+          "この王国はかつて、栄華を誇る美しい国だった。\nだが今は呪いに蝕まれ、荒廃してしまった...",
+          "呪いの根源は深淵の洞窟に潜む猫又じゃ。\nかつて王族の一員だった彼女が、裏切りによって闇に堕ちたのじゃ。",
+          "犬のボスを倒すのじゃ。彼は呪いによって狂った王国の守護者...\n本来は忠実な番犬だったのに。",
+          "呪われた森へ向かう道が開けるじゃろう。\nそこで森を蝕む毒の根源を断ち、古の知識を探すのじゃ。",
+          "この平原の平和を取り戻すことから全てが始まる。\n君こそが王国を救う希望の光じゃ！"
+        ]
+      },
+      "forestStoryteller": {
+        "dialogue": [
+          "森の奥から響く毒の息吹...これが呪いの影響じゃ。\n古い大樹が狂気に陥っておる。",
+          "かつてこの森は生命あふれる聖なる場所だった。\n大樹は長い間、森の母として全ての生き物を守っていたのじゃ。",
+          "猫又の呪いが大樹を蝕み、毒の胞子をまき散らすように変えてしまった。\n木々も動物たちも、みな苦しんでおる...",
+          "大樹を倒すのは辛いことじゃが、彼女を解放するためじゃ。\n倒せば森に再び清浄な空気が戻るじゃろう。",
+          "古城の廃墟への道筋が見えてくるはず。\nそこで「古代の鍵」を見つけるのじゃ...それは深淵への扉を開く重要な鍵じゃ。",
+          "森の平和を取り戻し、次なる試練へ向かうのじゃ。\n猫又の呪いを解くまで、君の旅は続く..."
+        ]
+      },
+      "ruinsStoryteller": {
+        "dialogue": [
+          "ここは栄光ある王国の心臓部だった古城じゃ...\n今は廃墟と化し、ガーゴイルたちが番をしておる。",
+          "昔、この城には賢王が住み、平和な治世を築いていた。\nだが猫又...王の妹君の裏切りによって呪いがかけられ、全てが変わってしまった。",
+          "彼女は王位継承を巡って兄と対立し、禁断の魔法に手を染めた。\nその結果、自らも化け物と化し、王国に呪いをかけたのじゃ。",
+          "ガーゴイルたちは石にされた騎士団じゃ。最後まで王国を守ろうとした忠臣たち...\n彼らを倒すのは心苦しいが、解放してやらねば。",
+          "「古代の鍵」はこの城の最奥にある。それを手にすれば雪山への道が開ける。\n雪山で「霜の結晶」を探すのじゃ。",
+          "城の秘密を解き明かし、呪いの真実に一歩近づくのじゃ。\n猫又への道のりは険しいが、君なら必ず..."
+        ]
+      },
+      "mountainStoryteller": {
+        "dialogue": [
+          "この雪山は永遠の冬に閉ざされておる...\nフロストドラゴンが呪いに蝕まれ、氷の怒りを撒き散らしているのじゃ。",
+          "本来この山は四季の美しさを見せる霊峰だった。\nドラゴンは氷雪の精霊たちの王として、自然の調和を保っていた。",
+          "猫又の呪いがドラゴンの心を凍らせ、永遠の冬を作り出そうとしている。\n山の生き物たちも凍てついた絶望の中にいる...",
+          "フロストドラゴンを倒し、「霜の結晶」を手に入れるのじゃ。\nそれは深淵の洞窟の封印を解く三つの鍵の一つじゃ。",
+          "古代の鍵、霜の結晶...あと一つ「深淵の水晶」が必要じゃ。\nそれは地底洞窟の最深部、深淵ドラゴンを倒せば手に入るじゃろう。",
+          "三つの鍵が揃えば、猫又の元へ向かえる。\n王国の呪いを解く最後の戦いが始まるのじゃ..."
+        ]
+      },
+      "abyssStoryteller": {
+        "dialogue": [
+          "ついにここまで来たか...深淵の洞窟、全ての始まりの場所じゃ。\n猫又がここで禁断の儀式を行い、自らを化け物に変えたのじゃ。",
+          "王女だった猫又は兄である王への嫉妬と憎悪から、\n古の邪神との契約を結んだ。その代償として王国全体を呪ったのじゃ。",
+          "深淵ドラゴンは本来、この洞窟の守護神だった。\n大地の力を司る創造神として、鉱物と生命を育んでいた。",
+          "だが猫又の邪悪な力に汚染され、今は狂気のドラゴンと化しておる。\n彼を倒せば「深淵の水晶」が手に入るじゃろう。",
+          "三つの鍵...古代の鍵、霜の結晶、深淵の水晶が揃った今、\nついに猫又の封印を解き、決戦の時が来るのじゃ。",
+          "猫又を倒すことで呪いが解け、王国に平和が戻る。\nだが彼女もまた...哀しい犠牲者なのかもしれんな..."
         ]
       }
     }
@@ -274,43 +319,88 @@
     },
     "npcs": {
       "guide": {
-        "name": "Guide",
         "dialogue": [
-          "Welcome, adventurer!\nThis world is full of dangers.",
-          "Use WASD keys to move\nMove the mouse to look around.\n\nPress Space to jump!",
-          "Defeat enemies to level up!\nGain experience to become stronger."
+          "Welcome, adventurer!\nThe air here is quite refreshing, isn't it?",
+          "I've been guiding adventurers here for ages.\nThey're all such nice people.",
+          "Many small flowers bloom around here.\nThey're even more beautiful in spring."
         ]
       },
       "hermit": {
-        "name": "Forest Hermit",
         "dialogue": [
-          "This is a cursed forest...\nDangerous poisonous spores drift through the air.",
-          "Even if you're poisoned, you'll recover naturally over time.\nDon't panic.",
-          "An ancient great tree serves as the forest's guardian.\nBe careful, adventurer."
+          "I've been living in this forest for ages.\nIt's a peaceful place, you know.",
+          "The mushrooms here taste quite good.\nJust be careful of the poisonous ones.",
+          "The birds in this forest are quite friendly.\nSometimes they perch on your shoulder if you hold out your hand."
         ]
       },
       "archaeologist": {
-        "name": "Archaeologist",
         "dialogue": [
           "This ancient castle was built over a thousand years ago.\nThe stonework is magnificent.",
-          "The gargoyles are stone statues brought to life by magic.\nIt must be the influence of ancient sorcery.",
-          "If you defeat the ancient guardian, you should be able to obtain the ancient key.\nBe careful."
+          "I'm studying the ancient murals here,\nbut I can't read the script. It's frustrating.",
+          "Excavation work is tedious, you know.\nSometimes I dig dirt all day long."
         ]
       },
       "mountaineer": {
-        "name": "Mountaineer",
         "dialogue": [
           "These snowy peaks are frigid lands.\nDon't forget to protect yourself from the cold.",
-          "Ice spirits are beautiful but dangerous.\nThey'll freeze you with frost arrows.",
-          "The frost dragon lives deep in the mountains.\nIt's guarding the frost crystal."
+          "There's warm soup at the mountain hut.\nFeel free to rest if you're tired.",
+          "The view from the mountain peak is spectacular.\nOn clear days, you can see the distant ocean."
         ]
       },
       "dwarfMiner": {
-        "name": "Dwarf Miner",
         "dialogue": [
           "This cavern is dangerous!\nLava flows through it, unbearably hot.",
-          "The abyss crystal is a precious mineral.\nBut it's only found in the deepest parts.",
-          "The abyss dragon and nekomata dwell in the deepest depths.\nEven I can't get close to them."
+          "Dwarven ale is the best!\nRock salt snacks are delicious too.",
+          "My grandfather was also a miner.\nOur family has been doing this work for generations."
+        ]
+      },
+      "plainsStoryteller": {
+        "dialogue": [
+          "Ah, you've awakened, brave soul...\nLet me tell you the truth about this starting land.",
+          "This kingdom was once a beautiful realm of prosperity.\nBut now it lies in ruin, consumed by a terrible curse...",
+          "The source of the curse is a nekomata lurking in the abyss cavern.\nShe was once royalty, but betrayal led her to fall into darkness.",
+          "You must defeat the dog boss. He's the kingdom's guardian driven mad by the curse...\nOnce a faithful watchdog.",
+          "The path to the cursed forest will open.\nThere you must sever the source of poison and seek ancient knowledge.",
+          "Restoring peace to these plains is where everything begins.\nYou are the light of hope that will save this kingdom!"
+        ]
+      },
+      "forestStoryteller": {
+        "dialogue": [
+          "The poisonous breath echoing from deep within the forest... this is the curse's influence.\nThe ancient tree has fallen to madness.",
+          "Long ago this forest was a sacred place overflowing with life.\nThe great tree was the forest's mother, protecting all living beings.",
+          "The nekomata's curse corrupted the tree, turning it to spread toxic spores.\nThe trees and animals... all are suffering...",
+          "It pains me, but you must fell the great tree to free her.\nOnce defeated, pure air will return to the forest.",
+          "The path to the ancient ruins should become visible.\nThere you must find the 'Ancient Key'... it's crucial for opening the abyss.",
+          "Restore peace to the forest and head to the next trial.\nYour journey continues until the nekomata's curse is broken..."
+        ]
+      },
+      "ruinsStoryteller": {
+        "dialogue": [
+          "This is the ancient castle, once the heart of a glorious kingdom...\nNow in ruins, guarded by gargoyles.",
+          "Long ago, a wise king lived in this castle, building a peaceful reign.\nBut the nekomata... the king's sister's betrayal brought the curse upon the kingdom.",
+          "She opposed her brother over succession and dabbled in forbidden magic.\nAs a result, she transformed into a monster and cursed the entire kingdom.",
+          "The gargoyles are the petrified knights. Loyal retainers who tried to protect the kingdom until the end...\nIt grieves me, but they must be freed.",
+          "The 'Ancient Key' lies in the castle's deepest chamber. With it, the path to the snowy mountains opens.\nThere you must seek the 'Frost Crystal'.",
+          "Uncover the castle's secrets and draw closer to the curse's truth.\nThe path to the nekomata is treacherous, but you can surely..."
+        ]
+      },
+      "mountainStoryteller": {
+        "dialogue": [
+          "These snowy mountains are locked in eternal winter...\nThe Frost Dragon, corrupted by the curse, spreads icy wrath.",
+          "Originally this mountain showed the beauty of four seasons as a sacred peak.\nThe dragon was king of ice spirits, maintaining nature's harmony.",
+          "The nekomata's curse froze the dragon's heart, making it create eternal winter.\nThe mountain's creatures are trapped in frozen despair...",
+          "Defeat the Frost Dragon and obtain the 'Frost Crystal'.\nIt's one of three keys needed to unseal the abyss cavern.",
+          "The Ancient Key, Frost Crystal... one more 'Abyss Crystal' is needed.\nYou'll obtain it by defeating the Abyss Dragon in the deepest part of the underground cavern.",
+          "Once the three keys are gathered, you can reach the nekomata.\nThe final battle to break the kingdom's curse begins..."
+        ]
+      },
+      "abyssStoryteller": {
+        "dialogue": [
+          "Finally, you've reached here... the abyss cavern, where it all began.\nThis is where the nekomata performed the forbidden ritual, transforming herself into a monster.",
+          "The nekomata was once a princess consumed by jealousy and hatred toward her brother the king.\nShe made a pact with an ancient evil god, cursing the entire kingdom as payment.",
+          "The Abyss Dragon was originally this cavern's guardian deity.\nA creator god governing earth's power, nurturing minerals and life.",
+          "But corrupted by the nekomata's evil power, it has become a dragon of madness.\nDefeat it and you'll obtain the 'Abyss Crystal'.",
+          "The three keys... Ancient Key, Frost Crystal, Abyss Crystal are now assembled.\nFinally, the time has come to break the nekomata's seal and face the final battle.",
+          "By defeating the nekomata, the curse will be broken and peace will return to the kingdom.\nBut she too... may be a tragic victim..."
         ]
       }
     }
