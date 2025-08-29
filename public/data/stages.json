@@ -131,13 +131,17 @@
           },
           {
             "id": "dog",
-            "placements": [{ "position": [10, 1, 10] }]
+            "placements": [{ "position": [10, 0, 10] }]
           }
         ],
         "npcs": [
           {
             "id": "guide",
             "placements": [{ "position": [-5, 0, -5] }]
+          },
+          {
+            "id": "plainsStoryteller",
+            "placements": [{ "position": [8, 0, -8] }]
           }
         ],
         "items": [
@@ -312,6 +316,10 @@
           {
             "id": "hermit",
             "placements": [{ "position": [-15, 0, 10] }]
+          },
+          {
+            "id": "forestStoryteller",
+            "placements": [{ "position": [12, 0, -8] }]
           }
         ],
         "items": [
@@ -484,6 +492,10 @@
           {
             "id": "archaeologist",
             "placements": [{ "position": [-20, 0, -10] }]
+          },
+          {
+            "id": "ruinsStoryteller",
+            "placements": [{ "position": [15, 0, 12] }]
           }
         ],
         "items": [
@@ -680,7 +692,11 @@
         "npcs": [
           {
             "id": "mountaineer",
-            "placements": [{ "position": [-25, 3, -15] }]
+            "placements": [{ "position": [-25, 0, -15] }]
+          },
+          {
+            "id": "mountainStoryteller",
+            "placements": [{ "position": [18, 0, -20] }]
           }
         ],
         "items": [
@@ -890,7 +906,11 @@
         "npcs": [
           {
             "id": "dwarfMiner",
-            "placements": [{ "position": [-30, 1, -20] }]
+            "placements": [{ "position": [-30, 0, -20] }]
+          },
+          {
+            "id": "abyssStoryteller",
+            "placements": [{ "position": [25, 0, 18] }]
           }
         ],
         "items": [
