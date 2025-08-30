@@ -5,6 +5,7 @@ import {
   StageMessageTypes,
 } from '../utils/constants.js';
 import { localization } from '../utils/localization.js';
+import { Minimap } from './minimap.js';
 
 export class Hud {
   constructor(game) {
@@ -19,6 +20,10 @@ export class Hud {
     this.initialMaxStamina = this.game.data.player.maxStamina;
     this.baseBarWidth = 200;
 
+    // Initialize minimap first (used in stageDisplay)
+    this.minimap = new Minimap(this.game);
+    this.minimap.show(); // Explicitly show
+
     this.statusBarsContainer = this.createStatusBarsContainer();
     this.equipmentContainer = this.createEquipmentContainer();
     this.experienceDisplay = this.createExperienceDisplay();
@@ -32,6 +37,9 @@ export class Hud {
     this.container.appendChild(this.experienceDisplay);
     this.container.appendChild(this.stageDisplay);
     this.container.appendChild(this.levelUpMenu.element);
+
+    // Place minimap independently below stage display
+    this.stageDisplay.appendChild(this.minimap.container);
 
     document.body.appendChild(this.deathOverlay.element);
     document.body.appendChild(this.stageMessageOverlay.element);
@@ -425,6 +433,11 @@ export class Hud {
     this.hpBar.background.style.width = `${(this.game.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
     this.fpBar.background.style.width = `${(this.game.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
     this.staminaBar.background.style.width = `${(this.game.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+
+    // Update minimap
+    if (this.minimap) {
+      this.minimap.update(performance.now());
+    }
 
     if (this.game.player.statusPoints > 0) {
       this.levelUpMenu.element.classList.remove('hidden');
