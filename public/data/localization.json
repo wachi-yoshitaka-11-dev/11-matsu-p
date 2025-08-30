@@ -55,7 +55,7 @@
         "description": "・雪と氷に覆われた険しい山岳地帯。\n・氷の精霊と雪狼が住む極寒の世界。\n・ドラゴンを倒し、結晶を集めよう。"
       },
       "abyssCavern": {
-        "description": "・溶岩と暗闇に満ちた地底洞窟。\n・ドラゴンが待ち受ける最終エリア。\n・ラスボス猫又との決戦に備えよう。"
+        "description": "・溶岩と暗闇に満ちた地底の洞窟。\n・影の魔物と岩の精霊が徘徊する危険地帯。\n・深淵の水晶を3個集め、竜の鱗を入手せよ。\n・深淵の竜と猫又、2体のボスとの最終決戦が待ち受ける。"
       }
     },
     "items": {
@@ -258,7 +258,7 @@
         "description": "・Rugged mountain terrain covered in snow and ice.\n・A frigid world inhabited by ice spirits and snow wolves.\n・Defeat the dragon and collect crystals."
       },
       "abyssCavern": {
-        "description": "・Underground cavern filled with lava and darkness.\n・The final area where the Dragon awaits.\n・Prepare for the final battle against the boss Nekomata."
+        "description": "・Underground cavern filled with lava and darkness.\n・Dangerous territory roamed by shadow wraiths and rock elementals.\n・Collect 3 Abyss Crystals and obtain the Dragon Scale.\n・Two final bosses await: the Abyss Dragon and Nekomata."
       }
     },
     "items": {

@@ -1,5 +1,15 @@
+import * as THREE from 'three';
 // Core
 import { MapData } from '../core/map-data.js';
+import {
+  EnemyTypes,
+  MinimapDisplayType,
+  ItemTypes,
+} from '../utils/constants.js';
+// Entity classes
+import { Npc } from '../entities/characters/npc.js';
+import { Item } from '../entities/items/item.js';
+import { Enemy } from '../entities/characters/enemy.js';
 
 /**
  * Minimap UI component
@@ -23,6 +33,8 @@ export class Minimap {
       npc: '#66aaff', // Blue
       item: '#ffff66', // Yellow
       terrain: 'rgba(128, 128, 128, 0.5)', // Gray
+      area_fill: 'rgba(255, 255, 255, 0.1)', // A single faint color for all areas
+      area_border: 'rgba(255, 255, 255, 0.15)', // Less conspicuous border
     };
 
     // Create and initialize DOM elements
@@ -120,10 +132,81 @@ export class Minimap {
    * Draw background
    */
   drawBackground() {
-    this.ctx.fillStyle = this.backgroundColor;
+    const playerPos = this.game.player.mesh.position;
+    const stageData = this.game.stageManager.getCurrentStageData();
+
+    // 1. Draw the base minimap circle (as the abyss)
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
     this.ctx.beginPath();
     this.ctx.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2);
     this.ctx.fill();
+
+    this.ctx.save();
+    // Clip subsequent drawing to the main minimap circle
+    this.ctx.beginPath();
+    this.ctx.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2);
+    this.ctx.clip();
+
+    // 2. Draw the ground as a circle with a brighter color
+    const groundColor = 'rgba(80, 120, 80, 0.75)'; // Brighter green
+    this.ctx.fillStyle = groundColor;
+
+    const groundEnv =
+      stageData?.world?.environments?.find((env) => env.id === 'ground') || {};
+    const groundPlacement = groundEnv.placements?.[0] || {};
+
+    const groundWorldRadius = (groundPlacement.scale || 100) / 2;
+    const groundWorldCenter = groundPlacement.position || [0, 0, 0];
+
+    const groundMapCenter = this.mapData.worldToMap(
+      groundWorldCenter[0],
+      groundWorldCenter[2],
+      playerPos.x,
+      playerPos.z
+    );
+    const groundMapRadius =
+      (groundWorldRadius / this.mapData.viewRange) * this.radius;
+
+    this.ctx.beginPath();
+    this.ctx.arc(
+      groundMapCenter.x,
+      groundMapCenter.y,
+      groundMapRadius,
+      0,
+      Math.PI * 2
+    );
+    this.ctx.fill();
+
+    // 3. Draw the area fills and borders
+    this.ctx.strokeStyle = this.colors.area_border;
+    this.ctx.fillStyle = this.colors.area_fill;
+    this.ctx.lineWidth = 1;
+
+    if (stageData && stageData.areas) {
+      const areas = stageData.areas;
+      for (const areaKey in areas) {
+        if (areaKey === 'sky') continue;
+        const area = areas[areaKey];
+        if (area.center && area.radius) {
+          const mapCenter = this.mapData.worldToMap(
+            area.center[0],
+            area.center[2],
+            playerPos.x,
+            playerPos.z
+          );
+          const mapRadius =
+            (area.radius / this.mapData.viewRange) * this.radius;
+
+          // Fill and stroke the area
+          this.ctx.beginPath();
+          this.ctx.arc(mapCenter.x, mapCenter.y, mapRadius, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.stroke();
+        }
+      }
+    }
+
+    this.ctx.restore();
   }
 
   /**
@@ -136,25 +219,25 @@ export class Minimap {
     const viewAngle = Math.PI / 3; // 60 degrees FOV
     const cameraRotation = this.game.inputController.cameraYaw;
 
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    this.ctx.lineWidth = 1;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(0, 0);
-
-    // Camera direction should match player direction
-    // When camera faces north (rotation=0), fan should point up (north)
-
     // Convert: Three.js north (0) should be Canvas up (-π/2)
     const cameraCanvasRotation = -cameraRotation - Math.PI / 2;
     const startAngle = cameraCanvasRotation - viewAngle / 2;
     const endAngle = cameraCanvasRotation + viewAngle / 2;
 
+    // Create a radial gradient for the lighting effect
+    const gradient = this.ctx.createRadialGradient(0, 0, 0, 0, 0, this.radius);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)'); // Bright center
+    gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.1)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.0)'); // Fade to transparent
+
+    this.ctx.fillStyle = gradient;
+
+    // Draw the sector (arc) shape
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, 0);
     this.ctx.arc(0, 0, this.radius, startAngle, endAngle);
     this.ctx.closePath();
     this.ctx.fill();
-    this.ctx.stroke();
 
     this.ctx.restore();
   }
@@ -205,7 +288,12 @@ export class Minimap {
     const visibleEntities = entities
       .map((entity) => {
         if (!entity.mesh?.position) return null;
-        const distance = playerPos.distanceTo(entity.mesh.position);
+        const playerPos2D = new THREE.Vector2(playerPos.x, playerPos.z);
+        const entityPos2D = new THREE.Vector2(
+          entity.mesh.position.x,
+          entity.mesh.position.z
+        );
+        const distance = playerPos2D.distanceTo(entityPos2D);
         if (this.cullingEnabled && distance > this.mapData.viewRange) {
           return null;
         }
@@ -215,11 +303,9 @@ export class Minimap {
       .sort((a, b) => a.distance - b.distance)
       .slice(0, this.maxEntitiesPerType);
 
-    visibleEntities.forEach(({ entity }) => {
-      let type = 'enemy';
-      if (entity.data?.dialogue) type = 'npc';
-      if (entity.data?.healAmount || entity.data?.fpHealAmount) type = 'item';
+    this.ctx.save();
 
+    visibleEntities.forEach(({ entity }) => {
       const mapPos = this.mapData.worldToMap(
         entity.mesh.position.x,
         entity.mesh.position.z,
@@ -227,11 +313,36 @@ export class Minimap {
         playerPos.z
       );
 
-      this.ctx.fillStyle = this.colors[type];
+      let displayType;
+
+      if (entity instanceof Npc) {
+        displayType = MinimapDisplayType.NPC;
+      } else if (entity instanceof Item) {
+        displayType = MinimapDisplayType.ITEM;
+      } else if (entity instanceof Enemy) {
+        displayType = MinimapDisplayType.ENEMY;
+      }
+
+      const fillColor = this.colors[displayType] || this.colors.enemy;
+      const radius =
+        (displayType === MinimapDisplayType.ENEMY &&
+          entity.data?.type === EnemyTypes.BOSS) ||
+        (displayType === MinimapDisplayType.ITEM &&
+          entity.data?.type === ItemTypes.KEY)
+          ? 5
+          : 3;
+
+      // Draw the entity fill and border
+      this.ctx.fillStyle = fillColor;
+      this.ctx.strokeStyle = 'rgba(0, 0, 0, 1)'; // Black border
+      this.ctx.lineWidth = 1; // Border thickness
       this.ctx.beginPath();
-      this.ctx.arc(mapPos.x, mapPos.y, 3, 0, Math.PI * 2);
+      this.ctx.arc(mapPos.x, mapPos.y, radius, 0, Math.PI * 2);
       this.ctx.fill();
+      this.ctx.stroke();
     });
+
+    this.ctx.restore();
   }
 
   /**
@@ -243,8 +354,6 @@ export class Minimap {
     this.ctx.save();
     this.ctx.translate(this.radius, this.radius);
 
-    // Player triangle should point towards player's actual facing direction
-    // Extract Y-axis rotation from player mesh quaternion for accurate direction
     const playerQuaternion = player.mesh.quaternion;
     const playerRotationY = Math.atan2(
       2 *
@@ -258,17 +367,17 @@ export class Minimap {
 
     this.ctx.rotate(-playerRotationY + Math.PI);
 
-    // Draw triangle pointing up
     this.ctx.fillStyle = this.colors.player;
-    this.ctx.strokeStyle = '#ffffff';
-    this.ctx.lineWidth = 1.5;
+    this.ctx.strokeStyle = 'rgba(0, 0, 0, 1)'; // Black border
+    this.ctx.lineWidth = 1; // Border thickness
     this.ctx.beginPath();
-    this.ctx.moveTo(0, -7);
-    this.ctx.lineTo(-5, 5);
-    this.ctx.lineTo(5, 5);
+    this.ctx.moveTo(0, -9.6); // Tip (8 * 1.2)
+    this.ctx.lineTo(-6, 7.2); // Left barb (5 * 1.2, 6 * 1.2)
+    this.ctx.lineTo(0, 3.6); // Center indent (3 * 1.2)
+    this.ctx.lineTo(6, 7.2); // Right barb (5 * 1.2, 6 * 1.2)
     this.ctx.closePath();
     this.ctx.fill();
-    this.ctx.stroke();
+    this.ctx.stroke(); // Draw the border
 
     this.ctx.restore();
   }
@@ -278,7 +387,7 @@ export class Minimap {
    */
   drawBorder() {
     this.ctx.strokeStyle = this.borderColor;
-    this.ctx.lineWidth = 2;
+    this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.arc(this.radius, this.radius, this.radius - 1, 0, Math.PI * 2);
     this.ctx.stroke();

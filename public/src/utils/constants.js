@@ -108,6 +108,13 @@ export const ItemTypes = {
   KEY: 'key',
 };
 
+export const MinimapDisplayType = {
+  PLAYER: 'player',
+  ENEMY: 'enemy',
+  NPC: 'npc',
+  ITEM: 'item',
+};
+
 export const EnvironmentTypes = {
   CLOUD: 'cloud',
   GROUND: 'ground',
