@@ -499,7 +499,8 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: flex-end; /* Right align */
+  gap: 10px; /* Increase spacing between elements */
   min-width: 200px;
   max-width: 300px;
   pointer-events: auto;

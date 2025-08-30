@@ -50,7 +50,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the sequence overlay to appear (indicating opening sequence started)
@@ -87,7 +87,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the opening sequence to complete
@@ -770,7 +770,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
         () => window.game?.player?.lockedTarget?.mesh?.uuid || null
       );
 
-      // マウスホイールダウンでターゲット切り替え（次へ）
+      // Mouse wheel down to switch target (next)
       await page.mouse.wheel(0, 100);
       await page.waitForTimeout(100);
 
@@ -779,7 +779,7 @@ test.describe('Mofu Mofu Adventure - Startup Test', () => {
       );
       expect(nextTargetId).not.toBe(initialTargetId);
 
-      // マウスホイールアップでターゲット切り替え（前へ）
+      // Mouse wheel up to switch target (previous)
       await page.mouse.wheel(0, -100);
       await page.waitForTimeout(100);
 
@@ -810,7 +810,7 @@ test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the sequence overlay to appear
@@ -845,7 +845,7 @@ test.describe('Mofu Mofu Adventure - Sequence Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the opening sequence to complete
@@ -914,7 +914,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the sequence overlay to appear
@@ -950,7 +950,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the sequence overlay to appear
@@ -986,7 +986,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the sequence overlay to appear
@@ -1023,7 +1023,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the sequence overlay to appear
@@ -1064,7 +1064,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await setupNetworkRoutes(page);
     await page.goto('/');
 
-    // Click the "タッチしてはじめる" button to start the game
+    // Click the "Touch to Start" button to start the game
     await page.locator('#click-to-start-screen').click();
 
     // Wait for the opening sequence to complete
@@ -1122,5 +1122,226 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     );
     await expect(newGameButton).toBeVisible();
     await expect(page.locator('#sequence-overlay')).not.toBeVisible();
+  });
+
+  test('should display minimap in top-right corner during gameplay', async ({
+    page,
+  }) => {
+    await setupNetworkRoutes(page);
+
+    // Go to the game page
+    await page.goto('/');
+
+    // Wait for the title screen and start the game
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page
+      .locator(
+        "#title-screen #title-menu button:has-text('はじめから'), " +
+          "#title-screen #title-menu button:has-text('New Game')"
+      )
+      .first();
+    await newGameButton.click();
+
+    // Wait for the game to start
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check that minimap is visible during gameplay
+    const minimapContainer = page.locator('#minimap-container');
+    await expect(minimapContainer).toBeVisible();
+
+    // Check minimap position (top-right)
+    const containerBox = await minimapContainer.boundingBox();
+    const viewportSize = await page.viewportSize();
+
+    expect(containerBox.x).toBeGreaterThan(viewportSize.width - 200); // Right side
+    expect(containerBox.y).toBeLessThan(100); // Top area
+
+    // Check minimap canvas exists and has correct size
+    const minimapCanvas = page.locator('#minimap-canvas');
+    await expect(minimapCanvas).toBeVisible();
+
+    const canvasBox = await minimapCanvas.boundingBox();
+    // Use runtime size from minimap instance to avoid hardcoding
+    const runtimeSize = await page.evaluate(() => {
+      const g = window.game;
+      const mm = g?.hud?.minimap || g?.minimap;
+      return mm?.size ?? 180;
+    });
+    expect(canvasBox.width).toBe(runtimeSize);
+    expect(canvasBox.height).toBe(runtimeSize);
+
+    // Test minimap functionality
+    const minimapState = await page.evaluate(() => {
+      const game = window.game;
+      const minimap = game?.hud?.minimap || game?.minimap;
+      return {
+        minimapExists: !!minimap,
+        isVisible: minimap?.isVisible,
+        hasMapData: !!minimap?.mapData,
+        hasCanvas: !!minimap?.canvas,
+        hasContext: !!minimap?.ctx,
+        size: minimap?.size,
+        playerExists: !!game?.player,
+        playerPosition: game?.player?.mesh?.position
+          ? {
+              x: game.player.mesh.position.x,
+              y: game.player.mesh.position.y,
+              z: game.player.mesh.position.z,
+            }
+          : null,
+      };
+    });
+
+    expect(minimapState.minimapExists).toBe(true);
+    expect(minimapState.isVisible).toBe(true);
+    expect(minimapState.hasMapData).toBe(true);
+    expect(minimapState.hasCanvas).toBe(true);
+    expect(minimapState.hasContext).toBe(true);
+    // Size is validated against canvasBox above
+    expect(minimapState.size).toBeTruthy();
+    expect(minimapState.playerExists).toBe(true);
+    expect(minimapState.playerPosition).toBeTruthy();
+  });
+
+  test('should update minimap when player moves', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    await page.goto('/');
+
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    // Use an i18n-safe locator to match either Japanese or English text, then pick the first match
+    const newGameButton = page
+      .locator(
+        "#title-screen #title-menu button:has-text('はじめから'), " +
+          "#title-screen #title-menu button:has-text('New Game')"
+      )
+      .first();
+    await newGameButton.click();
+
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Get initial player position (now from mesh.position)
+    const initialPosition = await page.evaluate(() => {
+      const player = window.game?.player;
+      return player?.mesh?.position
+        ? {
+            x: player.mesh.position.x,
+            z: player.mesh.position.z,
+          }
+        : null;
+    });
+
+    expect(initialPosition).toBeTruthy();
+
+    // Move player
+    await page.keyboard.press('KeyW');
+    await page.waitForTimeout(500);
+
+    // Check that player position has changed (from mesh.position)
+    const newPosition = await page.evaluate(() => {
+      const player = window.game?.player;
+      return player?.mesh?.position
+        ? {
+            x: player.mesh.position.x,
+            z: player.mesh.position.z,
+          }
+        : null;
+    });
+
+    expect(newPosition).toBeTruthy();
+    expect(
+      newPosition.x !== initialPosition.x || newPosition.z !== initialPosition.z
+    ).toBe(true);
+
+    // Verify minimap is still updating (use hud.minimap if available)
+    const minimapUpdateStatus = await page.evaluate(() => {
+      const minimap = window.game?.hud?.minimap || window.game?.minimap;
+      return {
+        isVisible: minimap?.isVisible,
+        lastUpdateTime: minimap?.lastUpdateTime > 0,
+        statsDrawCalls: minimap?.stats?.drawCalls > 0,
+      };
+    });
+
+    expect(minimapUpdateStatus.isVisible).toBe(true);
+    expect(minimapUpdateStatus.lastUpdateTime).toBe(true);
+  });
+
+  test('should keep minimap visible when game is paused', async ({ page }) => {
+    await setupNetworkRoutes(page);
+
+    await page.goto('/');
+
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#title-screen #title-menu button')
+          ?.offsetParent !== null,
+      null,
+      { timeout: 10000 }
+    );
+
+    const newGameButton = page
+      .locator(
+        "#title-screen #title-menu button:has-text('はじめから'), " +
+          "#title-screen #title-menu button:has-text('New Game')"
+      )
+      .first();
+    await newGameButton.click();
+
+    await page.waitForFunction(
+      () => window.game?.gameState === 'playing',
+      null,
+      { timeout: 10000 }
+    );
+
+    // Check minimap is visible during gameplay
+    await expect(page.locator('#minimap-container')).toBeVisible();
+
+    // Pause the game
+    await page.keyboard.press('Escape');
+
+    // Wait for pause state
+    await page.waitForFunction(
+      () => window.game?.gameState === 'paused',
+      null,
+      { timeout: 2000 }
+    );
+
+    // Verify minimap behavior during pause
+    const pausedState = await page.evaluate(() => {
+      const minimap = window.game?.hud?.minimap || window.game?.minimap;
+      return {
+        isVisible: minimap?.isVisible,
+        containerDisplay:
+          document.getElementById('minimap-container')?.style.display,
+        gameState: window.game?.gameState,
+      };
+    });
+
+    expect(pausedState.gameState).toBe('paused');
+    // Minimap should remain visible during pause (updates may throttle)
+    expect(pausedState.isVisible).toBe(true);
   });
 });
