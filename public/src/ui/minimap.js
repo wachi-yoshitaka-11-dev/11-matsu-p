@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { MapData } from '../core/map-data.js';
 import {
   EnemyTypes,
-  MinimapDisplayType,
+  MinimapDisplayTypes,
   ItemTypes,
 } from '../utils/constants.js';
 // Entity classes
@@ -133,7 +133,7 @@ export class Minimap {
    */
   drawBackground() {
     const playerPos = this.game.player.mesh.position;
-    const stageData = this.game.stageManager.getCurrentStageData();
+    const stageData = this.game.stageManager?.getCurrentStageData?.();
 
     // 1. Draw the base minimap circle (as the abyss)
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
@@ -217,7 +217,7 @@ export class Minimap {
     this.ctx.translate(this.radius, this.radius);
 
     const viewAngle = Math.PI / 3; // 60 degrees FOV
-    const cameraRotation = this.game.inputController.cameraYaw;
+    const cameraRotation = this.game.inputController?.cameraYaw ?? 0;
 
     // Convert: Three.js north (0) should be Canvas up (-π/2)
     const cameraCanvasRotation = -cameraRotation - Math.PI / 2;
@@ -279,11 +279,11 @@ export class Minimap {
    */
   drawEntities() {
     const playerPos = this.game.player.mesh.position;
-    const entities = [
-      ...(this.game.entities.characters.enemies || []),
-      ...(this.game.entities.characters.npcs || []),
-      ...(this.game.entities.items || []),
-    ];
+    const enemies =
+      this.game.entities?.characters?.enemies ?? this.game.enemies ?? [];
+    const npcs = this.game.entities?.characters?.npcs ?? this.game.npcs ?? [];
+    const items = this.game.entities?.items ?? this.game.items ?? [];
+    const entities = [...enemies, ...npcs, ...items];
 
     const visibleEntities = entities
       .map((entity) => {
@@ -316,18 +316,18 @@ export class Minimap {
       let displayType;
 
       if (entity instanceof Npc) {
-        displayType = MinimapDisplayType.NPC;
+        displayType = MinimapDisplayTypes.NPC;
       } else if (entity instanceof Item) {
-        displayType = MinimapDisplayType.ITEM;
+        displayType = MinimapDisplayTypes.ITEM;
       } else if (entity instanceof Enemy) {
-        displayType = MinimapDisplayType.ENEMY;
+        displayType = MinimapDisplayTypes.ENEMY;
       }
 
       const fillColor = this.colors[displayType] || this.colors.enemy;
       const radius =
-        (displayType === MinimapDisplayType.ENEMY &&
+        (displayType === MinimapDisplayTypes.ENEMY &&
           entity.data?.type === EnemyTypes.BOSS) ||
-        (displayType === MinimapDisplayType.ITEM &&
+        (displayType === MinimapDisplayTypes.ITEM &&
           entity.data?.type === ItemTypes.KEY)
           ? 5
           : 3;

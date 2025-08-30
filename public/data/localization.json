@@ -43,19 +43,19 @@
     },
     "stages": {
       "startingPlains": {
-        "description": "・穏やかな平原と小さな遺跡。\n・基本的な操作を学ぶ安全なエリア。\n・すべての敵を倒そう。"
+        "description": "忘れ去られた王国の、穏やかな平原。\n小さな遺跡が、過去の面影を映す。\nここで戦いの基本を身につけよう。\n全ての敵を倒し、先へ進むのだ。"
       },
       "cursedForest": {
-        "description": "・薄暗く霧深い呪われた森。\n・毒の胞子が漂う危険なエリア。\n・森の奥に潜む大樹を倒そう。"
+        "description": "呪いの瘴気が満ちる、薄暗い霧の森。\n毒の胞子を放つキノコが道を阻む。\n森の奥で苦しむ大樹の呻きが響く。\n大樹を解放し、森に光を取り戻せ。"
       },
       "ancientRuins": {
-        "description": "・古びた石造りの城塞廃墟。\n・ガーゴイルと亡霊が徘徊する。\n・守護者を倒し、鍵を入手しよう。"
+        "description": "かつて栄華を誇った王城、今は廃墟。\n石のガーゴイルと亡霊が城を守る。\n守護者を倒し「古代の鍵」を探せ。\n城の謎を解き、次なる地へ進め。"
       },
       "snowyPeaks": {
-        "description": "・雪と氷に覆われた険しい山岳地帯。\n・氷の精霊と雪狼が住む極寒の世界。\n・ドラゴンを倒し、結晶を集めよう。"
+        "description": "永遠の冬に閉ざされた、極寒の山岳。\n吹雪が視界を奪い、氷の魔物が襲う。\n山の頂きのフロストドラゴンを倒し、\n封印の鍵「霜の結晶」を集めよ。"
       },
       "abyssCavern": {
-        "description": "・溶岩と暗闇に満ちた地底の洞窟。\n・影の魔物と岩の精霊が徘徊する危険地帯。\n・深淵の水晶を3個集め、竜の鱗を入手せよ。\n・深淵の竜と猫又、2体のボスとの最終決戦が待ち受ける。"
+        "description": "灼熱の溶岩と暗闇が広がる最深部。\n影の魔物と岩の精霊が待ち受ける。\n「深淵の水晶」と「竜の鱗」を集め、\n全ての元凶、猫又との決戦に挑め。"
       }
     },
     "items": {
@@ -246,19 +246,19 @@
     },
     "stages": {
       "startingPlains": {
-        "description": "・A peaceful plain with small ruins.\n・A safe area to learn basic controls.\n・Defeat all enemies to clear the stage."
+        "description": "A peaceful plain, the forgotten kingdom's gate.\nSmall ruins reflect the shadows of the past.\nLearn the basics of combat in this land.\nDefeat all foes to open up the path ahead."
       },
       "cursedForest": {
-        "description": "・A dark, misty cursed forest.\n・A dangerous area with poisonous spores.\n・Defeat the great tree lurking deep in the forest."
+        "description": "A dim, misty forest filled with a cursed air.\nPoisonous spore-releasing fungi block your way.\nA great tree's moans echo from deep within.\nFree the great tree and bring light to the forest."
       },
       "ancientRuins": {
-        "description": "・Ancient stone fortress ruins.\n・Dangerous territory roamed by gargoyles and ghosts.\n・Defeat the guardian and obtain the key."
+        "description": "A once glorious royal castle, now in ruins.\nStone gargoyles and ghosts guard the castle.\nDefeat the guardian and find the \"Ancient Key\".\nSolve the castle's riddle and proceed onward."
       },
       "snowyPeaks": {
-        "description": "・Rugged mountain terrain covered in snow and ice.\n・A frigid world inhabited by ice spirits and snow wolves.\n・Defeat the dragon and collect crystals."
+        "description": "Frigid mountains locked in an eternal winter.\nBlizzards obscure sight, ice monsters attack.\nSlay the Frost Dragon at the mountain's peak,\nand gather the \"Frost Crystals\", keys to the seal."
       },
       "abyssCavern": {
-        "description": "・Underground cavern filled with lava and darkness.\n・Dangerous territory roamed by shadow wraiths and rock elementals.\n・Collect 3 Abyss Crystals and obtain the Dragon Scale.\n・Two final bosses await: the Abyss Dragon and Nekomata."
+        "description": "The deepest part, where lava and darkness spread.\nShadow fiends and rock spirits lie in wait.\nGather the \"Abyss Crystal\" and \"Dragon Scale\",\nto face the Nekomata, the source of all evil."
       }
     },
     "items": {

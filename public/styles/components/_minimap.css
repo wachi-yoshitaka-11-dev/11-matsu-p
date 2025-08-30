@@ -8,6 +8,7 @@
   margin-top: 10px; /* Spacing from stage text */
   z-index: 15; /* Display slightly above HUD */
   pointer-events: auto; /* Enable minimap display */
+  overflow: hidden; /* Clip canvas to circle */
 
   /* Basic styles */
   width: 180px; /* Adjust size */
@@ -33,9 +34,6 @@
   image-rendering: -webkit-optimize-contrast;
   image-rendering: -moz-crisp-edges;
   image-rendering: pixelated;
-
-  /* Anti-aliasing */
-  image-rendering: auto;
 }
 
 /* Hidden state */
@@ -51,15 +49,10 @@
   transform: scale(1);
 }
 
-/* Hover effect (for debugging) */
-.minimap-container:hover {
-  transform: scale(1.05);
-}
-
 /* High DPI screen support */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+@media (min-resolution: 2dppx), (min-resolution: 192dpi) {
   .minimap-canvas {
-    image-rendering: -webkit-optimize-contrast;
+    image-rendering: pixelated;
   }
 }
 
@@ -73,23 +66,6 @@
 .game-title .minimap-container,
 .game-loading .minimap-container {
   display: none;
-}
-
-/* Debug mode styles */
-.debug-mode .minimap-container {
-  border: 2px solid #00ff00;
-}
-
-.debug-mode .minimap-container::after {
-  content: 'MINIMAP';
-  position: absolute;
-  bottom: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: #00ff00;
-  font-family: monospace;
-  white-space: nowrap;
 }
 
 /* Animation settings */

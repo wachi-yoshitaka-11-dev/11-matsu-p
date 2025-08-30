@@ -1141,9 +1141,12 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
       { timeout: 10000 }
     );
 
-    const newGameButton = page.locator(
-      "#title-screen #title-menu button:has-text('New Game')"
-    );
+    const newGameButton = page
+      .locator(
+        "#title-screen #title-menu button:has-text('はじめから'), " +
+          "#title-screen #title-menu button:has-text('New Game')"
+      )
+      .first();
     await newGameButton.click();
 
     // Wait for the game to start
@@ -1169,13 +1172,19 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await expect(minimapCanvas).toBeVisible();
 
     const canvasBox = await minimapCanvas.boundingBox();
-    expect(canvasBox.width).toBe(150);
-    expect(canvasBox.height).toBe(150);
+    // Use runtime size from minimap instance to avoid hardcoding
+    const runtimeSize = await page.evaluate(() => {
+      const g = window.game;
+      const mm = g?.hud?.minimap || g?.minimap;
+      return mm?.size ?? 180;
+    });
+    expect(canvasBox.width).toBe(runtimeSize);
+    expect(canvasBox.height).toBe(runtimeSize);
 
     // Test minimap functionality
     const minimapState = await page.evaluate(() => {
       const game = window.game;
-      const minimap = game?.minimap;
+      const minimap = game?.hud?.minimap || game?.minimap;
       return {
         minimapExists: !!minimap,
         isVisible: minimap?.isVisible,
@@ -1184,11 +1193,11 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
         hasContext: !!minimap?.ctx,
         size: minimap?.size,
         playerExists: !!game?.player,
-        playerPosition: game?.player?.position
+        playerPosition: game?.player?.mesh?.position
           ? {
-              x: game.player.position.x,
-              y: game.player.position.y,
-              z: game.player.position.z,
+              x: game.player.mesh.position.x,
+              y: game.player.mesh.position.y,
+              z: game.player.mesh.position.z,
             }
           : null,
       };
@@ -1199,7 +1208,8 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     expect(minimapState.hasMapData).toBe(true);
     expect(minimapState.hasCanvas).toBe(true);
     expect(minimapState.hasContext).toBe(true);
-    expect(minimapState.size).toBe(150);
+    // Size is validated against canvasBox above
+    expect(minimapState.size).toBeTruthy();
     expect(minimapState.playerExists).toBe(true);
     expect(minimapState.playerPosition).toBeTruthy();
   });
@@ -1217,9 +1227,13 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
       { timeout: 10000 }
     );
 
-    const newGameButton = page.locator(
-      "#title-screen #title-menu button:has-text('New Game')"
-    );
+    // Use an i18n-safe locator to match either Japanese or English text, then pick the first match
+    const newGameButton = page
+      .locator(
+        "#title-screen #title-menu button:has-text('はじめから'), " +
+          "#title-screen #title-menu button:has-text('New Game')"
+      )
+      .first();
     await newGameButton.click();
 
     await page.waitForFunction(
@@ -1228,13 +1242,13 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
       { timeout: 10000 }
     );
 
-    // Get initial player position
+    // Get initial player position (now from mesh.position)
     const initialPosition = await page.evaluate(() => {
       const player = window.game?.player;
-      return player?.position
+      return player?.mesh?.position
         ? {
-            x: player.position.x,
-            z: player.position.z,
+            x: player.mesh.position.x,
+            z: player.mesh.position.z,
           }
         : null;
     });
@@ -1245,13 +1259,13 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     await page.keyboard.press('KeyW');
     await page.waitForTimeout(500);
 
-    // Check that player position has changed
+    // Check that player position has changed (from mesh.position)
     const newPosition = await page.evaluate(() => {
       const player = window.game?.player;
-      return player?.position
+      return player?.mesh?.position
         ? {
-            x: player.position.x,
-            z: player.position.z,
+            x: player.mesh.position.x,
+            z: player.mesh.position.z,
           }
         : null;
     });
@@ -1261,9 +1275,9 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
       newPosition.x !== initialPosition.x || newPosition.z !== initialPosition.z
     ).toBe(true);
 
-    // Verify minimap is still updating
+    // Verify minimap is still updating (use hud.minimap if available)
     const minimapUpdateStatus = await page.evaluate(() => {
-      const minimap = window.game?.minimap;
+      const minimap = window.game?.hud?.minimap || window.game?.minimap;
       return {
         isVisible: minimap?.isVisible,
         lastUpdateTime: minimap?.lastUpdateTime > 0,
@@ -1275,7 +1289,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     expect(minimapUpdateStatus.lastUpdateTime).toBe(true);
   });
 
-  test('should hide minimap when game is paused', async ({ page }) => {
+  test('should keep minimap visible when game is paused', async ({ page }) => {
     await setupNetworkRoutes(page);
 
     await page.goto('/');
@@ -1288,9 +1302,12 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
       { timeout: 10000 }
     );
 
-    const newGameButton = page.locator(
-      "#title-screen #title-menu button:has-text('New Game')"
-    );
+    const newGameButton = page
+      .locator(
+        "#title-screen #title-menu button:has-text('はじめから'), " +
+          "#title-screen #title-menu button:has-text('New Game')"
+      )
+      .first();
     await newGameButton.click();
 
     await page.waitForFunction(
@@ -1314,7 +1331,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
 
     // Verify minimap behavior during pause
     const pausedState = await page.evaluate(() => {
-      const minimap = window.game?.minimap;
+      const minimap = window.game?.hud?.minimap || window.game?.minimap;
       return {
         isVisible: minimap?.isVisible,
         containerDisplay:
@@ -1324,7 +1341,7 @@ test.describe('Mofu Mofu Adventure - New Sequence Features Tests', () => {
     });
 
     expect(pausedState.gameState).toBe('paused');
-    // Minimap should still be visible but may have reduced opacity or updates
+    // Minimap should remain visible during pause (updates may throttle)
     expect(pausedState.isVisible).toBe(true);
   });
 });

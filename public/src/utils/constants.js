@@ -108,7 +108,7 @@ export const ItemTypes = {
   KEY: 'key',
 };
 
-export const MinimapDisplayType = {
+export const MinimapDisplayTypes = {
   PLAYER: 'player',
   ENEMY: 'enemy',
   NPC: 'npc',
