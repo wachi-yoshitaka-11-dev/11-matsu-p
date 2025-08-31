@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx playwright test:*)",
+      "Bash(npm test)",
+      "Bash(gh pr view:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run lint)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(mkdir:*)",
+      "Bash(npm start)",
+      "Bash(gh issue:*)",
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_tab_new",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__find_symbol",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__replace_regex",
+      "Bash(npx http-server:*)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_handle_dialog",
+      "Bash(npm run lint:*)",
+      "Bash(curl:*)",
+      "mcp__serena__insert_after_symbol",
+      "mcp__serena__replace_symbol_body",
+      "Bash(node:*)",
+      "Bash(find:*)",
+      "Bash(dos2unix:*)",
+      "mcp__serena__think_about_collected_information",
+      "mcp__serena__think_about_task_adherence",
+      "mcp__playwright__browser_close",
+      "mcp__serena__list_dir",
+      "mcp__serena__find_file",
+      "Bash(grep:*)",
+      "Bash(gh repo view:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7",
+    "playwright",
+    "sequential-thinking",
+    "serena"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "guide": {
+    "name": "案内人",
+    "model": "npcs/guide.glb",
+    "texture": "npcs/guide.png",
+    "description": "冒険の案内をしてくれる",
+    "interactionRange": 5,
+    "dialogue": "npcs.guide"
+  },
+  "hermit": {
+    "name": "森の隠者",
+    "model": "npcs/hermit.glb",
+    "texture": "npcs/hermit.png",
+    "description": "呪われた森に住む賢者",
+    "interactionRange": 5,
+    "dialogue": "npcs.hermit"
+  },
+  "archaeologist": {
+    "name": "考古学者",
+    "model": "npcs/archaeologist.glb",
+    "texture": "npcs/archaeologist.png",
+    "description": "古城の謎を研究する学者",
+    "interactionRange": 5,
+    "dialogue": "npcs.archaeologist"
+  },
+  "mountaineer": {
+    "name": "登山家",
+    "model": "npcs/mountaineer.glb",
+    "texture": "npcs/mountaineer.png",
+    "description": "雪山を知り尽くした案内人",
+    "interactionRange": 5,
+    "dialogue": "npcs.mountaineer"
+  },
+  "dwarfMiner": {
+    "name": "ドワーフ鉱夫",
+    "model": "npcs/dwarf-miner.glb",
+    "texture": "npcs/dwarf-miner.png",
+    "description": "地底洞窟で鉱石を採掘するドワーフ",
+    "interactionRange": 5,
+    "dialogue": "npcs.dwarfMiner"
+  },
+  "plainsStoryteller": {
+    "name": "平原の語り部",
+    "model": "npcs/storyteller.glb",
+    "texture": "npcs/storyteller.png",
+    "description": "始まりの地の歴史を知る古い語り部",
+    "interactionRange": 5,
+    "dialogue": "npcs.plainsStoryteller"
+  },
+  "forestStoryteller": {
+    "name": "森の語り部",
+    "model": "npcs/storyteller.glb",
+    "texture": "npcs/storyteller.png",
+    "description": "呪われた森の真実を知る語り部",
+    "interactionRange": 5,
+    "dialogue": "npcs.forestStoryteller"
+  },
+  "ruinsStoryteller": {
+    "name": "廃墟の語り部",
+    "model": "npcs/storyteller.glb",
+    "texture": "npcs/storyteller.png",
+    "description": "古城の栄光と没落を語る語り部",
+    "interactionRange": 5,
+    "dialogue": "npcs.ruinsStoryteller"
+  },
+  "mountainStoryteller": {
+    "name": "山の語り部",
+    "model": "npcs/storyteller.glb",
+    "texture": "npcs/storyteller.png",
+    "description": "雪山の秘密を守る語り部",
+    "interactionRange": 5,
+    "dialogue": "npcs.mountainStoryteller"
+  },
+  "abyssStoryteller": {
+    "name": "深淵の語り部",
+    "model": "npcs/storyteller.glb",
+    "texture": "npcs/storyteller.png",
+    "description": "呪いの真実を知る最後の語り部",
+    "interactionRange": 5,
+    "dialogue": "npcs.abyssStoryteller"
+  }
+}

@@ -1,0 +1,615 @@
+// Utils
+import {
+  AssetPaths,
+  GameState,
+  StageMessageTypes,
+} from '../utils/constants.js';
+import { localization } from '../utils/localization.js';
+import { Minimap } from './minimap.js';
+
+export class Hud {
+  constructor(game) {
+    this.game = game;
+    this.container = document.createElement('div');
+    this.container.id = 'hud';
+    this.container.classList.add('hidden');
+    document.body.appendChild(this.container);
+
+    this.initialMaxHp = this.game.data.player.maxHp;
+    this.initialMaxFp = this.game.data.player.maxFp;
+    this.initialMaxStamina = this.game.data.player.maxStamina;
+    this.baseBarWidth = 200;
+
+    // Initialize minimap first (used in stageDisplay)
+    this.minimap = new Minimap(this.game);
+    this.minimap.show(); // Explicitly show
+
+    this.statusBarsContainer = this.createStatusBarsContainer();
+    this.equipmentContainer = this.createEquipmentContainer();
+    this.experienceDisplay = this.createExperienceDisplay();
+    this.stageDisplay = this.createStageDisplay();
+    this.levelUpMenu = this.createLevelUpMenu();
+    this.deathOverlay = this.createDeathOverlay();
+    this.stageMessageOverlay = this.createStageMessageOverlay();
+
+    this.container.appendChild(this.statusBarsContainer);
+    this.container.appendChild(this.equipmentContainer);
+    this.container.appendChild(this.experienceDisplay);
+    this.container.appendChild(this.stageDisplay);
+    this.container.appendChild(this.levelUpMenu.element);
+
+    // Place minimap independently below stage display
+    this.stageDisplay.appendChild(this.minimap.container);
+
+    document.body.appendChild(this.deathOverlay.element);
+    document.body.appendChild(this.stageMessageOverlay.element);
+  }
+
+  // Create buff/debuff display container
+  createBuffsAndDebuffsContainer() {
+    const container = document.createElement('div');
+    container.classList.add('buffs-and-debuffs-container');
+    return container;
+  }
+
+  // Update buff/debuff display
+  updateBuffsAndDebuffsDisplay(buffsAndDebuffs) {
+    this.buffsAndDebuffsContainer.innerHTML = '';
+
+    buffsAndDebuffs.forEach((item) => {
+      const element = document.createElement('div');
+      element.classList.add('buff-debuff-item', item.type);
+
+      const iconElement = document.createElement('div');
+      iconElement.classList.add(
+        'buff-debuff-icon',
+        `${item.category}-${item.type.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+      );
+
+      element.appendChild(iconElement);
+      this.buffsAndDebuffsContainer.appendChild(element);
+    });
+  }
+
+  // Show poison effect helper
+  showPoisonEffect() {
+    // Show poison effect across entire HUD
+    this.container.style.filter = 'hue-rotate(100deg)';
+    setTimeout(() => {
+      this.container.style.filter = '';
+    }, 300);
+  }
+
+  createStatusBarsContainer() {
+    const container = document.createElement('div');
+    container.classList.add('status-bars');
+
+    this.game.playerPortrait = this.createPlayerPortrait();
+    container.appendChild(this.game.playerPortrait);
+
+    const rightOfPortraitContainer = document.createElement('div');
+    rightOfPortraitContainer.classList.add('right-of-portrait-container');
+
+    const barsContainer = document.createElement('div');
+    barsContainer.classList.add('bars-container');
+
+    this.hpBar = this.createStatusBar('hp-bar');
+    this.fpBar = this.createStatusBar('fp-bar');
+    this.staminaBar = this.createStatusBar('stamina-bar');
+
+    barsContainer.appendChild(this.hpBar.element);
+    barsContainer.appendChild(this.fpBar.element);
+    barsContainer.appendChild(this.staminaBar.element);
+
+    rightOfPortraitContainer.appendChild(barsContainer);
+
+    // Add buffs and debuffs container to the new container
+    this.buffsAndDebuffsContainer = this.createBuffsAndDebuffsContainer();
+    rightOfPortraitContainer.appendChild(this.buffsAndDebuffsContainer);
+
+    container.appendChild(rightOfPortraitContainer);
+
+    return container;
+  }
+
+  createPlayerPortrait() {
+    const portraitContainer = document.createElement('div');
+    portraitContainer.classList.add('player-portrait');
+
+    const portraitImage = document.createElement('img');
+    portraitImage.src = `./assets/images/${this.game.data.player.image}`;
+    portraitImage.alt = 'Player Portrait';
+    portraitImage.classList.add('portrait-image');
+
+    portraitImage.onerror = () => {
+      portraitImage.classList.add('hidden');
+      portraitImage.classList.remove('visible');
+      let placeholder = portraitContainer.querySelector(
+        '.portrait-placeholder'
+      );
+      if (!placeholder) {
+        placeholder = document.createElement('div');
+        placeholder.classList.add('portrait-placeholder');
+        placeholder.textContent = '?';
+        portraitContainer.appendChild(placeholder);
+      }
+    };
+
+    // Add level display overlay on top of portrait
+    const levelOverlay = document.createElement('div');
+    levelOverlay.classList.add('level-overlay');
+    levelOverlay.textContent = '1';
+
+    portraitContainer.appendChild(portraitImage);
+    portraitContainer.appendChild(levelOverlay);
+
+    // Store reference to level overlay for updates
+    this.levelOverlay = levelOverlay;
+
+    return portraitContainer;
+  }
+
+  createStatusBar(id) {
+    const barContainer = document.createElement('div');
+    barContainer.id = id;
+    barContainer.classList.add('status-bar-container');
+
+    const barBackground = document.createElement('div');
+    barBackground.classList.add('status-bar-background');
+
+    const barFill = document.createElement('div');
+    barFill.classList.add('status-bar-fill');
+
+    barBackground.appendChild(barFill);
+    barContainer.appendChild(barBackground);
+
+    return { element: barContainer, fill: barFill, background: barBackground };
+  }
+
+  createDeathOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'death-overlay';
+
+    const message = document.createElement('div');
+    message.id = 'death-message';
+    message.textContent = localization.getText('ui.death');
+
+    overlay.appendChild(message);
+
+    return { element: overlay, message };
+  }
+
+  createStageMessageOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'stage-message-overlay';
+    overlay.classList.add('transparent'); // Start hidden
+
+    const message = document.createElement('div');
+    message.id = 'stage-message';
+
+    overlay.appendChild(message);
+
+    return { element: overlay, message };
+  }
+
+  createLevelUpMenu() {
+    const menu = document.createElement('div');
+    menu.id = 'level-up-menu';
+
+    const title = document.createElement('h2');
+    title.textContent = localization.getText('ui.levelUp');
+    menu.appendChild(title);
+
+    const points = document.createElement('p');
+    points.id = 'status-points';
+    menu.appendChild(points);
+
+    const statusPointsPerLevel = this.game.data.player.statusPointsPerLevel;
+
+    const hpButton = this.createStatButton(
+      'hp',
+      `HP +${statusPointsPerLevel}`,
+      () => (this.game.player.maxHp += statusPointsPerLevel)
+    );
+    const fpButton = this.createStatButton(
+      'fp',
+      `FP +${statusPointsPerLevel}`,
+      () => (this.game.player.maxFp += statusPointsPerLevel)
+    );
+    const staminaButton = this.createStatButton(
+      'stamina',
+      `Stamina +${statusPointsPerLevel}`,
+      () => (this.game.player.maxStamina += statusPointsPerLevel)
+    );
+
+    menu.appendChild(hpButton);
+    menu.appendChild(fpButton);
+    menu.appendChild(staminaButton);
+
+    return { element: menu, points, hpButton, fpButton, staminaButton };
+  }
+
+  createStatButton(stat, text, onClick) {
+    const button = document.createElement('button');
+    button.textContent = text;
+    button.addEventListener('click', () => {
+      if (this.game.player.statusPoints > 0) {
+        onClick();
+        this.game.player.statusPoints--;
+        this.game.playSFX(AssetPaths.SFX_CLICK);
+
+        if (this.game.player.statusPoints === 0) {
+          this.game.player.hp = this.game.player.maxHp;
+          this.game.player.fp = this.game.player.maxFp;
+          this.game.player.stamina = this.game.player.maxStamina;
+
+          this.game.togglePause();
+          this.game.setPauseMenuVisibility(false);
+
+          // Re-evaluate key states to sync with actual keyboard state
+          this.game.inputController.reevaluateKeyStates();
+        } else {
+          this._updateStatusPointsDisplay();
+        }
+      }
+    });
+    return button;
+  }
+
+  createEquipmentContainer() {
+    const container = document.createElement('div');
+    container.id = 'equipment-container';
+
+    this.equipmentWeapon = this.createEquipmentSlot('weapon');
+    this.equipmentShield = this.createEquipmentSlot('shield');
+    this.equipmentItem = this.createEquipmentSlot('item');
+    this.equipmentSkill = this.createEquipmentSlot('skill');
+
+    container.appendChild(this.equipmentWeapon);
+    container.appendChild(this.equipmentShield);
+    container.appendChild(this.equipmentItem);
+    container.appendChild(this.equipmentSkill);
+
+    return container;
+  }
+
+  createExperienceDisplay() {
+    const container = document.createElement('div');
+    container.id = 'experience-display';
+
+    const label = document.createElement('div');
+    label.textContent = localization.getText('ui.experience');
+
+    const value = document.createElement('div');
+    value.id = 'total-experience';
+    value.textContent = '0';
+
+    container.appendChild(label);
+    container.appendChild(value);
+
+    this.totalExperienceValue = value;
+
+    return container;
+  }
+
+  createStageDisplay() {
+    const container = document.createElement('div');
+    container.id = 'stage-display';
+
+    // Main stage container with image and text
+    const stageMainContainer = document.createElement('div');
+    stageMainContainer.classList.add('stage-main-container');
+
+    // Stage image (left side)
+    const stageImage = document.createElement('img');
+    stageImage.id = 'current-stage-image';
+    stageImage.classList.add('stage-image', 'hidden');
+    stageImage.alt = 'Stage Image';
+
+    stageImage.onerror = () => {
+      stageImage.classList.add('hidden');
+      stageImage.classList.remove('visible');
+    };
+
+    // Text content container (right side)
+    const stageTextContainer = document.createElement('div');
+    stageTextContainer.classList.add('stage-text-container');
+
+    // Stage header container (label + name)
+    const stageHeaderContainer = document.createElement('div');
+    stageHeaderContainer.classList.add('stage-name-box');
+    const stageLabel = document.createElement('div');
+    stageLabel.classList.add('stage-label');
+    stageLabel.textContent = localization.getText('ui.stage');
+
+    const stageName = document.createElement('div');
+    stageName.id = 'current-stage-name';
+    stageName.classList.add('stage-name');
+    stageName.textContent = '';
+
+    stageHeaderContainer.appendChild(stageLabel);
+    stageHeaderContainer.appendChild(stageName);
+
+    // Stage description container
+    const stageDescriptionContainer = document.createElement('div');
+    stageDescriptionContainer.classList.add('stage-description-box');
+
+    const stageDescription = document.createElement('div');
+    stageDescription.id = 'current-stage-description';
+    stageDescription.classList.add('stage-description');
+    stageDescription.textContent = '';
+
+    stageDescriptionContainer.appendChild(stageDescription);
+
+    stageTextContainer.appendChild(stageHeaderContainer);
+    stageTextContainer.appendChild(stageDescriptionContainer);
+
+    stageMainContainer.appendChild(stageImage);
+    stageMainContainer.appendChild(stageTextContainer);
+
+    container.appendChild(stageMainContainer);
+
+    this.stageImageElement = stageImage;
+    this.stageNameElement = stageName;
+    this.stageDescriptionElement = stageDescription;
+
+    return container;
+  }
+
+  createEquipmentSlot(type) {
+    const element = document.createElement('div');
+    element.classList.add('equipment-slot', type);
+
+    element.innerHTML = `
+      <div class="item-icon-container">
+        <img class="item-image" src="" alt="" style="display: none;">
+        <span class="placeholder">-</span>
+      </div>
+      <span class="item-name"></span>
+    `;
+
+    return element;
+  }
+
+  show() {
+    this.container.classList.remove('hidden');
+    this.container.classList.add('visible');
+  }
+
+  hide() {
+    this.container.classList.add('hidden');
+    this.container.classList.remove('visible');
+  }
+
+  showDeathScreen() {
+    this.deathOverlay.element.classList.remove('transparent');
+    this.deathOverlay.element.classList.add('opaque');
+  }
+
+  hideDeathScreen() {
+    this.deathOverlay.element.classList.add('transparent');
+    this.deathOverlay.element.classList.remove('opaque');
+  }
+
+  showStageMessage(messageText, messageType, duration = 3000) {
+    this.stageMessageOverlay.message.textContent = messageText;
+
+    // Reset classes
+    this.stageMessageOverlay.element.classList.remove(
+      'transparent',
+      'stage-start',
+      'stage-clear'
+    );
+
+    // Add type-specific class
+    switch (messageType) {
+      case StageMessageTypes.CLEAR:
+        this.stageMessageOverlay.element.classList.add('stage-clear');
+        break;
+      case StageMessageTypes.START:
+      default:
+        this.stageMessageOverlay.element.classList.add('stage-start');
+        break;
+    }
+
+    this.stageMessageOverlay.element.classList.add('opaque');
+
+    // Auto-hide after duration
+    setTimeout(() => {
+      this.hideStageMessage();
+    }, duration);
+  }
+
+  hideStageMessage() {
+    this.stageMessageOverlay.element.classList.add('transparent');
+    this.stageMessageOverlay.element.classList.remove('opaque');
+  }
+
+  update() {
+    this.hpBar.fill.style.width = `${(this.game.player.hp / this.game.player.maxHp) * 100}%`;
+    this.fpBar.fill.style.width = `${(this.game.player.fp / this.game.player.maxFp) * 100}%`;
+    this.staminaBar.fill.style.width = `${(this.game.player.stamina / this.game.player.maxStamina) * 100}%`;
+
+    this.hpBar.background.style.width = `${(this.game.player.maxHp / this.initialMaxHp) * this.baseBarWidth}px`;
+    this.fpBar.background.style.width = `${(this.game.player.maxFp / this.initialMaxFp) * this.baseBarWidth}px`;
+    this.staminaBar.background.style.width = `${(this.game.player.maxStamina / this.initialMaxStamina) * this.baseBarWidth}px`;
+
+    // Update minimap
+    if (this.minimap) {
+      this.minimap.update(performance.now());
+    }
+
+    if (this.game.player.statusPoints > 0) {
+      this.levelUpMenu.element.classList.remove('hidden');
+      this.levelUpMenu.element.classList.add('visible');
+      this._updateStatusPointsDisplay();
+      if (this.game.gameState === GameState.PLAYING) {
+        this.game.togglePause();
+      }
+    } else {
+      this.levelUpMenu.element.classList.add('hidden');
+      this.levelUpMenu.element.classList.remove('visible');
+    }
+
+    this.updateEquipmentDisplay();
+
+    this.updateExperienceDisplay();
+
+    this.updateLevelDisplay();
+
+    this.updateStageDisplay();
+
+    if (this.game.player.isDead) {
+      this.deathOverlay.element.classList.remove('hidden');
+      this.deathOverlay.element.classList.add('visible-flex');
+    } else {
+      this.deathOverlay.element.classList.add('hidden');
+      this.deathOverlay.element.classList.remove('visible-flex');
+    }
+  }
+
+  updateEquipmentDisplay() {
+    if (!this.equipmentWeapon) return;
+
+    const currentWeapon = this.game.player.getCurrentWeapon();
+    this.updateEquipmentSlot(this.equipmentWeapon, currentWeapon);
+
+    const currentShield = this.game.player.getCurrentShield();
+    this.updateEquipmentSlot(this.equipmentShield, currentShield);
+
+    const currentItem = this.game.player.getCurrentItem();
+    let itemData = null;
+    if (currentItem) {
+      itemData = this.game.data.items[currentItem];
+    }
+    this.updateEquipmentSlot(this.equipmentItem, itemData, currentItem);
+
+    const currentSkill = this.game.player.getCurrentSkill();
+    this.updateEquipmentSlot(this.equipmentSkill, currentSkill);
+  }
+
+  updateEquipmentSlot(slotElement, itemData, itemKey = null) {
+    const imageElement = slotElement.querySelector('.item-image');
+    const nameElement = slotElement.querySelector('.item-name');
+    const placeholderElement = slotElement.querySelector('.placeholder');
+
+    if (itemData) {
+      nameElement.textContent =
+        itemData.name ||
+        (itemKey ? localization.getText(`items.${itemKey}`) || itemKey : '');
+
+      if (itemData.image) {
+        imageElement.src = `./assets/images/${itemData.image}`;
+        imageElement.classList.remove('hidden');
+        imageElement.classList.add('visible');
+        placeholderElement.classList.add('hidden');
+        placeholderElement.classList.remove('visible');
+
+        imageElement.onerror = () => {
+          imageElement.classList.add('hidden');
+          imageElement.classList.remove('visible');
+          placeholderElement.classList.remove('hidden');
+          placeholderElement.classList.add('visible');
+          placeholderElement.textContent = '?';
+        };
+      } else {
+        imageElement.classList.add('hidden');
+        imageElement.classList.remove('visible');
+        placeholderElement.classList.remove('hidden');
+        placeholderElement.classList.add('visible');
+        placeholderElement.textContent = '?';
+      }
+    } else {
+      nameElement.textContent = '';
+      imageElement.classList.add('hidden');
+      imageElement.classList.remove('visible');
+      placeholderElement.classList.remove('hidden');
+      placeholderElement.classList.add('visible');
+      placeholderElement.textContent = '-';
+    }
+  }
+
+  updateExperienceDisplay() {
+    this.totalExperienceValue.textContent =
+      this.game.player.totalExperience.toLocaleString();
+  }
+
+  updateLevelDisplay() {
+    if (!this.levelOverlay) return;
+
+    if (this.game.player && this.game.player.level !== undefined) {
+      this.levelOverlay.textContent = this.game.player.level.toString();
+    } else {
+      this.levelOverlay.textContent = '1';
+    }
+  }
+
+  updateStageDisplay() {
+    if (
+      !this.stageNameElement ||
+      !this.stageDescriptionElement ||
+      !this.stageImageElement
+    )
+      return;
+
+    const stageData = this.game.stageManager?.getCurrentStageData();
+    if (stageData && stageData.name) {
+      this.stageNameElement.textContent = stageData.name;
+
+      // Get localized description
+      if (stageData.description) {
+        const description = localization.getText(stageData.description);
+        this.stageDescriptionElement.textContent = description;
+      } else {
+        this.stageDescriptionElement.textContent = '';
+      }
+
+      // Update stage image
+      if (stageData.image) {
+        this.stageImageElement.src = `./assets/images/${stageData.image}`;
+        this.stageImageElement.classList.remove('hidden');
+        this.stageImageElement.classList.add('visible');
+      } else {
+        this.stageImageElement.classList.add('hidden');
+        this.stageImageElement.classList.remove('visible');
+      }
+    } else {
+      this.stageNameElement.textContent = '';
+      this.stageDescriptionElement.textContent = '';
+      this.stageImageElement.classList.add('hidden');
+      this.stageImageElement.classList.remove('visible');
+    }
+  }
+
+  showFpInsufficientEffect() {
+    this.fpBar.element.classList.add('fp-insufficient-flash');
+    setTimeout(() => {
+      this.fpBar.element.classList.remove('fp-insufficient-flash');
+    }, 500);
+  }
+
+  showHpDamageEffect() {
+    this.hpBar.element.classList.add('hp-damage-flash');
+    setTimeout(() => {
+      this.hpBar.element.classList.remove('hp-damage-flash');
+    }, 500);
+  }
+
+  showHpPoisonEffect() {
+    this.hpBar.fill.classList.add('hp-poison-flash');
+    setTimeout(() => {
+      this.hpBar.fill.classList.remove('hp-poison-flash');
+    }, 500);
+  }
+
+  showFpUseEffect() {
+    this.fpBar.element.classList.add('fp-use-flash');
+    setTimeout(() => {
+      this.fpBar.element.classList.remove('fp-use-flash');
+    }, 300);
+  }
+
+  _updateStatusPointsDisplay() {
+    this.levelUpMenu.points.textContent = `${localization.getText('ui.statusPoints')}: ${this.game.player.statusPoints}`;
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "tree": {
+    "model": "terrains/tree.glb",
+    "texture": "terrains/tree.png",
+    "collision": {
+      "enabled": true,
+      "type": "mesh"
+    }
+  },
+  "rock": {
+    "model": "terrains/rock.glb",
+    "texture": "terrains/rock.png",
+    "collision": {
+      "enabled": true,
+      "type": "mesh"
+    }
+  },
+  "grass": {
+    "model": "terrains/grass.glb",
+    "texture": "terrains/grass.png",
+    "collision": {
+      "enabled": false,
+      "type": "none"
+    }
+  }
+}

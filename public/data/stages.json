@@ -1,0 +1,989 @@
+{
+  "stageOrder": [
+    "startingPlains",
+    "cursedForest",
+    "ancientRuins",
+    "snowyPeaks",
+    "abyssCavern"
+  ],
+  "stages": {
+    "startingPlains": {
+      "name": "始まりの地",
+      "model": "stages/starting-plains.glb",
+      "texture": "",
+      "modelSettings": {
+        "position": [0, -4.0, 0],
+        "scale": [100, 100, 100],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
+      "image": "stages/starting-plains.png",
+      "description": "stages.startingPlains.description",
+      "bgm": [
+        {
+          "file": "stages/starting-plains/default.mp3",
+          "loop": true
+        },
+        {
+          "file": "stages/starting-plains/climax.mp3",
+          "condition": {
+            "type": "enemyCount",
+            "targets": ["grunt", "boss"],
+            "operator": "lessThanOrEqual",
+            "count": 4
+          },
+          "loop": true
+        }
+      ],
+      "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#87CEEB",
+          "gradientBottom": "#E0F6FF"
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#87CEEB",
+            "intensity": 0.5
+          },
+          {
+            "type": "directional",
+            "color": "#FFF8DC",
+            "intensity": 0.8,
+            "position": [10, 50, 10]
+          }
+        ],
+        "terrains": [
+          {
+            "id": "tree",
+            "count": 15,
+            "minScale": 2.0,
+            "maxScale": 6.0,
+            "areas": ["field"]
+          },
+          {
+            "id": "rock",
+            "count": 25,
+            "minScale": 2.0,
+            "maxScale": 10.0,
+            "areas": ["ruins"]
+          },
+          {
+            "id": "grass",
+            "count": 200,
+            "minScale": 0.5,
+            "maxScale": 4.0,
+            "areas": ["plains"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 100,
+                "segments": 50
+              }
+            ]
+          },
+          {
+            "id": "cloud",
+            "count": 1000,
+            "minScale": 5.0,
+            "maxScale": 50.0,
+            "opacity": 0.4,
+            "height": {
+              "min": 40,
+              "max": 70
+            },
+            "areas": ["sky"]
+          }
+        ]
+      },
+      "player": {
+        "startPosition": [0, 1, 0]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "mouse",
+            "placements": [
+              { "area": "plains", "count": 2 },
+              { "area": "ruins", "count": 1 }
+            ]
+          },
+          {
+            "id": "crow",
+            "placements": [{ "area": "ruins", "count": 2 }]
+          },
+          {
+            "id": "weasel",
+            "placements": [
+              { "area": "plains", "count": 1 },
+              { "area": "ruins", "count": 1 }
+            ]
+          },
+          {
+            "id": "dog",
+            "placements": [{ "position": [10, 0, 10] }]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "guide",
+            "placements": [{ "position": [-5, 0, -5] }]
+          },
+          {
+            "id": "plainsStoryteller",
+            "placements": [{ "position": [8, 0, -8] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "potion",
+            "placements": [
+              { "area": "plains", "count": 2 },
+              { "area": "field", "count": 1 }
+            ]
+          },
+          {
+            "id": "fpPotion",
+            "placements": [{ "area": "ruins", "count": 2 }]
+          }
+        ]
+      },
+      "areas": {
+        "plains": {
+          "center": [0, 0, 0],
+          "radius": 35
+        },
+        "ruins": {
+          "center": [0, 0, 15],
+          "radius": 20
+        },
+        "field": {
+          "center": [0, 0, 0],
+          "radius": 50
+        },
+        "sky": {
+          "center": [0, 0, 0],
+          "radius": 200
+        }
+      },
+      "clearConditions": {
+        "type": "enemyCount",
+        "targets": ["grunt", "boss"],
+        "count": 0,
+        "operator": "equal",
+        "optional": false,
+        "reward": {
+          "experience": 100,
+          "unlockNextStage": true
+        }
+      }
+    },
+    "cursedForest": {
+      "name": "呪われた森",
+      "model": "stages/cursed-forest.glb",
+      "texture": "",
+      "modelSettings": {
+        "position": [0, 0, 0],
+        "scale": [120, 120, 120],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
+      "image": "stages/cursed-forest.png",
+      "description": "stages.cursedForest.description",
+      "bgm": [
+        {
+          "file": "stages/cursed-forest/default.mp3",
+          "loop": true
+        },
+        {
+          "file": "stages/cursed-forest/climax.mp3",
+          "condition": {
+            "type": "enemyCount",
+            "targets": ["grunt", "boss"],
+            "operator": "lessThanOrEqual",
+            "count": 5
+          },
+          "loop": true
+        }
+      ],
+      "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#2F1B3C",
+          "gradientBottom": "#4A4A4A"
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#3D2F4F",
+            "intensity": 0.3
+          },
+          {
+            "type": "directional",
+            "color": "#8B7355",
+            "intensity": 0.6,
+            "position": [5, 30, 5]
+          }
+        ],
+        "terrains": [
+          {
+            "id": "tree",
+            "count": 30,
+            "minScale": 3.0,
+            "maxScale": 8.0,
+            "areas": ["forest", "deepForest"]
+          },
+          {
+            "id": "rock",
+            "count": 15,
+            "minScale": 1.5,
+            "maxScale": 5.0,
+            "areas": ["clearing"]
+          },
+          {
+            "id": "grass",
+            "count": 100,
+            "minScale": 2.0,
+            "maxScale": 4.0,
+            "areas": ["forest"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 100,
+                "segments": 50
+              }
+            ]
+          },
+          {
+            "id": "cloud",
+            "count": 600,
+            "minScale": 8.0,
+            "maxScale": 25.0,
+            "opacity": 0.6,
+            "height": {
+              "min": 20,
+              "max": 40
+            },
+            "areas": ["sky"]
+          }
+        ]
+      },
+      "player": {
+        "startPosition": [0, 1, 0]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "wolf",
+            "placements": [
+              { "area": "forest", "count": 2 },
+              { "area": "deepForest", "count": 3 }
+            ]
+          },
+          {
+            "id": "poisonMushroom",
+            "placements": [
+              { "area": "forest", "count": 1 },
+              { "area": "deepForest", "count": 2 },
+              { "area": "clearing", "count": 1 }
+            ]
+          },
+          {
+            "id": "treeGuardian",
+            "placements": [{ "area": "bossArea", "count": 1 }]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "hermit",
+            "placements": [{ "position": [-15, 0, 10] }]
+          },
+          {
+            "id": "forestStoryteller",
+            "placements": [{ "position": [12, 0, -8] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "potion",
+            "placements": [
+              { "area": "forest", "count": 1 },
+              { "area": "clearing", "count": 1 }
+            ]
+          }
+        ]
+      },
+      "areas": {
+        "forest": {
+          "center": [0, 0, 0],
+          "radius": 30
+        },
+        "deepForest": {
+          "center": [0, 0, 25],
+          "radius": 15
+        },
+        "clearing": {
+          "center": [20, 0, 0],
+          "radius": 12
+        },
+        "bossArea": {
+          "center": [0, 0, 40],
+          "radius": 10
+        },
+        "sky": {
+          "center": [0, 0, 0],
+          "radius": 200
+        }
+      },
+      "clearConditions": {
+        "type": "enemyCount",
+        "targets": ["boss"],
+        "count": 0,
+        "operator": "equal",
+        "optional": false,
+        "reward": {
+          "experience": 150,
+          "unlockNextStage": true
+        }
+      }
+    },
+    "ancientRuins": {
+      "name": "古城の廃墟",
+      "model": "stages/ancient-ruins.glb",
+      "texture": "",
+      "modelSettings": {
+        "position": [0, 2, 0],
+        "scale": [110, 110, 110],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
+      "image": "stages/ancient-ruins.png",
+      "description": "stages.ancientRuins.description",
+      "bgm": [
+        {
+          "file": "stages/ancient-ruins/default.mp3",
+          "loop": true
+        },
+        {
+          "file": "stages/ancient-ruins/climax.mp3",
+          "condition": {
+            "type": "enemyCount",
+            "targets": ["grunt", "boss"],
+            "operator": "lessThanOrEqual",
+            "count": 3
+          },
+          "loop": true
+        }
+      ],
+      "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#4A4A4A",
+          "gradientBottom": "#696969"
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#6A5ACD",
+            "intensity": 0.4
+          },
+          {
+            "type": "directional",
+            "color": "#D3D3D3",
+            "intensity": 0.7,
+            "position": [15, 40, 15]
+          }
+        ],
+        "terrains": [
+          {
+            "id": "rock",
+            "count": 60,
+            "minScale": 2.5,
+            "maxScale": 8.0,
+            "areas": ["ruins", "courtyard"]
+          },
+          {
+            "id": "grass",
+            "count": 120,
+            "minScale": 2.0,
+            "maxScale": 5.0,
+            "areas": ["courtyard"]
+          },
+          {
+            "id": "tree",
+            "count": 6,
+            "minScale": 4.0,
+            "maxScale": 12.0,
+            "areas": ["perimeter"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 110,
+                "segments": 60
+              }
+            ]
+          },
+          {
+            "id": "cloud",
+            "count": 800,
+            "minScale": 10.0,
+            "maxScale": 30.0,
+            "opacity": 0.5,
+            "height": {
+              "min": 35,
+              "max": 60
+            },
+            "areas": ["sky"]
+          }
+        ]
+      },
+      "player": {
+        "startPosition": [0, 1, -30]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "gargoyle",
+            "placements": [
+              { "area": "ruins", "count": 2 },
+              { "area": "towers", "count": 1 }
+            ]
+          },
+          {
+            "id": "ghost",
+            "placements": [
+              { "area": "courtyard", "count": 2 },
+              { "area": "ruins", "count": 1 }
+            ]
+          },
+          {
+            "id": "ancientGuardian",
+            "placements": [{ "area": "bossArea", "count": 1 }]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "archaeologist",
+            "placements": [{ "position": [-20, 0, -10] }]
+          },
+          {
+            "id": "ruinsStoryteller",
+            "placements": [{ "position": [15, 0, 12] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "ancientKey",
+            "placements": [{ "area": "towers", "count": 1 }]
+          },
+          {
+            "id": "potion",
+            "placements": [
+              { "area": "towers", "count": 3 }
+            ]
+          }
+        ]
+      },
+      "areas": {
+        "ruins": {
+          "center": [0, 0, 0],
+          "radius": 25
+        },
+        "courtyard": {
+          "center": [0, 0, -15],
+          "radius": 20
+        },
+        "towers": {
+          "center": [25, 0, 20],
+          "radius": 15
+        },
+        "bossArea": {
+          "center": [0, 0, 35],
+          "radius": 12
+        },
+        "perimeter": {
+          "center": [0, 0, 0],
+          "radius": 50
+        },
+        "sky": {
+          "center": [0, 0, 0],
+          "radius": 200
+        }
+      },
+      "clearConditions": {
+        "type": "composite",
+        "conditions": [
+          {
+            "type": "enemyCount",
+            "targets": ["boss"],
+            "count": 0,
+            "operator": "equal",
+            "required": true
+          },
+          {
+            "type": "collectItem",
+            "itemId": "ancientKey",
+            "required": true
+          }
+        ],
+        "reward": {
+          "experience": 200,
+          "unlockNextStage": true
+        }
+      }
+    },
+    "snowyPeaks": {
+      "name": "雪山",
+      "model": "stages/snowy-peaks.glb",
+      "texture": "",
+      "modelSettings": {
+        "position": [0, -2.0, 0],
+        "scale": [120, 120, 120],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
+      "image": "stages/snowy-peaks.png",
+      "description": "stages.snowyPeaks.description",
+      "bgm": [
+        {
+          "file": "stages/snowy-peaks/default.mp3",
+          "loop": true
+        },
+        {
+          "file": "stages/snowy-peaks/climax.mp3",
+          "condition": {
+            "type": "enemyCount",
+            "targets": ["grunt", "boss"],
+            "operator": "lessThanOrEqual",
+            "count": 6
+          },
+          "loop": true
+        }
+      ],
+      "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#B0E0E6",
+          "gradientBottom": "#E6E6FA"
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#ADD8E6",
+            "intensity": 0.6
+          },
+          {
+            "type": "directional",
+            "color": "#F0F8FF",
+            "intensity": 0.9,
+            "position": [20, 50, 25]
+          }
+        ],
+        "terrains": [
+          {
+            "id": "rock",
+            "count": 60,
+            "minScale": 3.0,
+            "maxScale": 10.0,
+            "areas": ["peaks", "cliffs"]
+          },
+          {
+            "id": "tree",
+            "count": 25,
+            "minScale": 5.0,
+            "maxScale": 15.0,
+            "areas": ["forest", "slopes"]
+          },
+          {
+            "id": "grass",
+            "count": 50,
+            "minScale": 2.0,
+            "maxScale": 4.0,
+            "areas": ["valley"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 120,
+                "segments": 70
+              }
+            ]
+          },
+          {
+            "id": "cloud",
+            "count": 800,
+            "minScale": 15.0,
+            "maxScale": 40.0,
+            "opacity": 0.7,
+            "height": {
+              "min": 30,
+              "max": 80
+            },
+            "areas": ["sky"]
+          }
+        ]
+      },
+      "player": {
+        "startPosition": [0, 1, -40]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "iceGolem",
+            "placements": [
+              { "area": "peaks", "count": 2 },
+              { "area": "glacier", "count": 1 }
+            ]
+          },
+          {
+            "id": "snowWolf",
+            "placements": [
+              { "area": "forest", "count": 3 },
+              { "area": "slopes", "count": 2 }
+            ]
+          },
+          {
+            "id": "iceSpirit",
+            "placements": [
+              { "area": "valley", "count": 2 },
+              { "area": "glacier", "count": 1 }
+            ]
+          },
+          {
+            "id": "frostDragon",
+            "placements": [{ "area": "bossArea", "count": 1 }]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "mountaineer",
+            "placements": [{ "position": [-25, 0, -15] }]
+          },
+          {
+            "id": "mountainStoryteller",
+            "placements": [{ "position": [18, 0, -20] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "icePotion",
+            "placements": [
+              { "area": "valley", "count": 3 }
+            ]
+          },
+          {
+            "id": "frostCrystal",
+            "placements": [{ "area": "glacier", "count": 3 }]
+          }
+        ]
+      },
+      "areas": {
+        "peaks": {
+          "center": [0, 0, 0],
+          "radius": 30
+        },
+        "valley": {
+          "center": [0, 0, -20],
+          "radius": 25
+        },
+        "forest": {
+          "center": [-20, 0, 10],
+          "radius": 18
+        },
+        "slopes": {
+          "center": [20, 0, 0],
+          "radius": 22
+        },
+        "cliffs": {
+          "center": [0, 0, 30],
+          "radius": 15
+        },
+        "glacier": {
+          "center": [30, 0, 25],
+          "radius": 20
+        },
+        "bossArea": {
+          "center": [0, 0, 45],
+          "radius": 15
+        },
+        "sky": {
+          "center": [0, 0, 0],
+          "radius": 200
+        }
+      },
+      "clearConditions": {
+        "type": "composite",
+        "conditions": [
+          {
+            "type": "enemyCount",
+            "targets": ["boss"],
+            "count": 0,
+            "operator": "equal",
+            "required": true
+          },
+          {
+            "type": "collectItem",
+            "itemId": "frostCrystal",
+            "count": 3,
+            "required": true
+          }
+        ],
+        "reward": {
+          "experience": 250,
+          "unlockNextStage": true
+        }
+      }
+    },
+    "abyssCavern": {
+      "name": "深淵の洞窟",
+      "model": "stages/abyss-cavern.glb",
+      "texture": "",
+      "modelSettings": {
+        "position": [0, -3.0, 0],
+        "scale": [170, 170, 170],
+        "autoScale": {
+          "enabled": true,
+          "targetSize": 100,
+          "basedOn": "max"
+        }
+      },
+      "image": "stages/abyss-cavern.png",
+      "description": "stages.abyssCavern.description",
+      "bgm": [
+        {
+          "file": "stages/abyss-cavern/default.mp3",
+          "loop": true
+        },
+        {
+          "file": "stages/abyss-cavern/climax.mp3",
+          "condition": {
+            "type": "enemyCount",
+            "targets": ["grunt", "boss"],
+            "operator": "lessThanOrEqual",
+            "count": 8
+          },
+          "loop": true
+        }
+      ],
+      "world": {
+        "sky": {
+          "type": "gradient",
+          "gradientTop": "#1C1C1C",
+          "gradientBottom": "#8B0000"
+        },
+        "lights": [
+          {
+            "type": "ambient",
+            "color": "#4B0000",
+            "intensity": 0.3
+          },
+          {
+            "type": "directional",
+            "color": "#FF4500",
+            "intensity": 0.8,
+            "position": [10, 20, 10]
+          },
+          {
+            "type": "point",
+            "color": "#FF6347",
+            "intensity": 1.2,
+            "position": [0, 8, 20],
+            "distance": 50
+          }
+        ],
+        "terrains": [
+          {
+            "id": "rock",
+            "count": 100,
+            "minScale": 2.0,
+            "maxScale": 15.0,
+            "areas": ["cavern", "depths", "lavaFields"]
+          },
+          {
+            "id": "crystal",
+            "count": 50,
+            "minScale": 1.0,
+            "maxScale": 8.0,
+            "areas": ["crystalCave", "depths"]
+          }
+        ],
+        "environments": [
+          {
+            "id": "ground",
+            "count": 1,
+            "placements": [
+              {
+                "position": [0, 0, 0],
+                "scale": 130,
+                "segments": 80
+              }
+            ]
+          },
+          {
+            "id": "lava",
+            "count": 10,
+            "minScale": 5.0,
+            "maxScale": 20.0,
+            "height": {
+              "min": -2,
+              "max": 0
+            },
+            "areas": ["lavaFields"]
+          }
+        ]
+      },
+      "player": {
+        "startPosition": [0, 1, -50]
+      },
+      "entities": {
+        "enemies": [
+          {
+            "id": "lavaSlime",
+            "placements": [
+              { "area": "lavaFields", "count": 4 },
+              { "area": "depths", "count": 2 }
+            ]
+          },
+          {
+            "id": "rockElemental",
+            "placements": [
+              { "area": "cavern", "count": 3 },
+              { "area": "crystalCave", "count": 2 }
+            ]
+          },
+          {
+            "id": "shadowWraith",
+            "placements": [
+              { "area": "depths", "count": 3 },
+              { "area": "abyss", "count": 1 }
+            ]
+          },
+          {
+            "id": "abyssDragon",
+            "placements": [{ "area": "abyss", "count": 1 }]
+          },
+          {
+            "id": "nekomata",
+            "placements": [{ "area": "bossArea", "count": 1 }]
+          }
+        ],
+        "npcs": [
+          {
+            "id": "dwarfMiner",
+            "placements": [{ "position": [-30, 0, -20] }]
+          },
+          {
+            "id": "abyssStoryteller",
+            "placements": [{ "position": [25, 0, 18] }]
+          }
+        ],
+        "items": [
+          {
+            "id": "lavaResistPotion",
+            "placements": [
+              { "area": "crystalCave", "count": 3 }
+            ]
+          },
+          {
+            "id": "abyssCrystal",
+            "placements": [{ "area": "crystalCave", "count": 3 }]
+          },
+          {
+            "id": "dragonScale",
+            "placements": [{ "area": "bossArea", "count": 1 }]
+          }
+        ]
+      },
+      "areas": {
+        "cavern": {
+          "center": [0, 0, 0],
+          "radius": 35
+        },
+        "depths": {
+          "center": [0, 0, 25],
+          "radius": 28
+        },
+        "lavaFields": {
+          "center": [25, 0, 15],
+          "radius": 25
+        },
+        "crystalCave": {
+          "center": [-25, 0, 20],
+          "radius": 20
+        },
+        "abyss": {
+          "center": [0, 0, 40],
+          "radius": 18
+        },
+        "bossArea": {
+          "center": [0, 0, 60],
+          "radius": 20
+        }
+      },
+      "clearConditions": {
+        "type": "composite",
+        "conditions": [
+          {
+            "type": "enemyCount",
+            "targets": ["boss"],
+            "count": 0,
+            "operator": "equal",
+            "required": true
+          },
+          {
+            "type": "collectItem",
+            "itemId": "abyssCrystal",
+            "count": 3,
+            "required": true
+          },
+          {
+            "type": "collectItem",
+            "itemId": "dragonScale",
+            "required": true
+          }
+        ],
+        "reward": {
+          "experience": 300,
+          "unlockNextStage": false,
+          "gameComplete": true
+        }
+      }
+    }
+  }
+}

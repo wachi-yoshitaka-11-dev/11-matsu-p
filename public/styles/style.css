@@ -1,0 +1,14 @@
+/* =============================================================
+   分割されたCSSファイルをインポート
+============================================================= */
+@import 'components/_base.css';
+@import 'components/_hud.css';
+@import 'components/_minimap.css';
+@import 'components/_level-up-ui.css';
+@import 'components/_pause-menu.css';
+@import 'components/_dialog-box.css';
+@import 'components/_title-screen.css';
+@import 'components/_loading-screen.css';
+@import 'components/_sequence.css';
+@import 'components/_animations.css';
+@import 'components/_utilities.css';
